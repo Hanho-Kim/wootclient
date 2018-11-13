@@ -2,7 +2,8 @@
 
 var mobile    = false;
 
-var serverParentURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:8000";
+//var serverParentURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:8000";
+var serverParentURL = "http://127.0.0.1:8000";
 //var chatServerURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:5000";
 //ec2-18-224-96-147.us-east-2.compute.amazonaws.com
 var currentVersion = "1.0.0";
@@ -11,6 +12,8 @@ var currentVersion = "1.0.0";
 
 /* Global Functions */
 
+// Alternate between new and old servers
+var server_toggle = true;  // If toggle on, new server
 
 //============================================================
 // Popup
@@ -475,6 +478,10 @@ var viewConfig = {
 
 }
 
+if (server_toggle){
+  viewConfig["/index"]["template"] = serverParentURL
+  viewConfig["/notification"]["template"] = serverParentURL + "/action/notification/"
+}
 
 var api = {
 
@@ -644,9 +651,14 @@ function initiator(newPath){
     });
     pathParams = "?" + pathParams;
   }
+  
+  if (server_toggle){
+    var highlight_url = "/common/highlight"
+  } else {
+    var highlight_url = "/api/v1/get/highlight"
+  }
 
-  api.get("/api/v1/get/highlight",function(response){
-
+  api.get(highlight_url, function (response) {
     var footerHighlight = response.footer;
     var headerHighlight = response.header;
 
@@ -2533,9 +2545,14 @@ $(document).ready(function(){
   //============================================================
   // Update Check
   //------------------------------------------------------------
+  if (server_toggle){
+    var update_url = serverParentURL + "/common/update?currentVersion=" + currentVersion;
+  } else {
+    var update_url = serverParentURL + "/update?currentVersion=" + currentVersion;
+  }
   $.ajax({
           method    : "GET",
-          url       : serverParentURL + "/update?currentVersion=" + currentVersion,
+          url: update_url,
           xhrFields: {withCredentials: true},
           success   : function( response ) {
 
