@@ -3,7 +3,8 @@
 var mobile    = false;
 
 //var serverParentURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:8000";
-var serverParentURL = "http://127.0.0.1:8000";
+//var serverParentURL = "http://127.0.0.1:8000";
+var serverParentURL = "http://hellowoot.co.kr:8000";
 //var chatServerURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:5000";
 //ec2-18-224-96-147.us-east-2.compute.amazonaws.com
 var currentVersion = "1.0.0";
