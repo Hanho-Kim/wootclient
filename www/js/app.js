@@ -479,8 +479,11 @@ var viewConfig = {
 }
 
 if (server_toggle){
-  viewConfig["/index"]["template"] = serverParentURL
-  viewConfig["/notification"]["template"] = serverParentURL + "/action/notification/"
+  // Don't put / at the end for now
+  viewConfig["/index"]["template"] = serverParentURL;
+  viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
+  viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list";
+  viewConfig["/gathering/detail"]["template"] = serverParentURL + "/gathering_detail";
 }
 
 var api = {
@@ -809,9 +812,7 @@ var controller = {
 
   /* Notification Ctrl */
   notificationCtrl : function(){
-    
-    api.get("/api/v1/get/highlightHeaderDelete");
-
+    // api.get("/api/v1/get/highlightHeaderDelete");
     return;
   },
 
