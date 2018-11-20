@@ -2,16 +2,10 @@
 
 var mobile    = false;
 
-<<<<<<< HEAD
 // No slash at the end of the url
 var serverParentURL = "http://127.0.0.1:8000";
 // "http://derek-kim.com:8000";
 
-=======
-var serverParentURL = "http://127.0.0.1:8000";
-//var chatServerURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:5000";
-//ec2-18-224-96-147.us-east-2.compute.amazonaws.com
->>>>>>> master
 var currentVersion = "1.0.0";
 
 /* End of Global Variables */
@@ -667,9 +661,6 @@ function initiator(newPath){
     var highlight_url = "/api/v1/get/highlight"
   }
 
-<<<<<<< HEAD
-  api.get(highlight_url, function (response) {
-=======
   // Server side id add 
   var idChecklist = ["uid","gid","bid","pid"];
   var idSlash     = "";
@@ -681,7 +672,6 @@ function initiator(newPath){
 
   api.get("/api/v1/get/highlight",function(response){
 
->>>>>>> master
     var footerHighlight = response.footer;
     var headerHighlight = response.header;
 
