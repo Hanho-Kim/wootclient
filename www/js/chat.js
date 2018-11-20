@@ -19,6 +19,7 @@ var chatConfig;
 var lastChatDataTime = "";
 var lastChatDataTimeInfiniteScroll = "";
 var infiniteScrollKey;
+var infiniteScrollEnd = false;
 
 // Initiate
 function chatInit() {
@@ -118,7 +119,14 @@ function chatInit() {
           $(this).unbind("scroll.chat");
 
           setTimeout(function(){ 
-            return infiniteScroll();
+
+            if(infiniteScrollEnd){
+              $("#chat-room").css({"padding-top":"80px"});
+              return false;
+            }else{
+              return infiniteScroll();
+            }
+            
           }, 1000);
 
         }
@@ -296,6 +304,9 @@ function loadMessagesOnceInfiniteScroll( keyFrom, count ) {
       var data = array[key];
 
       if(index == 0){
+        if(infiniteScrollKey == key){
+          infiniteScrollEnd = true;
+        }
         infiniteScrollKey = key;
       }
 
@@ -485,6 +496,14 @@ var MESSAGE_TEMPLATE =
     '</div>' +
   '</div>';
 
+var NOTIFICATION_TEMPLATE =
+  '<div class="chat-item chat-item-notification-time">' +
+    '<div class="chat-notification">' +
+      '<span></span>' +
+    '</div>' +
+  '</div>';
+
+
 // A loading image URL.
 var LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif?a';
 
@@ -495,7 +514,11 @@ function displayMessage(key, username, uid, text, avatarUrl, avatarColor, time, 
   
   if (!div) { // Not Child_change
     var container = document.createElement('div');
-    container.innerHTML = MESSAGE_TEMPLATE;
+    if(notification){
+      container.innerHTML = NOTIFICATION_TEMPLATE;
+    }else{
+      container.innerHTML = MESSAGE_TEMPLATE;
+    }
     div = container.firstChild;
     div.setAttribute('id', key);
     if(appendBool){
@@ -504,34 +527,42 @@ function displayMessage(key, username, uid, text, avatarUrl, avatarColor, time, 
   }
 
   // Set Username, Avatar, Time
-  div.querySelector('.username').textContent          = username;
-  div.querySelector('.avatar').style.backgroundImage  = 'url(' + avatarUrl + ')';
-  div.querySelector('.avatar').style.backgroundColor  = avatarColor;
-  div.querySelector('.time').textContent              = trimDate(time)[1];
+  if(notification){
 
-  // Add Message
-  var messageElement = div.querySelector('.message-cloud p');
-  var imageElement   = div.querySelector('.message-cloud .message-image');
-  if (text) { // If the message is text.
-    messageElement.textContent = text;
-    // Replace all line breaks by <br>.
-    messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
-  } else if (imageUrl) { // If the message is an image.
-    var image = document.createElement('img');
-    image.addEventListener('load', function() {
-      if(appendBool){
-        $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
-      }
-    });
-    image.src = imageUrl + '&' + new Date().getTime();
-    $(messageElement).remove();
-    imageElement.innerHTML = '';
-    $(imageElement).append(image);
-  }
+    div.querySelector('.chat-notification span').textContent  = text;
 
-  if(uid == chatConfig.user.uid){
-      $(div).addClass("chat-item-my");
-      messageInputElement.focus();
+  }else{
+
+    div.querySelector('.username').textContent          = username;
+    div.querySelector('.avatar').style.backgroundImage  = 'url(' + avatarUrl + ')';
+    div.querySelector('.avatar').style.backgroundColor  = avatarColor;
+    div.querySelector('.time').textContent              = trimDate(time)[1];
+
+    // Add Message
+    var messageElement = div.querySelector('.message-cloud p');
+    var imageElement   = div.querySelector('.message-cloud .message-image');
+    if (text) { // If the message is text.
+      messageElement.textContent = text;
+      // Replace all line breaks by <br>.
+      messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
+    } else if (imageUrl) { // If the message is an image.
+      var image = document.createElement('img');
+      image.addEventListener('load', function() {
+        if(appendBool){
+          $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+        }
+      });
+      image.src = imageUrl + '&' + new Date().getTime();
+      $(messageElement).remove();
+      imageElement.innerHTML = '';
+      $(imageElement).append(image);
+    }
+
+    if(uid == chatConfig.user.uid){
+        $(div).addClass("chat-item-my");
+        messageInputElement.focus();
+    }
+
   }
 
   // Show the card fading-in and scroll to view the new message.

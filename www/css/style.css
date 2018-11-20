@@ -294,6 +294,10 @@ input,textarea{
   min-height:50px;
   background-color:rgb(255,255,255);
 }
+#pullup .pullup-inner .pullup-title{
+  padding:10px;
+  font-weight:600;
+}
 
 /* End of Pullup */
 
