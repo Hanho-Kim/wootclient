@@ -2,7 +2,7 @@
 
 var mobile    = false;
 
-var serverParentURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:8000";
+var serverParentURL = "http://127.0.0.1:8000";
 //var chatServerURL = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:5000";
 //ec2-18-224-96-147.us-east-2.compute.amazonaws.com
 var currentVersion = "1.0.0";
@@ -645,6 +645,15 @@ function initiator(newPath){
     pathParams = "?" + pathParams;
   }
 
+  // Server side id add 
+  var idChecklist = ["uid","gid","bid","pid"];
+  var idSlash     = "";
+  $.each(idChecklist, function(index,value){
+    if(pathParamsJson[value]){
+      idSlash = "/" + pathParamsJson[value];
+    }
+  });
+
   api.get("/api/v1/get/highlight",function(response){
 
     var footerHighlight = response.footer;
@@ -671,7 +680,7 @@ function initiator(newPath){
         var res;
         initAjax = $.ajax({
                 method    : "GET",
-                url       : viewConfig[value]["template"] + pathParams,
+                url       : viewConfig[value]["template"] + idSlash + pathParams,
                 xhrFields : {withCredentials: true},
                 success   : function( response ) {
 
@@ -753,6 +762,14 @@ var controller = {
 
   /* Main Ctrl */
   mainCtrl : function(pathParams){
+
+
+    var swiper = new Swiper('.swiper-container', {
+      pagination: {
+        el: '.swiper-pagination',
+      },
+    });
+
 
     // Header Notification Highlight
     if(pathParams.headerHighlight > 0){
@@ -1487,31 +1504,54 @@ var controller = {
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
 
+    $("#people-filtering").off('click').on('click',function(){
 
-    //Debug
-    /*
-    $("#online-view-debug").off('click').on('click',function(){
+      pullupMenu('people.filtering',function(){
 
-      $("#template-online-view").css({"display":"block"});
-      anime({
-        targets: '#template-online-view',
-        translateY: '-100%',
-        duration: 500,
-        easing: 'easeInOutQuart'
+        var interestArray = [];
+        $(".pullup-interest-content .interest").off('click').on('click',function(){
+
+          var interest = $(this).data("interest");
+
+          if(interestArray.indexOf(interest) > -1){
+            interestArray.splice(interestArray.indexOf(interest), 1);
+          }else{
+            interestArray.push(interest);
+          }
+
+          $(this).toggleClass("selected");
+
+        });
+
+        $("#submit-filtering").off('click').on('click',function(){
+
+          $("#people-filtering").addClass("filtered").find("span").text("필터됨");
+          $("#pullup .background").click();
+          $(".people-section-all .people-item").each(function(index,value){
+
+            $(this).css({"display":"block"});
+
+            if(interestArray.length != 0){
+              var personInterestArray = $(this).find(".interest").data("interestarray");
+              var orChecker = false;
+              $.each(interestArray,function(index, value){
+                if(personInterestArray.indexOf(value) > -1){
+                  orChecker = true;
+                }
+              });
+
+              if(!orChecker){
+                $(this).css({"display":"none"});
+              }
+            }
+
+          });
+
+        });
+
       });
-      renderTemplate(serverParentURL + "/login","#template-online-view-content",function(){});
 
     });
-
-    $("#template-online-view .close-view").off('click').on('click',function(){
-      $("#template-online-view").css({"display":"none"});
-      anime({
-        targets: '#template-online-view',
-        translateY: '100%',
-        duration: 10
-      });
-    });
-    */
 
     return;
   },
@@ -1594,18 +1634,27 @@ var controller = {
         });
 
         $(".profile-report-report").off('click').on('click',function(){
-          api.post("/api/v1/post/user/report",{uid:targetUid},function(){
-            var elm = '<div id="popup-message">' +
-                        '<span>해당 유저를 차단하고 신고했습니다.<br>앞으로 내가 만든 게더링은 해당 유저에게 보이지 않습니다.</span>' +
-                      '</div>';
+          pullupMenu('profile.report.reason?uid=' + targetUid,function(){
+            $(".pullup-item-report-reason").off('click').on('click',function(){
+              var reason = $(this).data("reason");
+              api.post("/api/v1/post/user/report",{uid:targetUid, reason:reason},function(){
 
-            $("body").append(elm);
+                var elm = '<div id="popup-message">' +
+                            '<span>해당 유저를 차단하고 신고했습니다.<br>앞으로 내가 만든 게더링은 해당 유저에게 보이지 않습니다.</span>' +
+                          '</div>';
 
-            setTimeout(function(){ 
-              $("#popup-message").remove();
-            }, 10000);
+                $("body").append(elm);
+
+                setTimeout(function(){ 
+                  $("#popup-message").remove();
+                }, 10000);
+
+              });
+
+              $("#pullup .background").click();
+
+            });
           });
-          $("#pullup .background").click();
         });
 
         $(".profile-report-unblock").off('click').on('click',function(){
