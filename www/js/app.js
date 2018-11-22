@@ -482,8 +482,13 @@ if (server_toggle){
   // Don't put / at the end for now
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
+
+  viewConfig["/board"]["template"] = serverParentURL + "/post_list";
+  viewConfig["/board/posting"]["template"] = serverParentURL + "/post_detail";
+
   viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list";
   viewConfig["/gathering/detail"]["template"] = serverParentURL + "/gathering_detail";
+  viewConfig["/gathering/participants"]["template"] = serverParentURL + "/gathering_members";
 }
 
 var api = {
@@ -666,22 +671,22 @@ function initiator(newPath){
   var idSlash     = "";
   $.each(idChecklist, function(index,value){
     if(pathParamsJson[value]){
-      idSlash = "/" + pathParamsJson[value];
+      idSlash = "/" + pathParamsJson[value] + "/";
     }
   });
 
-  api.get("/api/v1/get/highlight",function(response){
+  // api.get("/api/v1/get/highlight",function(response){
 
-    var footerHighlight = response.footer;
-    var headerHighlight = response.header;
+  //   var footerHighlight = response.footer;
+  //   var headerHighlight = response.header;
 
-    $.each(footerHighlight,function(index,value){
-      $(".footer-item-" + value).append('<div class="footer-item-noti"></div>');
-    });
+  //   $.each(footerHighlight,function(index,value){
+  //     $(".footer-item-" + value).append('<div class="footer-item-noti"></div>');
+  //   });
 
-    pathParamsJson["headerHighlight"] = headerHighlight
+  //   pathParamsJson["headerHighlight"] = headerHighlight
 
-  });
+  // });
 
   // Activate Controller for Current view
   $.each(Object.keys(viewConfig),function(index,value){
@@ -772,6 +777,35 @@ function initiator(newPath){
 
 }
 
+function button_liked() {
+  var pid = $(this).data("pid");
+  var action = $(this).data("action");
+  var data = { 'pid': pid, 'action': action};
+  var button = $(this);
+
+  // TODO: need to add error handling
+  if (button.hasClass("liked")) { // Already Liked
+    api.post("/post_like/", data, function () { });
+    var next_action = "on";
+    
+    button.removeClass("liked");
+    button.html("<span class='ion-ios-heart-outline'></span>");
+    var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
+    $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
+  }
+  else {
+    api.post("/post_like/", data, function () { });
+    var next_action = "off";
+
+    button.addClass("liked");
+    button.html("<span class='ion-ios-heart'></span>");
+    var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
+    $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
+  }
+
+  button.data("action", next_action);
+}
+
 
 /* Controller */
 var controller = {
@@ -799,31 +833,7 @@ var controller = {
 
 
     // Post API: Like
-    $(".button-like").off('click').on('click',function(){
-      
-      var pid     = $(this).data("pid");
-      var data    = {pid : pid};
-      var button  = $(this);
-
-      if( button.hasClass("liked") ){ // Already Liked
-
-        api.delete("/api/v1/delete/like",data,function(){});
-        button.removeClass("liked");
-        button.html("<span class='ion-ios-heart-outline'></span>");
-        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
-
-      } else {
-
-        api.post("/api/v1/post/like",data,function(){});
-        button.addClass("liked");
-        button.html("<span class='ion-ios-heart'></span>");
-        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
-
-      }
-
-    });
+    $(".button-like").off('click').on('click', button_liked);
 
     return;
   },
@@ -1899,31 +1909,7 @@ var controller = {
 
     // Post API: Like
     var likeHandler = function(){
-      $(".button-like").off('click').on('click',function(){
-        
-        var pid     = $(this).data("pid");
-        var data    = {pid : pid};
-        var button  = $(this);
-
-        if( button.hasClass("liked") ){ // Already Liked
-
-          api.delete("/api/v1/delete/like",data,function(){});
-          button.removeClass("liked");
-          button.html("<span class='ion-ios-heart-outline'></span>");
-          var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-          $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
-
-        } else {
-
-          api.post("/api/v1/post/like",data,function(){});
-          button.addClass("liked");
-          button.html("<span class='ion-ios-heart'></span>");
-          var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-          $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
-
-        }
-
-      });
+      $(".button-like").off('click').on('click', button_liked);
     }
     likeHandler();
 
@@ -2193,31 +2179,7 @@ var controller = {
     });
 
     // Post API: Like
-    $(".button-like").off('click').on('click',function(){
-      
-      var pid     = $(this).data("pid");
-      var data    = {pid : pid};
-      var button  = $(this);
-
-      if( button.hasClass("liked") ){ // Already Liked
-
-        api.delete("/api/v1/delete/like",data,function(){});
-        button.removeClass("liked");
-        button.html("<span class='ion-ios-heart-outline'></span>");
-        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
-
-      } else {
-
-        api.post("/api/v1/post/like",data,function(){});
-        button.addClass("liked");
-        button.html("<span class='ion-ios-heart'></span>");
-        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
-
-      }
-
-    });
+    $(".button-like").off('click').on('click', button_liked);
 
     // Post API: Comment - Default
     $("#footer-textarea-submit").off('click').on('click',function(){
