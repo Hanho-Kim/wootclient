@@ -3,7 +3,7 @@
 var mobile    = false;
 
 // No slash at the end of the url
-var serverParentURL = "http://127.0.0.1:8000";
+var serverParentURL = "http://derek-kim.com:8000";
 // "http://derek-kim.com:8000";
 
 var currentVersion = "1.0.0";
