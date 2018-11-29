@@ -480,13 +480,19 @@ if (server_toggle){
   // Don't put / at the end for now
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
+    
+  viewConfig["/login/signup/1"]["template"] = serverParentURL + "/account/register";
 
-  viewConfig["/board"]["template"] = serverParentURL + "/post_list";
-  viewConfig["/board/posting"]["template"] = serverParentURL + "/post_detail";
+  viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
+  viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
 
   viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list";
   viewConfig["/gathering/detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering/participants"]["template"] = serverParentURL + "/gathering_members";
+
+  viewConfig["/people"]["template"] = serverParentURL + "/account/more";  
+  viewConfig["/people.profile"]["template"] = serverParentURL + "/account/profile";  
+
 }
 
 var api = {
@@ -930,6 +936,8 @@ var controller = {
                               $("#signup-address-input-hidden").val(currentAdd);
                               $("#signup-address-input").val(currentAdd);
                               $("#signup-address-result").html("");
+                                
+                              
                             })                            
                           }
 
