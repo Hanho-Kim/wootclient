@@ -4,11 +4,9 @@ var mobile    = false;
 
 // No slash at the end of the url
 var serverParentURL = "http://derek-kim.com:8000";
-// "http://derek-kim.com:8000";
+// "http://127.0.0.1:8000";
 
 var currentVersion = "1.0.0";
-
-/* End of Global Variables */
 
 /* Global Functions */
 
@@ -345,6 +343,11 @@ var viewConfig = {
     "template"    : serverParentURL + "/login/signup.3",
     "footerHide"  : true
   },
+  "/login/signup/4": {
+    "controller": "signupCtrl",
+    "template": serverParentURL + "/login/signup.4",
+    "footerHide": true
+  },
   "/login/signup/confirm" : {
     "controller"  : "signupConfirmCtrl",
     "template"    : serverParentURL + "/login/confirm",
@@ -483,7 +486,10 @@ if (server_toggle){
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
     
-  viewConfig["/login/signup/1"]["template"] = serverParentURL + "/account/register";
+  viewConfig["/login/signup/1"]["template"] = serverParentURL + "/account/address";
+  viewConfig["/login/signup/2"]["template"] = serverParentURL + "/account/register";
+  viewConfig["/login/signup/3"]["template"] = serverParentURL + "/account/block_select";
+  viewConfig["/login/signup/4"]["template"] = serverParentURL + "/account/verify";
 
   viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
   viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
@@ -497,7 +503,6 @@ if (server_toggle){
   viewConfig["/people/profile"]["template"] = serverParentURL + "/account/profile";  
   viewConfig["/people/profile/edit"]["template"] = serverParentURL + "/account/edit";
   viewConfig["/people/profile/edit/password"]["template"] = serverParentURL + "/account/change_password";
-    
 }
 
 var api = {
@@ -715,7 +720,7 @@ function initiator(newPath){
                 success   : function( response ) {
 
                             $("#template-view").html("");
-                            $("#template-view").append($.parseHTML(response));
+                            $("#template-view").append($.parseHTML(response, null, true));
                             $("#template-view").css({"display":"block"});
                             $("woot-click").off('click').on('click',function(){
                               initiator($(this).attr("href"));
