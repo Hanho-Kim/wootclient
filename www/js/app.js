@@ -488,13 +488,16 @@ if (server_toggle){
   viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
   viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
 
-  viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list";
+  viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list/all";
+  viewConfig["/gathering/my"]["template"] = serverParentURL + "/gathering_list/my";
   viewConfig["/gathering/detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering/participants"]["template"] = serverParentURL + "/gathering_members";
 
   viewConfig["/people"]["template"] = serverParentURL + "/account/more";  
-  viewConfig["/people.profile"]["template"] = serverParentURL + "/account/profile";  
-
+  viewConfig["/people/profile"]["template"] = serverParentURL + "/account/profile";  
+  viewConfig["/people/profile/edit"]["template"] = serverParentURL + "/account/edit";
+  viewConfig["/people/profile/edit/password"]["template"] = serverParentURL + "/account/change_password";
+    
 }
 
 var api = {
