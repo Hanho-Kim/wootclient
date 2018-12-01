@@ -1,5 +1,5 @@
 /* Global Variables */
-
+var currentVersion = "1.0.0";
 var mobile    = false;
 
 // No slash at the end of the url
@@ -7,12 +7,19 @@ var serverParentURL = "http://derek-kim.com:8000";
 // "http://derek-kim.com:8000"
 // "http://127.0.0.1:8000";
 
-var currentVersion = "1.0.0";
-
-/* Global Functions */
-
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
+
+var info = $("<div>[DEBUG]" + serverParentURL + "<br>is new: " + server_toggle + "</div>")
+            .css({ position: 'fixed', right: '50px', top: '80px', 'font-size': '10px'});
+if (serverParentURL != "http://derek-kim.com:8000") {
+  info.css({color: 'red', 'font-size': '20px'});
+}
+$('body').append(info)
+
+
+
+/* Global Functions */
 
 //============================================================
 // Popup
