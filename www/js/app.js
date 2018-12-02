@@ -336,27 +336,27 @@ var viewConfig = {
     "template"    : serverParentURL + "/login/signup",
     "footerHide"  : true
   },
-  "/login/signup/1" : {
+  "/signup/1" : {
     "controller"  : "signupCtrl",
     "template"    : serverParentURL + "/login/signup.1",
     "footerHide"  : true
   },
-  "/login/signup/2" : {
+  "/signup/2" : {
     "controller"  : "signupCtrl",
     "template"    : serverParentURL + "/login/signup.2",
     "footerHide"  : true
   },
-  "/login/signup/3" : {
+  "/signup/3" : {
     "controller"  : "signupCtrl",
     "template"    : serverParentURL + "/login/signup.3",
     "footerHide"  : true
   },
-  "/login/signup/4": {
+  "/signup/4": {
     "controller": "signupCtrl",
     "template": serverParentURL + "/login/signup.4",
     "footerHide": true
   },
-  "/login/signup/5": {
+  "/signup/5": {
     "controller": "signupCtrl",
     "template": serverParentURL + "/login/signup.5",
     "footerHide": true
@@ -400,18 +400,18 @@ var viewConfig = {
     "header"      : "./header/write.posting.edit.html",
     "footerHide"  : true
   },
-  "/board" : {
+  "/post_category_list" : {
     "controller"  : "voidCtrl",
     "template"    : serverParentURL + "/board/discover",
     "header"      : "./header/board.html"
   },
-  "/board/posting" : {
-    "controller"  : "boardCtrl",
+  "/post_list" : {
+    "controller"  : "postListCtrl",
     "template"    : serverParentURL + "/board/posting",
     "header"      : "./header/board.posting.html"
   },
-  "/board/posting/detail" : {
-    "controller"  : "boardDetailCtrl",
+  "/post_detail" : {
+    "controller"  : "postDetailCtrl",
     "template"    : serverParentURL + "/board/detail",
     "header"      : "./header/board.posting.html"
   },
@@ -420,17 +420,17 @@ var viewConfig = {
     "template"    : serverParentURL + "/board/like",
     "header"      : "./header/board.posting.like.html"
   },
-  "/gathering" : {
+  "/gathering_list" : {
     "controller"  : "voidCtrl",
     "template"    : serverParentURL + "/gathering/discover",
     "header"      : "./header/gathering.html"
   },
-  "/gathering/my" : {
-    "controller"  : "voidCtrl",
-    "template"    : serverParentURL + "/gathering/my",
-    "header"      : "./header/gathering.my.html"
-  },
-  "/gathering/detail" : {
+  // "/gathering_list/my" : {
+  //   "controller"  : "voidCtrl",
+  //   "template"    : serverParentURL + "/gathering/my",
+  //   "header"      : "./header/gathering.my.html"
+  // },
+  "/gathering_detail" : {
     "controller"  : "gatheringCtrl",
     "template"    : serverParentURL + "/gathering/detail",
     "header"      : "./header/gathering.detail.html",
@@ -442,7 +442,7 @@ var viewConfig = {
     "header"      : "./header/gathering.like.html",
     "footerHide"  : true
   },
-  "/gathering/participants" : {
+  "/gathering_members" : {
     "controller"  : "gatheringCtrl",
     "template"    : serverParentURL + "/gathering/participants",
     "header"      : "./header/gathering.participants.html",
@@ -466,22 +466,22 @@ var viewConfig = {
     "header"      : "./header/gathering.review.html",
     "footerHide"  : true
   },
-  "/people" : {
-    "controller"  : "peopleCtrl",
+  "/account/more" : {
+    "controller"  : "accountMoreCtrl",
     "template"    : serverParentURL + "/people/discover",
     "header"      : "./header/people.html"
   },
-  "/people/profile" : {
+  "/account/profile" : {
     "controller"  : "profileCtrl",
     "template"    : serverParentURL + "/people/profile",
     "header"      : "./header/people.profile.html"
   },
-  "/people/profile/edit" : {
+  "/account/edit" : {
     "controller"  : "profileEditCtrl",
     "template"    : serverParentURL + "/people/edit",
     "header"      : "./header/people.profile.edit.html"
   },
-  "/people/profile/edit/password" : {
+  "/account/change_password" : {
     "controller"  : "passwordEditCtrl",
     "template"    : serverParentURL + "/people/edit.password",
     "header"      : "./header/people.profile.edit.password.html"
@@ -499,24 +499,24 @@ if (server_toggle){
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
     
-  viewConfig["/login/signup/1"]["template"] = serverParentURL + "/account/signup/address";
-  viewConfig["/login/signup/2"]["template"] = serverParentURL + "/account/signup/register";
-  viewConfig["/login/signup/3"]["template"] = serverParentURL + "/account/signup/info";
-  viewConfig["/login/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
-  viewConfig["/login/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
+  viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
+  viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
+  viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
+  viewConfig["/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
+  viewConfig["/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
 
-  viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
-  viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
+  viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
+  viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
+  viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
 
-  viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list/all";
-  viewConfig["/gathering/my"]["template"] = serverParentURL + "/gathering_list/my";
-  viewConfig["/gathering/detail"]["template"] = serverParentURL + "/gathering_detail";
-  viewConfig["/gathering/participants"]["template"] = serverParentURL + "/gathering_members";
+  viewConfig["/gathering_list"]["template"] = serverParentURL + "/gathering_list";
+  viewConfig["/gathering_detail"]["template"] = serverParentURL + "/gathering_detail";
+  viewConfig["/gathering_members"]["template"] = serverParentURL + "/gathering_members";
 
-  viewConfig["/people"]["template"] = serverParentURL + "/account/more";  
-  viewConfig["/people/profile"]["template"] = serverParentURL + "/account/profile";  
-  viewConfig["/people/profile/edit"]["template"] = serverParentURL + "/account/edit";
-  viewConfig["/people/profile/edit/password"]["template"] = serverParentURL + "/account/change_password";
+  viewConfig["/account/more"]["template"] = serverParentURL + "/account/more";  
+  viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";  
+  viewConfig["/account/edit"]["template"] = serverParentURL + "/account/edit";
+  viewConfig["/account/change_password"]["template"] = serverParentURL + "/account/change_password";
 }
 
 var api = {
@@ -1554,7 +1554,7 @@ var controller = {
   },
 
   /* People Ctrl */
-  peopleCtrl : function(){
+  accountMoreCtrl : function(){
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
 
@@ -1923,8 +1923,7 @@ var controller = {
   },
 
   /* Board Ctrl */
-  boardCtrl : function(){
-    
+  postListCtrl : function(){
 
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
@@ -2170,7 +2169,7 @@ var controller = {
   },
 
   /* Board Detail Ctrl */
-  boardDetailCtrl : function(urlParameter){
+  postDetailCtrl : function(urlParameter){
     
     var swiper = new Swiper('.swiper-container', {
       pagination: {
