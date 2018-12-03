@@ -388,12 +388,6 @@ var viewConfig = {
     "header"      : "./header/write.html",
     "footerHide"  : true
   },
-//   "/write/posting" : {
-//     "controller"  : "writePostingCtrl",
-//     "template"    : serverParentURL + "/write/posting",
-//     "header"      : "./header/write.posting.html",
-//     "footerHide"  : true
-//   },
   "/write/posting/edit" : {
     "controller"  : "writePostingCtrl",
     "template"    : serverParentURL + "/write/posting.edit",
@@ -504,7 +498,7 @@ if (server_toggle){
   viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
   viewConfig["/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
   viewConfig["/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
-   
+  
   viewConfig["/write"]["template"] = serverParentURL + "/misc/write";    
     
   viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
