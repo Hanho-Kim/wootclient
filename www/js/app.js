@@ -383,17 +383,17 @@ var viewConfig = {
     "header"      : "./header/notification.html"
   },
   "/write" : {
-    "controller"  : "writeGatheringCtrl",
+    "controller"  : "writeCtrl",
     "template"    : serverParentURL + "/write/gathering",
     "header"      : "./header/write.html",
     "footerHide"  : true
   },
-  "/write/posting" : {
-    "controller"  : "writePostingCtrl",
-    "template"    : serverParentURL + "/write/posting",
-    "header"      : "./header/write.posting.html",
-    "footerHide"  : true
-  },
+//   "/write/posting" : {
+//     "controller"  : "writePostingCtrl",
+//     "template"    : serverParentURL + "/write/posting",
+//     "header"      : "./header/write.posting.html",
+//     "footerHide"  : true
+//   },
   "/write/posting/edit" : {
     "controller"  : "writePostingCtrl",
     "template"    : serverParentURL + "/write/posting.edit",
@@ -505,14 +505,17 @@ if (server_toggle){
   viewConfig["/login/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
   viewConfig["/login/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
 
-  viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
-  viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
-  viewConfig["/board/posting/detail"]["template"] = serverParentURL + "/post_detail";
-
   viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list/all";
   viewConfig["/gathering/my"]["template"] = serverParentURL + "/gathering_list/my";
   viewConfig["/gathering/detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering/participants"]["template"] = serverParentURL + "/gathering_members";
+
+  viewConfig["/write"]["template"] = serverParentURL + "/misc/write";    
+    
+  viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
+  viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
+  viewConfig["/board/posting/detail"]["template"] = serverParentURL + "/post_detail";
+
 
   viewConfig["/people"]["template"] = serverParentURL + "/account/more";  
   viewConfig["/people/profile"]["template"] = serverParentURL + "/account/profile";  
@@ -1002,8 +1005,8 @@ var controller = {
 
   },
 
-  /* WriteGathering Ctrl */
-  writeGatheringCtrl : function(){
+  /* WriteCtrl */
+  writeCtrl : function(){
 
     $("#footer").css({"display":"none"});
 
@@ -1013,6 +1016,38 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') - 16);  
     });
 
+    /* subheader */
+
+    if($(".subheader-tab").length){
+        $(".write-section-gathering").show();
+        $(".write-section-posting").hide();
+    }
+
+    $(".subheader-tab").off('click').on('click',function(){
+
+        var tab = $(this).data("tab");
+ 
+        if(tab == "gathering"){
+
+            $(".subheader-tab").removeClass("selected");
+            $(this).addClass("selected");
+
+            $(".write-section-gathering").show();
+            $(".write-section-posting").hide();
+
+        // renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
+
+        } else if(tab == "posting"){
+
+            $(".subheader-tab").removeClass("selected");
+            $(this).addClass("selected");
+
+            $(".write-section-gathering").hide();
+            $(".write-section-posting").show();
+        }
+    });
+
+      
     /* Write Gathering */
 
     // Sticker Change
@@ -1349,20 +1384,7 @@ var controller = {
 
     });
 
-    return;
-  },
-
-  /* WritePosting Ctrl */
-  writePostingCtrl : function(){
-
-    $("#footer").css({"display":"none"});
-
-    /* Global */
-
-    $("textarea").on('keydown keyup', function () {
-      $(this).height(1).height( $(this).prop('scrollHeight') - 16);  
-    });
-
+  /* Write Posting */
 
     // Board Select
     $("#write-posting-input-board-fake").off('click').on('click',function(){
