@@ -425,11 +425,11 @@ var viewConfig = {
     "template"    : serverParentURL + "/gathering/discover",
     "header"      : "./header/gathering.html"
   },
-  // "/gathering_list/my" : {
-  //   "controller"  : "voidCtrl",
-  //   "template"    : serverParentURL + "/gathering/my",
-  //   "header"      : "./header/gathering.my.html"
-  // },
+  "/gathering_list/my" : {
+    "controller"  : "voidCtrl",
+    "template"    : serverParentURL + "/gathering/my",
+    "header"      : "./header/gathering.my.html"
+  },
   "/gathering_detail" : {
     "controller"  : "gatheringCtrl",
     "template"    : serverParentURL + "/gathering/detail",
@@ -510,6 +510,7 @@ if (server_toggle){
   viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
 
   viewConfig["/gathering_list"]["template"] = serverParentURL + "/gathering_list";
+  viewConfig["/gathering_list/my"]["template"] = serverParentURL + "/gathering_list/my/";
   viewConfig["/gathering_detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering_members"]["template"] = serverParentURL + "/gathering_members";
 
@@ -522,7 +523,6 @@ if (server_toggle){
 var api = {
 
   get : function(url,successFn){
-
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -531,35 +531,26 @@ var api = {
               dataType  : "json",
               xhrFields : {withCredentials: true},
               success   : function( response ) {
-                          res = response;
-                        },
-              error     : function( request, status, error ) {
-
-                        }
+                          res = response;},
+              error     : function( request, status, error ) {}
     });
 
     promise.then(function(){
-
       return successFn(res);
-
-    }).catch(function(){
-
+    })
+    .catch(function(){
       var elm = '<div id="popup-message">' +
                   '<span>API 연결 오류</span>' +
                 '</div>';
-
       $("body").append(elm);
 
       setTimeout(function(){ 
         $("#popup-message").remove();
       }, 5000);
-
     });
-
   },
 
   post : function(url,data,successFn){
-
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -574,33 +565,25 @@ var api = {
               success   : function( response ) {
                           res = response;
                         },
-              error     : function( request, status, error ) {
-
-                        }
+              error     : function( request, status, error ) {}
     });
 
     promise.then(function(){
-
       return successFn(res);
-
-    }).catch(function(){
-
+    })
+    .catch(function(){
       var elm = '<div id="popup-message">' +
                   '<span>API 연결 오류</span>' +
                 '</div>';
-
       $("body").append(elm);
-
       setTimeout(function(){ 
         $("#popup-message").remove();
       }, 5000);
-
     });
 
   },
 
   delete : function(url,data,successFn){
-
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -615,29 +598,22 @@ var api = {
               success   : function( response ) {
                           res = response;
                         },
-              error     : function( request, status, error ) {
-
-                        }
+              error     : function( request, status, error ) {}
     });
 
     promise.then(function(){
-
       return successFn(res);
-
-    }).catch(function(){
-
+    })
+    .catch(function(){
       var elm = '<div id="popup-message">' +
                   '<span>API 연결 오류</span>' +
                 '</div>';
-
       $("body").append(elm);
 
       setTimeout(function(){ 
         $("#popup-message").remove();
       }, 5000);
-
     });
-
   }
 
 }
@@ -719,87 +695,77 @@ function initiator(newPath){
   // Activate Controller for Current view
   $.each(Object.keys(viewConfig),function(index,value){
 
-    if(pathname == value){
+    if (pathname != value) {
+      return;
+    }
 
-      $("#template-view-loading").css({"display":"block"});
-      $("#template-view-loading").css({"opacity":"1"});
-      $("#template-view").html("");
+    $("#template-view-loading").css({"display":"block"});
+    $("#template-view-loading").css({"opacity":"1"});
+    $("#template-view").html("");
 
-      renderTemplate(viewConfig[value]["header"],"#template-header",function(){
-        var res;
-        initAjax = $.ajax({
-                method    : "GET",
-                url       : viewConfig[value]["template"] + idSlash + pathParams,
-                xhrFields : {withCredentials: true},
-                success   : function( response ) {
+    renderTemplate(viewConfig[value]["header"], "#template-header", function(){
+      var res;
+      initAjax = $.ajax({
+              method    : "GET",
+              url       : viewConfig[value]["template"] + idSlash + pathParams,
+              xhrFields : {withCredentials: true},
+              success   : function( response ) {
+                          $("#template-view").html("");
+                          $("#template-view").append($.parseHTML(response, null, true));
+                          $("#template-view").css({"display":"block"});
+                          $("woot-click").off('click').on('click',function(){
+                            initiator($(this).attr("href"));
+                            history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
+                          });
+                        },
+              error     : function( request, status, error ) {}
+      });
 
-                            $("#template-view").html("");
-                            $("#template-view").append($.parseHTML(response, null, true));
-                            $("#template-view").css({"display":"block"});
-                            $("woot-click").off('click').on('click',function(){
-                              initiator($(this).attr("href"));
-                              history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
-                            });
+      initAjax.then(function(){
+          anime({
+            targets: '#template-view-loading',
+            opacity: '0',
+            duration: 100,
+            easing: 'linear',
+            complete: function(){
+              $("#template-view-loading").css({"display":"none"});
+            }
+          });
 
-                          },
-                error     : function( request, status, error ) {
+          // Login Check
+          /*
+          if(pathParent != "login"){
+            var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+            if(!userdata.login){
+              window.location.href = "./login.html#/login";
+            }
+          }else{
+            var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+            if(userdata.login){
+              window.location.href = "./index.html#/index";
+            }
+          }
+          */
 
-                          }
-
-        });
-
-        initAjax.then(function(){
-
+          controller[viewConfig[value]["controller"]](pathParamsJson);
+          globalEventHandler();
+      })
+      .catch(function(){
+          renderTemplate("404.html", "#template-view", function(){
             anime({
               targets: '#template-view-loading',
               opacity: '0',
+              delay: 10000,
               duration: 100,
               easing: 'linear',
               complete: function(){
                 $("#template-view-loading").css({"display":"none"});
               }
             });
-
-            // Login Check
-            /*
-            if(pathParent != "login"){
-              var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-              if(!userdata.login){
-                window.location.href = "./login.html#/login";
-              }
-            }else{
-              var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-              if(userdata.login){
-                window.location.href = "./index.html#/index";
-              }
-            }
-            */
-
-            controller[viewConfig[value]["controller"]](pathParamsJson);
-            globalEventHandler();
-
-        })
-        .catch(function(){
-
-            renderTemplate("404.html","#template-view",function(){
-              anime({
-                targets: '#template-view-loading',
-                opacity: '0',
-                delay: 10000,
-                duration: 100,
-                easing: 'linear',
-                complete: function(){
-                  $("#template-view-loading").css({"display":"none"});
-                }
-              });
-            });
-            globalEventHandler();
-
-        });
-
+          });
+          globalEventHandler();
       });
-
-    }
+    });
 
   });
 
