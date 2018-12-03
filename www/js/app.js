@@ -213,7 +213,7 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
           success   : function( response ) {
 
                       $(targetElm).html("");
-                      $(targetElm).append($.parseHTML(response));
+                      $(targetElm).append($.parseHTML(response, null, true));
                       $(targetElm).css({"display":"block"});
                       $("woot-click").off('click').on('click',function(){
                         initiator($(this).attr("href"));
@@ -507,6 +507,7 @@ if (server_toggle){
 
   viewConfig["/board"]["template"] = serverParentURL + "/post_category_list";
   viewConfig["/board/posting"]["template"] = serverParentURL + "/post_list";
+  viewConfig["/board/posting/detail"]["template"] = serverParentURL + "/post_detail";
 
   viewConfig["/gathering"]["template"] = serverParentURL + "/gathering_list/all";
   viewConfig["/gathering/my"]["template"] = serverParentURL + "/gathering_list/my";
@@ -1618,7 +1619,9 @@ var controller = {
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
     if($("#profile-section-history").length){
-      renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
+      $(".badge-discover-contents").show();
+      $(".posting-wrapper").hide();
+      $(".people-contents").hide();
     }
 
     // History Tab
@@ -1626,31 +1629,40 @@ var controller = {
 
       var tab = $(this).data("tab");
 
-      if(tab == "posting"){
+      if(tab == "badge"){
 
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
 
-        renderTemplate(serverParentURL + "/people/profile.posting?uid=" + profiledata.uid,"#profile-section-history");
+        $(".badge-discover-contents").show();
+        $(".posting-wrapper").hide();
+        $(".people-contents").hide();
 
-      }else if(tab == "woot"){
+        // renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
 
-        $(".profile-section-statistics-tab").removeClass("selected");
-        $(this).addClass("selected");
-
-        renderTemplate(serverParentURL + "/people/profile.woot?uid=" + profiledata.uid,"#profile-section-history");
-
-      }else if(tab == "badge"){
+      } else if(tab == "posting"){
 
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
+        $(".badge-discover-contents").hide();
+        $(".posting-wrapper").show();
+        $(".people-contents").hide();
 
-        renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
+        // renderTemplate(serverParentURL + "/people/profile.posting?uid=" + profiledata.uid,"#profile-section-history");
+
+      } else if(tab == "woot"){
+
+        $(".profile-section-statistics-tab").removeClass("selected");
+        $(this).addClass("selected");
+        $(".badge-discover-contents").hide();
+        $(".posting-wrapper").hide();
+        $(".people-contents").show();
+
+        // renderTemplate(serverParentURL + "/people/profile.woot?uid=" + profiledata.uid,"#profile-section-history");
 
       }
 
     });
-
 
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
