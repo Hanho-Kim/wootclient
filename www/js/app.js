@@ -140,7 +140,7 @@ function pullupMenu(menu,successFn){
   var res;
   var promise = $.ajax({
           method    : "GET",
-          url       : serverParentURL + "/pullup/" + menu,
+          url       : serverParentURL + "/misc/" + menu,
           xhrFields : {withCredentials: true},
           success   : function( response ) {
                       $("#pullup .pullup-inner").html("");
@@ -161,7 +161,7 @@ function pullupMenu(menu,successFn){
                       });
 
                       $("#pullup .pullup-item").off('click').on('click',function(){
-                        
+
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
@@ -255,7 +255,7 @@ function globalEventHandler(){
     initiator($(this).attr("href"));
     history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
   });
-    
+
 }
 
 //============================================================
@@ -301,7 +301,7 @@ function imageElementDelete(e,inputOrder){
       $(this).val("");
     }
 
-  }); 
+  });
 
   $("#write-section-item-photo-button").removeClass("disabled");
 
@@ -492,15 +492,15 @@ if (server_toggle){
   // Don't put / at the end for now
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
-    
+
   viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
   viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
   viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
   viewConfig["/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
   viewConfig["/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
-  
-  viewConfig["/write"]["template"] = serverParentURL + "/misc/write";    
-    
+
+  viewConfig["/write"]["template"] = serverParentURL + "/misc/write";
+
   viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
   viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
   viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
@@ -510,8 +510,8 @@ if (server_toggle){
   viewConfig["/gathering_detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering_members"]["template"] = serverParentURL + "/gathering_members";
 
-  viewConfig["/account/more"]["template"] = serverParentURL + "/account/more";  
-  viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";  
+  viewConfig["/account/more"]["template"] = serverParentURL + "/account/more";
+  viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";
   viewConfig["/account/edit"]["template"] = serverParentURL + "/account/edit";
   viewConfig["/account/change_password"]["template"] = serverParentURL + "/account/change_password";
 }
@@ -540,7 +540,7 @@ var api = {
                 '</div>';
       $("body").append(elm);
 
-      setTimeout(function(){ 
+      setTimeout(function(){
         $("#popup-message").remove();
       }, 5000);
     });
@@ -572,7 +572,7 @@ var api = {
                   '<span>API 연결 오류</span>' +
                 '</div>';
       $("body").append(elm);
-      setTimeout(function(){ 
+      setTimeout(function(){
         $("#popup-message").remove();
       }, 5000);
     });
@@ -606,7 +606,7 @@ var api = {
                 '</div>';
       $("body").append(elm);
 
-      setTimeout(function(){ 
+      setTimeout(function(){
         $("#popup-message").remove();
       }, 5000);
     });
@@ -659,14 +659,14 @@ function initiator(newPath){
     });
     pathParams = "?" + pathParams;
   }
-  
+
   if (server_toggle){
     var highlight_url = "/common/highlight"
   } else {
     var highlight_url = "/api/v1/get/highlight"
   }
 
-  // Server side id add 
+  // Server side id add
   var idChecklist = ["uid","gid","bid","pid"];
   var idSlash     = "";
   $.each(idChecklist, function(index,value){
@@ -777,7 +777,7 @@ function button_liked() {
   if (button.hasClass("liked")) { // Already Liked
     api.post("/post_like/", data, function () { });
     var next_action = "on";
-    
+
     button.removeClass("liked");
     button.html("<span class='ion-ios-heart-outline'></span>");
     var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
@@ -836,7 +836,7 @@ var controller = {
 
   /* Login Ctrl */
   loginCtrl : function(){
-    
+
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
 
@@ -922,9 +922,9 @@ var controller = {
                               $("#signup-address-input-hidden").val(currentAdd);
                               $("#signup-address-input").val(currentAdd);
                               $("#signup-address-result").html("");
-                                
-                              
-                            })                            
+
+
+                            })
                           }
 
                         },
@@ -947,7 +947,7 @@ var controller = {
     $("#model-house-item-wrapper").html("");
 
     $.each(modelHouseHTML,function(index,elm){
-      setTimeout(function(){ 
+      setTimeout(function(){
         $("#model-house-item-wrapper").prepend(elm);
         anime({
           targets: '.model-house-item:nth-child(1)',
@@ -971,7 +971,7 @@ var controller = {
     /* Global */
 
     $("textarea").on('keydown keyup', function () {
-      $(this).height(1).height( $(this).prop('scrollHeight') - 16);  
+      $(this).height(1).height( $(this).prop('scrollHeight') - 16);
     });
 
     /* subheader */
@@ -984,7 +984,7 @@ var controller = {
     $(".subheader-tab").off('click').on('click',function(){
 
         var tab = $(this).data("tab");
- 
+
         if(tab == "gathering"){
 
             $(".subheader-tab").removeClass("selected");
@@ -1005,7 +1005,7 @@ var controller = {
         }
     });
 
-      
+
     /* Write Gathering */
 
     // Sticker Change
@@ -1082,7 +1082,7 @@ var controller = {
 
     // Gathering Time
     $("#write-gathering-input-time-fake").off('click').on('click',function(){
-      pullupMenu("calendar",function(){
+      pullupMenu("pullup_write_calendar",function(){
 
         // Date Select
         function dateSelect(){
@@ -1099,7 +1099,7 @@ var controller = {
 
             dd = '0' + dd;
 
-        } 
+        }
         if(mm<10){
 
             mm = '0' + mm;
@@ -1185,7 +1185,7 @@ var controller = {
           }else{
             timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
           }
-          
+
           $("#write-gathering-input-time").val(timestamp);
           $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
 
@@ -1207,7 +1207,7 @@ var controller = {
 
 
     $("#write-gathering-input-agelimit-fake").off('click').on('click',function(){
-      pullupMenu("agelimit",function(){
+      pullupMenu("pullup_write_agelimit",function(){
 
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
@@ -1249,7 +1249,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
               $("#popup-message").remove();
             }, 5000);
 
@@ -1302,7 +1302,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
               $("#popup-message").remove();
             }, 5000);
 
@@ -1321,7 +1321,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
               $("#popup-message").remove();
             }, 5000);
 
@@ -1347,7 +1347,7 @@ var controller = {
     // Board Select
     $("#write-posting-input-board-fake").off('click').on('click',function(){
 
-      pullupMenu("write.posting.board",function(){
+      pullupMenu("pullup_write_posting_category",function(){
 
         $(".board-select").off('click').on('click',function(){
 
@@ -1383,7 +1383,7 @@ var controller = {
           return false;
         }
 
-      }); 
+      });
 
     });
 
@@ -1398,7 +1398,7 @@ var controller = {
       image.onload = function () {
 
         EXIF.getData(image, function() {
-        
+
           srcOrientation = EXIF.getTag(this, "Orientation");
           var newWidth = image.width;
           var newHeight = image.height;
@@ -1433,7 +1433,7 @@ var controller = {
           context.drawImage(image, 0, 0);
 
           dataURL   = canvas.toDataURL(fileType);
-          
+
           var imageID = "image_" + Date.now();
 
           $("#write-section-item-photo-preview-" + inputOrder).addClass("selected").append("<span class='item-delete ion-close-circled button' onclick='imageElementDelete(this," + inputOrder + ")' data-image='" + imageID + "'></span><img src='" + dataURL + "'/>");
@@ -1454,21 +1454,21 @@ var controller = {
 
     if(window.File && window.FileList && window.FileReader){
       var $filesInput = $("#write-posting-input-photo-wrapper").find("input");
-          
+
       $filesInput.on("change", function(event){
-              
+
           var inputOrder = event.target.getAttribute('data-inputOrder');
           var file = event.target.files[0];
           var picReader = new FileReader();
-                  
+
           picReader.onloadend = function(){
-                      
+
               imageProcessor(picReader.result, file.type, inputOrder);
-                  
+
           };
 
           picReader.readAsDataURL(file);
-             
+
       });
     }
 
@@ -1507,7 +1507,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
               $("#popup-message").remove();
             }, 5000);
 
@@ -1541,7 +1541,7 @@ var controller = {
 
     $("#people-filtering").off('click').on('click',function(){
 
-      pullupMenu('people.filtering',function(){
+      pullupMenu('pullup_more_filtering',function(){
 
         var interestArray = [];
         $(".pullup-interest-content .interest").off('click').on('click',function(){
@@ -1594,7 +1594,7 @@ var controller = {
 
   /* Profile Ctrl */
   profileCtrl : function(){
-    
+
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
@@ -1660,8 +1660,8 @@ var controller = {
     // Profile Buttons Report
     $(".profile-button-report").off('click').on('click',function(){
       var targetUid = $(this).data("uid");
-      pullupMenu('profile.report?uid=' + targetUid,function(){
-        
+      pullupMenu('pullup_profile_report?uid=' + targetUid,function(){
+
         $(".profile-report-block").off('click').on('click',function(){
           api.post("/api/v1/post/user/block",{uid:targetUid},function(){
 
@@ -1671,7 +1671,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
               $("#popup-message").remove();
             }, 10000);
 
@@ -1680,7 +1680,7 @@ var controller = {
         });
 
         $(".profile-report-report").off('click').on('click',function(){
-          pullupMenu('profile.report.reason?uid=' + targetUid,function(){
+          pullupMenu('pullup_profile_report_reason?uid=' + targetUid,function(){
             $(".pullup-item-report-reason").off('click').on('click',function(){
               var reason = $(this).data("reason");
               api.post("/api/v1/post/user/report",{uid:targetUid, reason:reason},function(){
@@ -1691,7 +1691,7 @@ var controller = {
 
                 $("body").append(elm);
 
-                setTimeout(function(){ 
+                setTimeout(function(){
                   $("#popup-message").remove();
                 }, 10000);
 
@@ -1712,7 +1712,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
               $("#popup-message").remove();
             }, 5000);
 
@@ -1728,9 +1728,9 @@ var controller = {
 
   profileEditCtrl : function(){
 
-    $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );  
+    $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
-      $(this).height(1).height( $(this).prop('scrollHeight') -16 );  
+      $(this).height(1).height( $(this).prop('scrollHeight') -16 );
     });
     $("textarea").focus(function(){
       $("#footer").css({"display":"none"});
@@ -1756,8 +1756,8 @@ var controller = {
     // Profile Interest Edit
     $("#profile-edit-input-interest-fake").off('click').on('click',function(){
 
-      pullupMenu("profile.edit.interest",function(){
-        
+      pullupMenu("pullup_edit_interest",function(){
+
         var interestArray = JSON.parse($("#profile-edit-input-interest").val() || null);
 
         $(".pullup-interest-content").find(".interest").each(function(indx,val){
@@ -1803,24 +1803,24 @@ var controller = {
 
     $("#profile-edit-submit").off('click').on('click',function(){
 
-      if($("#profile-edit-input-avatar").val()      == "" || 
-        $("#profile-edit-input-description").val()  == "" || 
+      if($("#profile-edit-input-avatar").val()      == "" ||
+        $("#profile-edit-input-description").val()  == "" ||
         $("#profile-edit-input-interest").val()     == ""){
-        
+
         var elm = '<div id="popup-message">' +
                     '<span>모든 값을 정확히 입력해주세요.</span>' +
                   '</div>';
 
         $("body").append(elm);
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
 
         return;
 
       }
-      
+
       var serializedData = $("#profile-edit-form").serialize();
 
       $.ajax({
@@ -1839,7 +1839,7 @@ var controller = {
 
                       },
             error     : function( request, status, error ) {
-                          
+
                       }
 
       });
@@ -1853,24 +1853,24 @@ var controller = {
 
     $("#profile-password-edit-submit").off('click').on('click',function(){
 
-      if($("#profile-edit-password-input-current").val()    == "" || 
-        $("#profile-edit-password-input-new").val()         == "" || 
+      if($("#profile-edit-password-input-current").val()    == "" ||
+        $("#profile-edit-password-input-new").val()         == "" ||
         $("#profile-edit-password-input-new-confirm").val() == ""){
-        
+
         var elm = '<div id="popup-message">' +
                     '<span>모든 값을 정확히 입력해주세요.</span>' +
                   '</div>';
 
         $("body").append(elm);
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
 
         return;
 
       }
-      
+
       if($("#profile-edit-password-input-new").val() != $("#profile-edit-password-input-new-confirm").val()){
 
         var elm = '<div id="popup-message">' +
@@ -1879,7 +1879,7 @@ var controller = {
 
         $("body").append(elm);
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
 
@@ -1904,7 +1904,7 @@ var controller = {
 
                       },
             error     : function( request, status, error ) {
-                          
+
                       }
 
       });
@@ -1924,7 +1924,7 @@ var controller = {
     var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);
 
     $("textarea").on('keydown keyup', function () {
-      $(this).height(1).height( $(this).prop('scrollHeight') );  
+      $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
 
@@ -1996,16 +1996,16 @@ var controller = {
             $("#posting-comment-" + cid).addClass("selected");
 
             renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
-              
-              $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );  
+
+              $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
               $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
 
               $("#footer-textarea").on('keydown keyup', function () {
-                $(this).height(1).height( $(this).prop('scrollHeight') );  
+                $(this).height(1).height( $(this).prop('scrollHeight') );
                 $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
               });
 
-              setTimeout(function(){ 
+              setTimeout(function(){
                 $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - $("#footer-textarea").height() );
               }, 500);
 
@@ -2020,7 +2020,7 @@ var controller = {
                 api.post("/api/v1/post/comment",data,function(){
                   location.reload(true);
                 });
-                
+
               });
 
             });
@@ -2037,14 +2037,14 @@ var controller = {
             $("#posting-comment-" + cid).addClass("selected");
 
             renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
-              
-              $("#footer-textarea").focus();  
+
+              $("#footer-textarea").focus();
 
               $("#footer-textarea").on('keydown keyup', function () {
-                $(this).height(1).height( $(this).prop('scrollHeight') );  
+                $(this).height(1).height( $(this).prop('scrollHeight') );
               });
 
-              setTimeout(function(){ 
+              setTimeout(function(){
                 $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
               }, 500);
 
@@ -2107,7 +2107,7 @@ var controller = {
             $("body").css({"overflow":"inherit"});
           });
         });
-        
+
       });
     }
     overlapHandler();
@@ -2162,7 +2162,7 @@ var controller = {
 
   /* Board Detail Ctrl */
   postDetailCtrl : function(urlParameter){
-    
+
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
@@ -2187,7 +2187,7 @@ var controller = {
         $("#template-view").scrollTop( $('#' + urlParameter.scrollToElm).position().top );
       }
     }
-    
+
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
@@ -2195,7 +2195,7 @@ var controller = {
     var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);
 
     $("textarea").on('keydown keyup', function () {
-      $(this).height(1).height( $(this).prop('scrollHeight') );  
+      $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
 
@@ -2224,16 +2224,16 @@ var controller = {
       $("#posting-comment-" + cid).addClass("selected");
 
       renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
-        
-        $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );  
+
+        $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
         $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
 
         $("#footer-textarea").on('keydown keyup', function () {
-          $(this).height(1).height( $(this).prop('scrollHeight') );  
+          $(this).height(1).height( $(this).prop('scrollHeight') );
           $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
         });
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - $("#footer-textarea").height() );
         }, 500);
 
@@ -2248,7 +2248,7 @@ var controller = {
           api.post("/api/v1/post/comment",data,function(){
             location.reload(true);
           });
-          
+
         });
 
       });
@@ -2265,14 +2265,14 @@ var controller = {
       $("#posting-comment-" + cid).addClass("selected");
 
       renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
-        
-        $("#footer-textarea").focus();  
+
+        $("#footer-textarea").focus();
 
         $("#footer-textarea").on('keydown keyup', function () {
-          $(this).height(1).height( $(this).prop('scrollHeight') );  
+          $(this).height(1).height( $(this).prop('scrollHeight') );
         });
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
         }, 500);
 
@@ -2346,7 +2346,7 @@ var controller = {
 
               $("body").append(elm);
 
-              setTimeout(function(){ 
+              setTimeout(function(){
                 $("#popup-message").remove();
               }, 5000);
 
@@ -2422,10 +2422,10 @@ var controller = {
         '</div>' +
       '</div>').insertAfter($("#footer"));
 
-      $("#footer-textarea").height(1).height( $("#footer-textarea").prop('scrollHeight') );  
+      $("#footer-textarea").height(1).height( $("#footer-textarea").prop('scrollHeight') );
 
       $("#footer-textarea").on('keydown keyup', function () {
-        $(this).height(1).height( $(this).prop('scrollHeight') );  
+        $(this).height(1).height( $(this).prop('scrollHeight') );
       });
     }else{
       $('<div id="footer-input" class="row footer-special-element">' +
@@ -2608,7 +2608,7 @@ $(document).ready(function(){
   // Cordova Plugin
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
-    
+
     // cordova-plugin-fcm : Push Notification
     FCMPlugin.onNotification(function(data){
 
