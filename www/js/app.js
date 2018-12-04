@@ -209,7 +209,7 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
   var promise = $.ajax({
           method    : "GET",
           url       : templateUrl,
-          xhrFields: {withCredentials: true},
+          xhrFields : {withCredentials: true},
           success   : function( response ) {
 
                       $(targetElm).html("");
@@ -323,7 +323,7 @@ var viewConfig = {
   },
   "/login" : {
     "controller"  : "loginCtrl",
-    "template"    : serverParentURL + "/account/login",
+    "template"    : serverParentURL + "/login/login",
     "footerHide"  : true
   },
   "/login/intro" : {
@@ -493,6 +493,7 @@ if (server_toggle){
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
 
+  // login.html
   viewConfig["/login/intro"]["template"] = serverParentURL + "/account/not_logged_in";
   viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
   viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
@@ -877,7 +878,7 @@ var controller = {
 
       });
     });
-      
+
     return;
   },
 
@@ -954,8 +955,26 @@ var controller = {
                               $("#signup-address-input").val(currentAdd);
                               $("#signup-address-result").html("");
 
+                              // Showing Signable Block
+                              api.get("/api/v1/get/signupBlockCheck?address=" + currentAdd,function(res){
+                                $("#signup-address-block-result").css({"display":"block"});
+                                $("#signup-address-block-result ul").html("");
+                                $.each(res,function(index,value){
+                                  $("#signup-address-block-result ul").append('<li>' +
+                                                                                '<div class="block-title">' +
+                                                                                  '<span>' + value.title + '</span>' +
+                                                                                '</div>' +
+                                                                                '<div class="block-subtitle">' +
+                                                                                  '<span>' + value.subtitle + '</span>' +
+                                                                                '</div>' +
+                                                                              '</li>');
+                                });
+                              });
 
-                            })
+                              // Saving address data
+                              globalScopeVariable["signup_address"] = currentAdd;
+
+                            })                            
                           }
 
                         },
@@ -963,7 +982,23 @@ var controller = {
 
                         }
       });
-    })
+    });
+
+    // Radio
+    $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
+
+      var container   = $(this).parent();
+      var radioValue  = $(this).data("radio");
+
+      $(container).find(".signup-radio-button").removeClass("selected");
+      $(this).addClass("selected");
+      $(container).find("input").val(radioValue);
+
+    });
+
+    $(".signup-footer-item-forward-4").off('click').on('click',function(){
+      $("#signup-4-wrapper").css({"display":"block"});
+    });
 
     return;
   },
@@ -988,7 +1023,21 @@ var controller = {
           direction: 'reverse'
         });
       }, 5000 * index);
-    })
+    });
+
+
+    // Confirm Form
+    $(".signup-confirm-button").off('click').on('click',function(){
+      $(".signup-confirm-form-wrapper").css({"display":"block"});
+      var type = $(this).data("confirm");
+      if(type == "post"){
+        $(".signup-confirm-form-wrapper .post").css({"display":"block"});
+        $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
+      }else{
+        $(".signup-confirm-form-wrapper .post").css({"display":"none"});
+        $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
+      }
+    });
 
     return;
 
@@ -1000,7 +1049,6 @@ var controller = {
     $("#footer").css({"display":"none"});
 
     /* Global */
-
     $("textarea").on('keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') - 16);
     });
@@ -1983,6 +2031,7 @@ var controller = {
                                             '</div>' +
                                           '</div>');
         $("#posting-overlap-view").css({"display":"block"});
+        $("#posting-overlap-view").addClass("activated");
         anime({
             targets: "#posting-overlap-view",
             translateX: '-100%',
@@ -2000,6 +2049,7 @@ var controller = {
               duration: 10
             });
             $("#posting-overlap-view").html("");
+            $("#posting-overlap-view").removeClass("activated");
             $("#posting-overlap-view").css({"display":"none"});
             $("#template-view").css({"overflow":""});
             $("body").css({"overflow":"inherit"});
@@ -2117,6 +2167,7 @@ var controller = {
                                             '</div>' +
                                           '</div>');
         $("#posting-overlap-view").css({"display":"block"});
+        $("#posting-overlap-view").addClass("activated");
         anime({
             targets: "#posting-overlap-view",
             translateX: '-100%',
@@ -2134,12 +2185,15 @@ var controller = {
             });
             $("#posting-overlap-view").html("");
             $("#posting-overlap-view").css({"display":"none"});
+            $("#posting-overlap-view").removeClass("activated");
             $("#template-view").css({"overflow":""});
             $("body").css({"overflow":"inherit"});
           });
+
         });
 
       });
+
     }
     overlapHandler();
 
@@ -2669,7 +2723,30 @@ $(document).ready(function(){
 
   });
 
-})
+  // Android Back Button Overwrite
+  var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+  document.addEventListener("backbutton", function (e){
+
+      e.preventDefault();
+      if (exitApp) {
+
+        clearInterval(intval) 
+        (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
+
+      }else {
+
+        if($("#posting-overlap-view").hasClass("activated")){
+          $(".overlap-close").click();
+        }else{
+          exitApp = true
+          navigator.app.backHistory();            
+        }
+
+      } 
+
+  }, false);
+
+});
 
 window.addEventListener('popstate', function(event) {
   initiator();
