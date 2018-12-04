@@ -507,7 +507,7 @@ if (server_toggle){
   viewConfig["/gathering_detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering_members"]["template"] = serverParentURL + "/gathering_members";
 
-  viewConfig["/write"]["template"] = serverParentURL + "/misc/write";
+  viewConfig["/write"]["template"] = serverParentURL + "/write";
 
   viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
   viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
@@ -631,10 +631,16 @@ function initiator(newPath){
   var pathsplit   = newPath || window.location.hash.split("#")[1] || "";
   var pathname    = "";
 
-  if(pathsplit){
-    pathname  = pathsplit.split("?")[0];
-  }else{
-    pathname  = "/index";
+  if (pathsplit) {
+    pathname = pathsplit.split("?")[0];
+  } else {
+    var pathHtmlSplit = window.location.href.split("/");
+    var pathHtml = pathHtmlSplit[pathHtmlSplit.length - 1]
+    if (pathHtml == "index.html") {
+      pathname = "/index";
+    } else if (pathHtml == "login.html") {
+      pathname = "/login";
+    }
   }
 
   var pathParent  = pathname.split("/")[1];

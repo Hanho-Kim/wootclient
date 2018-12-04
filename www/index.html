@@ -13,47 +13,56 @@
 
 		<!-- ionicons -->
 		<link rel="stylesheet" href="./fonts/icon.css">
-		<!-- End of ionicons -->
 
 		<!-- jquery -->
 		<script src="./lib/jquery/jquery-3.2.1.min.js"></script>
 		<script src="./lib/jquery/jquery-ui-1.12.1.min.js"></script>
 		<link rel="stylesheet" href="./lib/jquery/jquery-ui-1.12.1.min.css">
-		<!-- end of jquery -->
+
+		<!-- Dealing with CSRF token is complicated
+			especially, when you have two domains at hand.
+
+			https://docs.djangoproject.com/en/2.1/ref/csrf/
+			This document didn't help.
+
+			With xhrFields: { withCredentials: true }, the problem was solved
+			transparently. withCredentials means that crendential cookes are 
+			kept. The exact mechanism should be figured out later!-->
+		<script>
+		function csrfSafeMethod(method) {
+			// these HTTP methods do not require CSRF protection
+			return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+		}
+		$.ajaxSetup({
+			xhrFields: { withCredentials: true },
+		});
+		</script>
 
 		<!-- bootstrap -->
 		<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 		<script src="./lib/bootstrap/js/bootstrap.min.js"></script>
-		<!-- end of bootstrap -->
 
 		<!-- stylesheet -->
 		<link rel="stylesheet" type="text/css" href="./css/reset.css?v=181024a">
 		<link rel="stylesheet" type="text/css" href="./css/style.css?v=181024a">
 		<!--<link rel="stylesheet" type="text/css" href="./css/serverStyleDefault.min.css?v=181024a">-->
-		<!-- end of stylesheet -->
 
 		<!-- googlefont -->
 		<link rel="stylesheet" href="http://cdn.rawgit.com/hiun/NanumSquare/master/nanumsquare.css">
-		<!-- end of googlefont -->
 
 		<!-- exif.js -->
 		<script src="./js/exif.js"></script>
-		<!-- end of exif.js -->
 
 		<!-- anime.js -->
 		<script src="./js/anime.min.js"></script>
-		<!-- end of anime.js -->
 
 		<!-- swiper.js -->
 		<link rel="stylesheet" type="text/css" href="./css/swiper.min.css">
 		<script src="./js/swiper.min.js"></script>
-		<!-- end of swiper.js -->
 
 		<!-- helloweek.js -->
 		<script src="./lib/hello-week-master/helloweek.min.js"></script>
 		<link rel="stylesheet" href="./lib/hello-week-master/helloweek.min.css">
-		<!-- end of helloweek.js -->
-
 
 	</head>
 	<body>
