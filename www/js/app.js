@@ -323,7 +323,7 @@ var viewConfig = {
   },
   "/login" : {
     "controller"  : "loginCtrl",
-    "template"    : "./login.contents.html",
+    "template"    : serverParentURL + "/account/login",
     "footerHide"  : true
   },
   "/login/intro" : {
@@ -338,7 +338,7 @@ var viewConfig = {
   },
   "/signup/1" : {
     "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.1",
+    "template"    : serverParentURL + "/account/address",
     "footerHide"  : true
   },
   "/signup/2" : {
@@ -493,23 +493,26 @@ if (server_toggle){
   viewConfig["/index"]["template"] = serverParentURL;
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
 
+  viewConfig["/login/intro"]["template"] = serverParentURL + "/account/not_logged_in";
   viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
   viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
   viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
   viewConfig["/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
   viewConfig["/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
 
-  viewConfig["/write"]["template"] = serverParentURL + "/misc/write";
-
-  viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
-  viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
-  viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
-
+  viewConfig["/message"]["template"] = serverParentURL + "/misc/message_list";     
+    
   viewConfig["/gathering_list"]["template"] = serverParentURL + "/gathering_list";
   viewConfig["/gathering_list/my"]["template"] = serverParentURL + "/gathering_list/my/";
   viewConfig["/gathering_detail"]["template"] = serverParentURL + "/gathering_detail";
   viewConfig["/gathering_members"]["template"] = serverParentURL + "/gathering_members";
 
+  viewConfig["/write"]["template"] = serverParentURL + "/misc/write";
+
+  viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
+  viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
+  viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
+    
   viewConfig["/account/more"]["template"] = serverParentURL + "/account/more";
   viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";
   viewConfig["/account/edit"]["template"] = serverParentURL + "/account/edit";
@@ -847,6 +850,28 @@ var controller = {
       },
     });
 
+    $("#login-form input[type='submit']").off('click').on('click',function(e){
+      e.preventDefault();
+      $.ajax({
+
+            url       : serverParentURL + "/account/login/",
+            type      : 'POST',
+            data      : $("#login-form").serialize(),
+            xhrFields : { withCredentials: true },
+            success   : function( response ) {
+
+                        if(response["ok"]){
+                          window.location.replace('./index.html');
+                        }
+
+                      },
+            error     : function( request, status, error ) {
+                          
+                      }
+
+      });
+    });
+      
     return;
   },
 
@@ -1959,7 +1984,7 @@ var controller = {
             easing: 'easeInOutQuart'
         });
 
-        renderTemplate(serverParentURL + "/board/overlap.comment?pid=" + pid,"#posting-overlap-view",function(){
+        renderTemplate(serverParentURL + "/misc/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
 
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
