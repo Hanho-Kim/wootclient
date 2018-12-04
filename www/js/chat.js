@@ -46,7 +46,7 @@ function chatInit() {
   //------------------------------------------------------------
 
   var cid     = pathParamsJson["cid"];
-  var apiPath = "http://127.0.0.1:8000/api/v1/get/chatInfo";
+  var apiPath = "http://ec2-18-224-96-147.us-east-2.compute.amazonaws.com:8000/api/v1/get/chatInfo";
 
   if(!cid){
 
@@ -92,10 +92,32 @@ function chatInit() {
     promise.then(function(res){
 
       chatConfig = JSON.parse(res);
-      $(".chat-title").text(chatConfig.room.title);
-      $(".chat-date").text(chatConfig.room.date);
-      $(".chat-place").text(chatConfig.room.place);
-      $(".chat-description").append($.parseHTML(chatConfig.room.description));
+
+      if(chatConfig.room.type == "gathering"){ // Case of Gathering
+        $("#header").addClass("with-subheader");
+        $("#subheader").css({"display":"block"});
+        $(".chat-title").text(chatConfig.room.title);
+        $(".chat-date").text(chatConfig.room.date);
+        $(".chat-place").text(chatConfig.room.place);
+        $(".chat-description").append($.parseHTML(chatConfig.room.description));
+
+        if(chatConfig.room.disable == "true"){
+          $(".footer-textarea-wrapper").css({"display":"none"});
+          $(".footer-textarea-wrapper-readonly").css({"display":"block"});
+          $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
+        }
+
+      }else{ // Case of Direct Message
+        $(".chat-title").text(chatConfig.room.title);
+        $(".chat-room-overlap-section-title .subtitle").css({"display":"none"});
+
+        if(chatConfig.room.disable == "true"){
+          $(".footer-textarea-wrapper").css({"display":"none"});
+          $(".footer-textarea-wrapper-readonly").css({"display":"block"});
+          $("#message-textarea-readolny").attr("placeholder","채팅을 할 수 없습니다.");
+        }
+
+      }
 
 
       initFirebaseAuth();
@@ -122,6 +144,13 @@ function chatInit() {
 
             if(infiniteScrollEnd){
               $("#chat-room").css({"padding-top":"80px"});
+
+              var datatime = $($("#chat-room .chat-item")[0]).data("time");
+              $("#chat-room").prepend($.parseHTML('<div class="chat-item chat-item-notification-time">' +
+                                                    '<div class="chat-notification">' +
+                                                      '<span>' + trimDate(datatime)[0] + '</span>' +
+                                                    '</div>' +
+                                                  '</div>'));
               return false;
             }else{
               return infiniteScroll();
@@ -372,11 +401,12 @@ function saveImageMessage(file) {
 
     name          : chatConfig.user.username,
     uid           : chatConfig.user.uid,
+    text          : "이미지 업로드중..",
     avatarUrl     : chatConfig.user.avatarUrl,
     avatarColor   : chatConfig.user.avatarColor,
     time          : String(time),
     notification  : false,
-    imageUrl      : LOADING_IMAGE_URL
+    imageUrl      : ""
 
   }).then(function(messageRef) {
     // 2 - Upload the image to Cloud Storage.
@@ -386,6 +416,7 @@ function saveImageMessage(file) {
       return fileSnapshot.ref.getDownloadURL().then((url) => {
         // 4 - Update the chat message placeholder with the image's URL.
         return messageRef.update({
+          text    : "",
           imageUrl: url,
           storageUri: fileSnapshot.metadata.fullPath
         });
@@ -537,6 +568,7 @@ function displayMessage(key, username, uid, text, avatarUrl, avatarColor, time, 
     div.querySelector('.avatar').style.backgroundImage  = 'url(' + avatarUrl + ')';
     div.querySelector('.avatar').style.backgroundColor  = avatarColor;
     div.querySelector('.time').textContent              = trimDate(time)[1];
+    div.setAttribute('data-time', time);
 
     // Add Message
     var messageElement = div.querySelector('.message-cloud p');
@@ -556,6 +588,12 @@ function displayMessage(key, username, uid, text, avatarUrl, avatarColor, time, 
       $(messageElement).remove();
       imageElement.innerHTML = '';
       $(imageElement).append(image);
+      $(imageElement).off('click').on('click',function(){
+        $("#chat-room-image").css({"display":"block","background-image":"url('" + image.src +"')"});
+        $("#chat-room-image .chat-room-image-close").off('click').on('click',function(){
+          $("#chat-room-image").css({"display":"none"});
+        });
+      });
     }
 
     if(uid == chatConfig.user.uid){
@@ -628,3 +666,8 @@ imageButtonElement.addEventListener('click', function(e) {
 mediaCaptureElement.addEventListener('change', onMediaFileSelected);
 
 chatInit();
+
+
+$("textarea").on('keydown keyup', function () {
+  $(this).height(1).height( $(this).prop('scrollHeight') );  
+});

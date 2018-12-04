@@ -59,7 +59,7 @@
   </head>
 <body>
 
-<div id="header" class="row with-subheader">
+<div id="header" class="row">
   <div class="header-left history-back button">
     <i class="ion-android-close"></i>
   </div>
@@ -80,6 +80,12 @@
       <i class="ion-ios-location"></i>
       <span class="chat-place"></span>
     </div>
+  </div>
+</div>
+
+<div id="chat-room-image" style="background-image:url('https://firebasestorage.googleapis.com/v0/b/wootchat-4d537.appspot.com/o/44%2F-LQCdXEyUFq1WveWtTrh%2F%EA%B5%AC%EB%A6%84%EA%B5%AC%EB%A6%84.jpeg?alt=media&amp;token=f75da957-19bd-4d03-ae09-b7a563a28303&amp;1542893492196')">
+  <div class="chat-room-image-close button">
+    <i class="ion-android-close"></i>
   </div>
 </div>
 
@@ -135,7 +141,7 @@
   <div class="footer-item-wrapper">
     <div class="footer-textarea-wrapper">
       <form id="image-form" action="#">
-        <input id="mediaCapture" type="file" accept="image/*" capture="camera">
+        <input id="mediaCapture" type="file" accept="image/*">
         <button id="submitImage">
           <i class="ion-android-image"></i>
         </button>
@@ -148,7 +154,11 @@
       </form>
 
     </div>
+    <div class="footer-textarea-wrapper-readonly">
+      <textarea id="message-textarea-readolny" class="footer-textarea-readonly" placeholder="채팅이 불가능합니다." readonly></textarea>
+    </div>
   </div>
+
 </div>
 
 <script src="./js/chat.js"></script>
