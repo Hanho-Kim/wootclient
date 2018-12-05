@@ -366,11 +366,6 @@ var viewConfig = {
     "template"    : serverParentURL + "/login/signup.6",
     "footerHide"  : true
   },
-  "/signup/7": {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.7",
-    "footerHide"  : true
-  },
   "/login/signup/confirm" : {
     "controller"  : "signupConfirmCtrl",
     "template"    : serverParentURL + "/login/confirm",
@@ -440,12 +435,6 @@ var viewConfig = {
     "header"      : "./header/gathering.detail.html",
     "footerHide"  : true
   },
-  "/gathering/like" : {
-    "controller"  : "gatheringCtrl",
-    "template"    : serverParentURL + "/gathering/like",
-    "header"      : "./header/gathering.like.html",
-    "footerHide"  : true
-  },
   "/gathering_members" : {
     "controller"  : "gatheringCtrl",
     "template"    : serverParentURL + "/gathering/participants",
@@ -494,8 +483,15 @@ var viewConfig = {
     "controller"  : "debugCtrl",
     "template"    : serverParentURL + "/debug",
     "header"      : "./header/index.html"
-  }
+  },
 
+  "/gathering/like" : {
+    "controller"  : "gatheringCtrl",
+    "template"    : serverParentURL + "/gathering/like",
+    "header"      : "./header/gathering.like.html",
+    "footerHide"  : true
+  },
+  
 }
 
 if (server_toggle){
@@ -510,8 +506,7 @@ if (server_toggle){
   viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
   viewConfig["/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
   viewConfig["/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
-  viewConfig["/signup/6"]["template"] = serverParentURL + "/account/verify_bill";
-  viewConfig["/signup/7"]["template"] = serverParentURL + "/account/to_be_approved";
+  viewConfig["/signup/6"]["template"] = serverParentURL + "/account/to_be_approved";
 
   viewConfig["/message"]["template"] = serverParentURL + "/misc/message_list";     
     
