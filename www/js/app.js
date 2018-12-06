@@ -1346,8 +1346,31 @@ var controller = {
       });
     });
 
-    // Gathering Submit
+    // Gathering Submit  
+    $('.write-gathering-sticker').click(function() { // 카테고리 선택시
+        var code = $(this).data('code');
+        $('#write-gathering-input-sticker').val(code); // 인풋필드에 넣고
+    }); 
 
+    $('#write-gathering-submit').click(function() {
+        var url = $(this).parents("form").attr("action");
+        api.post(
+            url, 
+            $('form.gathering_write').serialize(), 
+            function(){
+                if (data['ok']){
+                    $('form.gathering_write input[type=submit]').click();
+                    // 바로 글 쓴 곳으로 이동
+                } else {
+                    console.log("fail");
+                    // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
+                    // 채우라는 에러메세지
+                }
+            }
+        )
+    });
+
+    /*
     $("#write-gathering-submit").off('click').on('click',function(){
 
       var inputs = [
@@ -1427,8 +1450,9 @@ var controller = {
       }
 
     });
+    */
 
-  /* Write Posting */
+/* Write Posting */
 
     // Board Select
     $("#write-posting-input-board-fake").off('click').on('click',function(){
@@ -2046,7 +2070,7 @@ var controller = {
             easing: 'easeInOutQuart'
         });
 
-        renderTemplate(serverParentURL + "/misc/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
+        renderTemplate(serverParentURL + "/comment/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
 
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
@@ -2069,7 +2093,7 @@ var controller = {
               text : $("#footer-textarea").val()
             };
 
-            api.post("/api/v1/post/comment",data,function(){
+            api.post("{% url 'comment:write' %}",data,function(){
               location.reload(true);
             });
 
@@ -2298,10 +2322,12 @@ var controller = {
     $("#footer-textarea-submit").off('click').on('click',function(){
 
       var data = {
-        text : $("#footer-textarea").val()
+        content : $("#footer-textarea").val(),
+        content_type : $('[name="content_type"]').val(),
+        content_id : $('[name="content_id"]').val()
       };
 
-      api.post("/api/v1/post/comment",data,function(){
+      api.post("/comment/write/",data,function(){
         location.reload(true);
       });
 
