@@ -685,7 +685,7 @@ function initiator(newPath){
   // });
 
   // Activate Controller for Current view
-  $.each(Object.keys(viewConfig),function(index,value){
+  $.each(Object.keys(viewConfig), function(index,value){
     if (pathname != value) { return; }
     $("#template-view-loading").css({"display":"block"});
     $("#template-view-loading").css({"opacity":"1"});
@@ -696,12 +696,12 @@ function initiator(newPath){
       initAjax = $.ajax({
               method    : "GET",
               url       : viewConfig[value]["template"] + idSlash + pathParams,
-              xhrFields : {withCredentials: true},
+              // xhrFields : {withCredentials: true},
               success   : function( response ) {
                           $("#template-view").html("");
                           $("#template-view").append($.parseHTML(response, null, true));
                           $("#template-view").css({"display":"block"});
-                          $("woot-click").off('click').on('click',function(){
+                          $("woot-click").off('click').on('click', function(){
                             initiator($(this).attr("href"));
                             history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
                           });
@@ -831,7 +831,7 @@ var controller = {
             url       : serverParentURL + "/account/login/",
             type      : 'POST',
             data      : $("#login-form").serialize(),
-            xhrFields : { withCredentials: true },
+            // xhrFields : { withCredentials: true },
             success   : function( response ) {
                         if(response['ok']){
                           window.location.replace('./index.html');
@@ -1126,16 +1126,8 @@ var controller = {
         var mm     = days14.getMonth()+1;
         var yyyy   = days14.getFullYear();
 
-        if(dd<10){
-
-            dd = '0' + dd;
-
-        }
-        if(mm<10){
-
-            mm = '0' + mm;
-
-        }
+        if (dd < 10) { dd = '0' + dd; }
+        if (mm < 10) { mm = '0' + mm; }
 
         var myCalendar = new HelloWeek({
               selector: '.calendar',
@@ -1293,9 +1285,13 @@ var controller = {
         $('#write-gathering-input-sticker').val(code); // 인풋필드에 넣고
     }); 
 
-    var write_gathering_handler = makeAjaxSubmitHandler(function(response){
+    var writeGatheringHandler = makeAjaxSubmitHandler(function(response){
         if (response['ok']){
            console.log("gotcha!");
+           var gid = response['gid'].toString();
+           var cordovaLocation = '/gathering_detail?gid=' + gid
+           initiator(cordovaLocation);
+           history.pushState(null, null, document.location.pathname + '#' + cordovaLocation);
         } else {
             console.log("fail");
             // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
@@ -1303,7 +1299,7 @@ var controller = {
         }
     });
 
-    $('form.gathering_write').on('submit', write_gathering_handler);
+    $('form.gathering_write').on('submit', writeGatheringHandler);
     $('#write-gathering-submit').click(function() {
         $('form.gathering_write').submit();
     });
@@ -1830,7 +1826,7 @@ var controller = {
             url       : serverParentURL + "/api/v1/post/profile",
             type      : 'POST',
             data      : serializedData,
-            xhrFields : { withCredentials: true },
+            // xhrFields : { withCredentials: true },
             success   : function( response ) {
                         var res = JSON.parse(response);
                         if(res.redirect){
@@ -1881,7 +1877,7 @@ var controller = {
             url       : serverParentURL + "/api/v1/post/password",
             type      : 'POST',
             data      : serializedData,
-            xhrFields : { withCredentials: true },
+            // xhrFields : { withCredentials: true },
             success   : function( response ) {
                         var res = JSON.parse(response);
                         if(res.redirect){
@@ -2103,7 +2099,7 @@ var controller = {
             $.ajax({
                     method    : "GET",
                     url       : serverParentURL + "/board/posting.infinitescroll?lastpid=1",
-                    xhrFields: {withCredentials: true},
+                    // xhrFields: {withCredentials: true},
                     success   : function( response ) {
 
                                 if(response){
@@ -2496,6 +2492,25 @@ var controller = {
 // Initiate functions
 //------------------------------------------------------------
 $(document).ready(function(){
+    // Dealing with CSRF token is a complicated issue
+    // especially, when you have two domains at hand.
+    //
+    // https: //docs.djangoproject.com/en/2.1/ref/csrf/
+    //   This document didn 't help.
+    //
+    // With xhrFields: { withCredentials: true }, the problem was solved
+    // transparently.withCredentials means that crendential cookes are
+    // kept.The exact mechanism should be figured out later!
+    function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+      xhrFields: {
+        withCredentials: true
+      },
+    });
+
   initiator();
 
   //============================================================
