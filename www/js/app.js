@@ -24,7 +24,6 @@ $('body').append(info)
 // Popup
 //------------------------------------------------------------
 function popup( message, time, callback ){
-
   var timebomb   = time     || 60000;
   var callbackFn = callback || function(){return true;};
 
@@ -32,11 +31,8 @@ function popup( message, time, callback ){
   callbackFn();
 
   setTimeout(function(){
-
     $("#popup-client").animate({ marginTop : "-90px"} , 1000);
-
   }, timebomb);
-
 }
 
 
@@ -84,9 +80,7 @@ function scrollReachDiv(elm,callback){
 // Get Random Int
 //------------------------------------------------------------
 function getRandomInt(min, max) {
-
     return Math.floor(Math.random() * (max - min + 1)) + min;
-
 }
 
 
@@ -200,7 +194,6 @@ function pullupMenu(menu,successFn){
 //------------------------------------------------------------
 
 function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
-
   var successFn = successFn || function(){};
   var failureFn = failureFn || function(){};
 
@@ -239,9 +232,7 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
 //============================================================
 // Global Event Handler
 //------------------------------------------------------------
-
 function globalEventHandler(){
-
   $(".history-back").off('click').on('click',function(){
     history.back();
   });
@@ -260,9 +251,7 @@ function globalEventHandler(){
 //============================================================
 // Timestamp Converter
 //------------------------------------------------------------
-
 function timestampConverter(timestamp){
-
   var a       = new Date(timestamp * 1000);
   var months  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   var year    = a.getFullYear();
@@ -288,9 +277,7 @@ function timestampConverter(timestamp){
 //============================================================
 // image element delete (Special case)
 //------------------------------------------------------------
-
 function imageElementDelete(e,inputOrder){
-
   $("#write-section-item-photo-preview-" + inputOrder).removeClass("selected").empty();
 
   // Reset input
@@ -314,7 +301,6 @@ function imageElementDelete(e,inputOrder){
 // View Configuration
 //------------------------------------------------------------
 var viewConfig = {
-
   "/index" : {
     "controller"  : "mainCtrl",
     "template"    : serverParentURL + "/index",
@@ -483,14 +469,12 @@ var viewConfig = {
     "template"    : serverParentURL + "/debug",
     "header"      : "./header/index.html"
   },
-
   "/gathering/like" : {
     "controller"  : "gatheringCtrl",
     "template"    : serverParentURL + "/gathering/like",
     "header"      : "./header/gathering.like.html",
     "footerHide"  : true
   },
-  
 }
 
 if (server_toggle){
@@ -528,7 +512,6 @@ if (server_toggle){
 }
 
 var api = {
-
   get : function(url, successFn){
     var successFn = successFn || function(){};
     var res;
@@ -587,7 +570,6 @@ var api = {
         $("#popup-message").remove();
       }, 5000);
     });
-
   },
 
   delete : function(url, data, successFn){
@@ -707,10 +689,7 @@ function initiator(newPath){
 
   // Activate Controller for Current view
   $.each(Object.keys(viewConfig),function(index,value){
-
-    if (pathname != value) {
-      return;
-    }
+    if (pathname != value) { return; }
 
     $("#template-view-loading").css({"display":"block"});
     $("#template-view-loading").css({"opacity":"1"});
@@ -816,32 +795,22 @@ function button_liked() {
 
 /* Controller */
 var controller = {
-
   /* Main Ctrl */
   mainCtrl : function(pathParams){
-
-
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
       },
     });
-
-
     // Header Notification Highlight
     if(pathParams.headerHighlight > 0){
       $(".header-right-index-item.notification").append('<span class="header-item-noti">' + pathParams.headerHighlight + '</span>');
     }
-
-
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
-
-
     // Post API: Like
     $(".button-like").off('click').on('click', button_liked);
-
     return;
   },
 
@@ -981,7 +950,6 @@ var controller = {
 
     // Radio
     $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
-
       var container   = $(this).parent();
       var radioValue  = $(this).data("radio");
 
@@ -1000,7 +968,6 @@ var controller = {
 
   /* Signup Confirm Ctrl */
   signupConfirmCtrl : function(){
-
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
 
@@ -1040,7 +1007,6 @@ var controller = {
 
   /* WriteCtrl */
   writeCtrl : function(){
-
     $("#footer").css({"display":"none"});
 
     /* Global */
@@ -1049,14 +1015,12 @@ var controller = {
     });
 
     /* subheader */
-
     if($(".subheader-tab").length){
         $(".write-section-gathering").show();
         $(".write-section-posting").hide();
     }
 
     $(".subheader-tab").off('click').on('click',function(){
-
         var tab = $(this).data("tab");
 
         if(tab == "gathering"){
@@ -1229,7 +1193,6 @@ var controller = {
         });
 
         $("#calendar-input-minute").change(function(){
-
           var minute = $(this).val();
           if(minute >= 60){
             minute = 59;
@@ -1242,12 +1205,10 @@ var controller = {
           }else{
             $(this).val(parseInt(minute));
           }
-
         });
 
         // Submit Click Event Handler
         $(".calendar-submit").off('click').on('click',function(){
-
           var date        = $("#calendar-input-date").val();
           var ampm        = $("#calendar-input-am-pm").val();
           var hour        = $("#calendar-input-hour").val();
@@ -1256,10 +1217,10 @@ var controller = {
 
           if(ampm == "am"){
             timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
-          }else{
+          }
+          else{
             timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
           }
-
           $("#write-gathering-input-time").val(timestamp);
           $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
 
@@ -1274,15 +1235,14 @@ var controller = {
             easing: 'linear',
             direction: 'alternate'
           });
+        });
 
-        })
-      });
-    });
+      }); // pullupMenu
+    }); // Gathering Time
 
 
     $("#write-gathering-input-agelimit-fake").off('click').on('click',function(){
       pullupMenu("pullup_write_agelimit",function(){
-
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
           $("#pullup-agelimit-input-min-fake .roller").css({"display":"block"});
@@ -1337,7 +1297,6 @@ var controller = {
     // Gathering Submit
 
     $("#write-gathering-submit").off('click').on('click',function(){
-
       var inputs = [
                       {"id":"sticker","require":true},
                       {"id":"title","require":true},
@@ -1355,7 +1314,6 @@ var controller = {
       var data = {};
 
       $.each(inputs, function(ind,val){
-
         data[val.id] = $("#write-posting-input-" + val.id).val();
 
         if(val.require){ // Check required fields
@@ -1407,7 +1365,6 @@ var controller = {
       });
 
       if(required){ // All requirements are met
-
         api.post("/api/v1/post/gathering",data,function(){
           return document.location.replace("./gathering.my.html");
         });
@@ -1420,11 +1377,8 @@ var controller = {
 
     // Board Select
     $("#write-posting-input-board-fake").off('click').on('click',function(){
-
       pullupMenu("pullup_write_posting_category",function(){
-
         $(".board-select").off('click').on('click',function(){
-
           $("#pullup .background").click();
           var bid = $(this).data("bid");
 
@@ -1438,41 +1392,31 @@ var controller = {
             easing: 'linear',
             direction: 'alternate'
           });
-
           renderTemplate(serverParentURL + "/write/posting.addon?bid=" + bid, "#write-section-addon");
 
         });
-
       });
-
     });
 
 
     $("#write-section-item-photo-button").off('click').on('click',function(){
-
       $("#write-posting-input-photo-wrapper").find("input").each(function(index,val){
-
         if(val.files.length == 0){
           $(this).click();
           return false;
         }
-
       });
-
     });
 
 
     // Image Upload
     function imageProcessor(dataURL, fileType, inputOrder) {
-
       var image = new Image();
       var srcOrientation = 1;
       image.src = dataURL;
 
       image.onload = function () {
-
         EXIF.getData(image, function() {
-
           srcOrientation = EXIF.getTag(this, "Orientation");
           var newWidth = image.width;
           var newHeight = image.height;
@@ -1505,19 +1449,17 @@ var controller = {
             }
 
           context.drawImage(image, 0, 0);
-
           dataURL   = canvas.toDataURL(fileType);
-
           var imageID = "image_" + Date.now();
 
-          $("#write-section-item-photo-preview-" + inputOrder).addClass("selected").append("<span class='item-delete ion-close-circled button' onclick='imageElementDelete(this," + inputOrder + ")' data-image='" + imageID + "'></span><img src='" + dataURL + "'/>");
+          $("#write-section-item-photo-preview-" + inputOrder)
+          .addClass("selected")
+          .append("<span class='item-delete ion-close-circled button' onclick='imageElementDelete(this," + inputOrder + ")' data-image='" + imageID + "'></span><img src='" + dataURL + "'/>");
 
           if($("#write-section-item-photo-preview-wrapper .selected").length == 3){
             $("#write-section-item-photo-button").addClass("disabled");
           }
-
         });
-
       };
 
       image.onerror = function () {
@@ -1528,17 +1470,13 @@ var controller = {
 
     if(window.File && window.FileList && window.FileReader){
       var $filesInput = $("#write-posting-input-photo-wrapper").find("input");
-
       $filesInput.on("change", function(event){
-
           var inputOrder = event.target.getAttribute('data-inputOrder');
           var file = event.target.files[0];
           var picReader = new FileReader();
 
           picReader.onloadend = function(){
-
               imageProcessor(picReader.result, file.type, inputOrder);
-
           };
 
           picReader.readAsDataURL(file);
@@ -1549,7 +1487,6 @@ var controller = {
 
     // Posting Submit
     $("#write-posting-submit").off('click').on('click',function(){
-
       var inputs = [
                       {"id":"board","require":true},
                       {"id":"description","require":true},
@@ -1562,11 +1499,9 @@ var controller = {
       var required = true;
 
       $.each(inputs, function(ind,val){
-
         if(val.require){ // Check required fields
 
           if( $("#write-posting-input-" + val.id).val().length == 0 ){
-
             $("#write-posting-input-" + val.id).css({"border-bottom":"1px solid #eb3b5a"}).change(function(){
               $(this).css({"border-bottom":"1px solid rgb(210,210,210)"});
             });
@@ -1586,17 +1521,13 @@ var controller = {
             }, 5000);
 
             required = false;
-
           }
 
         };
-
       });
 
       if(required){ // All requirements are met
-
         var formData = $("#write-posting-form").serialize();
-
         api.post("/api/v1/post/posting",formData,function(res){
           return document.location.replace("./board.posting.detail.html?pid=" + res.pid);
         });
@@ -1614,7 +1545,6 @@ var controller = {
     $("#header-title").text(userdata.block);
 
     $("#people-filtering").off('click').on('click',function(){
-
       pullupMenu('pullup_more_filtering',function(){
 
         var interestArray = [];
@@ -1633,7 +1563,6 @@ var controller = {
         });
 
         $("#submit-filtering").off('click').on('click',function(){
-
           $("#people-filtering").addClass("filtered").find("span").text("필터됨");
           $("#pullup .background").click();
           $(".people-section-all .people-item").each(function(index,value){
@@ -1668,7 +1597,6 @@ var controller = {
 
   /* Profile Ctrl */
   profileCtrl : function(){
-
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
@@ -1680,11 +1608,9 @@ var controller = {
 
     // History Tab
     $(".profile-section-statistics-tab").off('click').on('click',function(){
-
       var tab = $(this).data("tab");
 
       if(tab == "badge"){
-
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
 
@@ -1695,7 +1621,6 @@ var controller = {
         // renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
 
       } else if(tab == "posting"){
-
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
         $(".badge-discover-contents").hide();
@@ -1705,7 +1630,6 @@ var controller = {
         // renderTemplate(serverParentURL + "/people/profile.posting?uid=" + profiledata.uid,"#profile-section-history");
 
       } else if(tab == "woot"){
-
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
         $(".badge-discover-contents").hide();
@@ -1713,7 +1637,6 @@ var controller = {
         $(".people-contents").show();
 
         // renderTemplate(serverParentURL + "/people/profile.woot?uid=" + profiledata.uid,"#profile-section-history");
-
       }
 
     });
@@ -1779,11 +1702,9 @@ var controller = {
 
         $(".profile-report-unblock").off('click').on('click',function(){
           api.post("/api/v1/post/user/unblock",{uid:targetUid},function(){
-
             var elm = '<div id="popup-message">' +
                         '<span>해당 유저 차단을 해제했습니다.</span>' +
                       '</div>';
-
             $("body").append(elm);
 
             setTimeout(function(){
@@ -1796,12 +1717,10 @@ var controller = {
 
       });
     });
-
     return;
-  },
+  }, // profileCtrl
 
   profileEditCtrl : function(){
-
     $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
@@ -1813,27 +1732,18 @@ var controller = {
       $("#footer").css({"display":"block"});
     });
 
-
     // Profile Avatar Change
     $("#profile-avatar-change-button").off('click').on('click',function(){
-
       api.get("/api/v1/get/avatarChange",function(response){
-
         $("#profile-avatar").css({"background-image":"url(" +response.image + ")"});
         $("#profile-edit-input-avatar").val(response.avatarID);
-
       });
-
     });
-
 
     // Profile Interest Edit
     $("#profile-edit-input-interest-fake").off('click').on('click',function(){
-
       pullupMenu("pullup_edit_interest",function(){
-
         var interestArray = JSON.parse($("#profile-edit-input-interest").val() || null);
-
         $(".pullup-interest-content").find(".interest").each(function(indx,val){
           if(interestArray.indexOf($(this).data("interest")) > -1){
             $(this).addClass("selected");
@@ -1842,29 +1752,22 @@ var controller = {
 
         $(".pullup-interest-content").find(".interest").off('click').on('click',function(){
           if($(this).hasClass("selected")){
-
             $(this).removeClass("selected");
             var interestValue = $(this).data("interest");
             interestArray.splice(interestArray.indexOf(interestValue), 1);
-
-          }else{
-
+          }
+          else{
             $(this).addClass("selected");
             var interestValue = $(this).data("interest");
             interestArray.push(interestValue);
-
           }
-
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
           $("#profile-edit-input-interest-fake").html("");
           $.each(interestArray,function(indx,val){
             $("#profile-edit-input-interest-fake").prepend("<span>" + val + "</span>");
           });
-
         });
-
-      });
-
+      }); // pullupMenu
     });
 
     $("#profile-edit-input-push-fake").change(function(){
@@ -1876,57 +1779,41 @@ var controller = {
     });
 
     $("#profile-edit-submit").off('click').on('click',function(){
-
       if($("#profile-edit-input-avatar").val()      == "" ||
         $("#profile-edit-input-description").val()  == "" ||
         $("#profile-edit-input-interest").val()     == ""){
-
         var elm = '<div id="popup-message">' +
                     '<span>모든 값을 정확히 입력해주세요.</span>' +
                   '</div>';
-
         $("body").append(elm);
 
         setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
-
         return;
-
       }
 
       var serializedData = $("#profile-edit-form").serialize();
-
       $.ajax({
-
             url       : serverParentURL + "/api/v1/post/profile",
             type      : 'POST',
             data      : serializedData,
             xhrFields : { withCredentials: true },
             success   : function( response ) {
-
                         var res = JSON.parse(response);
                         if(res.redirect){
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
                         }
-
                       },
-            error     : function( request, status, error ) {
-
-                      }
-
+            error     : function( request, status, error ) {}
       });
-
     });
-
     return;
   },
 
   passwordEditCtrl : function(){
-
     $("#profile-password-edit-submit").off('click').on('click',function(){
-
       if($("#profile-edit-password-input-current").val()    == "" ||
         $("#profile-edit-password-input-new").val()         == "" ||
         $("#profile-edit-password-input-new-confirm").val() == ""){
@@ -1946,25 +1833,19 @@ var controller = {
       }
 
       if($("#profile-edit-password-input-new").val() != $("#profile-edit-password-input-new-confirm").val()){
-
         var elm = '<div id="popup-message">' +
                     '<span>새로운 비밀번호를 확인해주세요.</span>' +
                   '</div>';
-
         $("body").append(elm);
 
         setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
-
         return;
-
       }
 
       var serializedData = $("#profile-edit-password-form").serialize();
-
       $.ajax({
-
             url       : serverParentURL + "/api/v1/post/password",
             type      : 'POST',
             data      : serializedData,
@@ -1975,22 +1856,15 @@ var controller = {
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
                         }
-
                       },
-            error     : function( request, status, error ) {
-
-                      }
-
+            error     : function( request, status, error ) {}
       });
-
     });
-
     return;
   },
 
   /* Board Ctrl */
   postListCtrl : function(){
-
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
@@ -2035,7 +1909,6 @@ var controller = {
         });
 
         renderTemplate(serverParentURL + "/misc/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
-
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
             anime({
@@ -2052,7 +1925,6 @@ var controller = {
 
           // Post API: Comment - Default
           $("#footer-textarea-submit").off('click').on('click',function(){
-
             var data = {
               text : $("#footer-textarea").val()
             };
@@ -2065,7 +1937,6 @@ var controller = {
 
           // Comment Edit Button
           $(".comment-edit-button").off('click').on('click',function(){
-
             var cid = $(this).data("cid");
 
             $(".posting-comment").removeClass("selected");
@@ -2106,7 +1977,6 @@ var controller = {
 
           // Comment Recomment Button
           $(".recomment-button").off('click').on('click',function(){
-
             var cid = $(this).data("cid");
 
             $(".posting-comment").removeClass("selected");
@@ -2126,7 +1996,6 @@ var controller = {
 
               // Post API: Comment
               $("#footer-textarea-submit").off('click').on('click',function(){
-
                 var data = {
                   parentCid : cid,
                   text : $("#footer-textarea").val()
@@ -2148,7 +2017,6 @@ var controller = {
 
       // Overlap : Like
       $(".overlap-button-like").off('click').on('click',function(){
-
         $("#template-view").css({"overflow":"hidden"});
         $("body").css({"overflow":"hidden"});
 
@@ -2170,7 +2038,6 @@ var controller = {
             easing: 'easeInOutQuart'
         });
         renderTemplate(serverParentURL + "/board/overlap.like?pid=" + pid,"#posting-overlap-view",function(){
-
           // Event Handler
           $(".overlap-close").off('click').on('click',function(){
             anime({
@@ -2188,20 +2055,15 @@ var controller = {
         });
 
       });
-
     }
     overlapHandler();
 
     // Infinite Scroll
-
     var infiniteScroll = function(){
-
       $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
-
         var eventScroll = $("#posting-wrapper").height() - $("#template-view").height() + 150;
 
         if( eventScroll < $("#template-view").scrollTop() ){
-
           $(this).unbind("scroll.board");
 
           if($("#posting-wrapper").length > 0){
@@ -2223,26 +2085,19 @@ var controller = {
                                 }
 
                               },
-                    error     : function( request, status, error ) {
-
-                              }
-
+                    error     : function( request, status, error ) {}
             });
           }
-
         }
 
       });
     }
-
     infiniteScroll();
-
     return;
   },
 
   /* Board Detail Ctrl */
   postDetailCtrl : function(urlParameter){
-
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
@@ -2250,7 +2105,6 @@ var controller = {
     });
 
     $("#footer").css({"display":"none"});
-
     $('<div id="footer-input" class="row footer-special-element">' +
       '<div class="footer-item-wrapper col-lg-24 col-md-24 col-sm-24 col-xs-24">' +
         '<div class="footer-textarea-wrapper">' +
@@ -2297,7 +2151,6 @@ var controller = {
 
     // Comment Edit Button
     $(".comment-edit-button").off('click').on('click',function(){
-
       var cid = $(this).data("cid");
 
       $(".posting-comment").removeClass("selected");
@@ -2338,7 +2191,6 @@ var controller = {
 
     // Comment Recomment Button
     $(".recomment-button").off('click').on('click',function(){
-
       var cid = $(this).data("cid");
 
       $(".posting-comment").removeClass("selected");
@@ -2358,7 +2210,6 @@ var controller = {
 
         // Post API: Comment
         $("#footer-textarea-submit").off('click').on('click',function(){
-
           var data = {
             parentCid : cid,
             text : $("#footer-textarea").val()
@@ -2380,7 +2231,6 @@ var controller = {
 
   /* Gathering Ctrl */
   gatheringCtrl : function(){
-
     // Gathering Participate
     $("#gathering-participate-button").off('click').on('click',function(){
 
@@ -2436,36 +2286,24 @@ var controller = {
     });
 
     $(".gathering-detail-tab").off('click').on('click',function(){
-
       var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
-
       var tab = $(this).data("tab");
 
       if(tab == "information"){
-
         $(".gathering-detail-tab").removeClass("selected");
         $(this).addClass("selected");
-
         renderTemplate(serverParentURL + "/gathering/detail.information?gid=" + gatheringdata.gid,"#gathering-details-view");
 
       }else if(tab == "review"){
-
         $(".gathering-detail-tab").removeClass("selected");
         $(this).addClass("selected");
-
         renderTemplate(serverParentURL + "/gathering/detail.review?uid=" + gatheringdata.gid,"#gathering-details-view");
-
       }else if(tab == "comment"){
-
         $(".gathering-detail-tab").removeClass("selected");
         $(this).addClass("selected");
-
         renderTemplate(serverParentURL + "/gathering/detail.comment?uid=" + gatheringdata.gid,"#gathering-details-view");
-
       }
-
     });
-
 
     $("#footer").css({"display":"none"});
     return;
@@ -2473,7 +2311,6 @@ var controller = {
 
   /* Gathering Review Ctrl */
   gatheringReviewCtrl : function(){
-
     var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     $("#chat-title").text(gatheringdata.gname);
 
@@ -2483,11 +2320,9 @@ var controller = {
 
   /* Chat Ctrl */
   chatCtrl : function(){
-
     var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     $("#chat-title").text(gatheringdata.gname);
     $("#chat-detail-link").attr("href","/gathering/detail?gid=" + gatheringdata.gid);
-
     $("#footer").css({"display":"none"});
 
     if(!gatheringdata.expired){
@@ -2520,13 +2355,9 @@ var controller = {
     $("#template-view").scrollTop($("#template-view").height());
 
     var infiniteScroll = function(){
-
       $("#template-view").unbind("scroll.chat").bind("scroll.chat",function() {
-
         var eventScroll = 500;
-
         if( eventScroll > $("#template-view").scrollTop() ){
-
           $(this).unbind("scroll.chat");
 
           if($("#chat-room").length > 0){
@@ -2535,41 +2366,30 @@ var controller = {
                     url       : serverParentURL + "/gathering/chat.infinitescroll",
                     xhrFields: {withCredentials: true},
                     success   : function( response ) {
-
                                 if(response){
                                   $("#chat-room").prepend($.parseHTML(response));
                                   infiniteScroll();
                                 }
-
                               },
-                    error     : function( request, status, error ) {
-
-                              }
-
+                    error     : function( request, status, error ) {}
             });
           }
-
         }
-
       });
     }
 
     infiniteScroll();
-
     return;
-
   },
 
 
   /* Debug Ctrl */
   debugCtrl : function(){
-
     return;
   },
 
   /* Message Ctrl */
   messageCtrl : function(){
-
     $("#message-search-input").focus(function(){
       $("#footer").css({"display":"none"});
     });
@@ -2579,32 +2399,22 @@ var controller = {
 
     // Message Search
     $("#message-search-input").off('keyup').on('keyup',function(){
-
       var query     = $(this).val();
       var noResult  = true;
 
       if( query != ""){
-
         $(".message-people-item").each(function(){
-
           if($(this).data("username").search(new RegExp(query, "i")) == -1){
-
             $(this).addClass("displayNone");
-
           }else{
-
             noResult = false;
             $(this).removeClass("displayNone");
-
           }
-
         });
-
-      }else{
-
+      }
+      else{
         noResult = false;
         $(".message-people-item").removeClass("displayNone");
-
       }
 
       if(noResult){
@@ -2612,16 +2422,12 @@ var controller = {
       }else{
         $(".message-people-item-no").css({"display":"none"});
       }
-
     });
-
-
     return;
   },
 
   /* Message Inbox Ctrl */
   messageInboxCtrl : function(){
-
     var currentuserdata = JSON.parse($("#hiddenInput_currentuserdata").val() || null);
     $("#header-title").text(currentuserdata.uname);
 
@@ -2653,7 +2459,6 @@ var controller = {
 // Initiate functions
 //------------------------------------------------------------
 $(document).ready(function(){
-
   initiator();
 
   //============================================================
@@ -2677,10 +2482,7 @@ $(document).ready(function(){
                       }
 
                     },
-          error     : function( request, status, error ) {
-
-                    }
-
+          error     : function( request, status, error ) {}
   });
 
 
@@ -2688,26 +2490,17 @@ $(document).ready(function(){
   // Cordova Plugin
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
-
     // cordova-plugin-fcm : Push Notification
     FCMPlugin.onNotification(function(data){
-
         if(data.wasTapped){
-
           //Notification was received on device tray and tapped by the user.
           if(data.url){
-
             initiator(data.url);
             history.pushState(null, null, document.location.pathname + '#' + data.url);
-
           }
-
         }else{
-
           //Notification was received in foreground. Maybe the user needs to be notified.
-
         }
-
     });
 
     // Cordova-plugin-screen-orientation : Orientation Lock
@@ -2721,26 +2514,19 @@ $(document).ready(function(){
   // Android Back Button Overwrite
   var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
   document.addEventListener("backbutton", function (e){
-
       e.preventDefault();
       if (exitApp) {
-
         clearInterval(intval) 
         (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-
       }else {
-
         if($("#posting-overlap-view").hasClass("activated")){
           $(".overlap-close").click();
         }else{
           exitApp = true
           navigator.app.backHistory();            
         }
-
       } 
-
   }, false);
-
 });
 
 window.addEventListener('popstate', function(event) {
