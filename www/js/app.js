@@ -4,8 +4,7 @@ var mobile    = false;
 
 // No slash at the end of the url
 var serverParentURL = "http://derek-kim.com:8000";
-// "http://derek-kim.com:8000"
-// "http://127.0.0.1:8000";
+// var serverParentURL = "http://127.0.0.1:8000";
 
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
@@ -500,6 +499,7 @@ if (server_toggle){
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
 
     // login.html
+  viewConfig["/login"]["template"] = serverParentURL + "/account/login/";
   viewConfig["/login/intro"]["template"] = serverParentURL + "/misc/intro";
   viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
   viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
