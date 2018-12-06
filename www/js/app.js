@@ -4,8 +4,7 @@ var mobile    = false;
 
 // No slash at the end of the url
 var serverParentURL = "http://derek-kim.com:8000";
-// "http://derek-kim.com:8000"
-// "http://127.0.0.1:8000";
+// var serverParentURL = "http://127.0.0.1:8000";
 
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
@@ -25,7 +24,6 @@ $('body').append(info)
 // Popup
 //------------------------------------------------------------
 function popup( message, time, callback ){
-
   var timebomb   = time     || 60000;
   var callbackFn = callback || function(){return true;};
 
@@ -33,11 +31,8 @@ function popup( message, time, callback ){
   callbackFn();
 
   setTimeout(function(){
-
     $("#popup-client").animate({ marginTop : "-90px"} , 1000);
-
   }, timebomb);
-
 }
 
 
@@ -85,9 +80,7 @@ function scrollReachDiv(elm,callback){
 // Get Random Int
 //------------------------------------------------------------
 function getRandomInt(min, max) {
-
     return Math.floor(Math.random() * (max - min + 1)) + min;
-
 }
 
 
@@ -119,9 +112,7 @@ function getCookie(name) {
 //============================================================
 // Pullup Menu
 //------------------------------------------------------------
-
 function pullupMenu(menu,successFn){
-
   var successFn = successFn || function(){};
 
   $("#pullup").css({"display":"block"});
@@ -134,9 +125,7 @@ function pullupMenu(menu,successFn){
     duration: 500,
     easing: 'easeInOutQuart'
   });
-
   $("#pullup .pullup-inner").css({"display":"block"}).html('<span class="loading-spinner"></span>');
-
   var res;
   var promise = $.ajax({
           method    : "GET",
@@ -148,7 +137,6 @@ function pullupMenu(menu,successFn){
 
                       // Event Handler Enactive
                       $("#pullup .background").off('click').on('click',function(){
-
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
@@ -157,11 +145,9 @@ function pullupMenu(menu,successFn){
                           translateY: '100%',
                           duration: 10
                         });
-
                       });
 
                       $("#pullup .pullup-item").off('click').on('click',function(){
-
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
@@ -170,25 +156,20 @@ function pullupMenu(menu,successFn){
                           translateY: '100%',
                           duration: 10
                         });
-
                       });
 
                       $("woot-click").off('click').on('click',function(){
-
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
                         initiator($(this).attr("href"));
                         history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
-
                       });
-
                     },
           error     : function( request, status, error ) {
 
                     }
   });
-
   promise.then(function(){
     successFn(res);
   });
@@ -199,12 +180,9 @@ function pullupMenu(menu,successFn){
 //============================================================
 // Render template
 //------------------------------------------------------------
-
 function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
-
   var successFn = successFn || function(){};
   var failureFn = failureFn || function(){};
-
   var res;
   var promise = $.ajax({
           method    : "GET",
@@ -224,7 +202,6 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
           error     : function( request, status, error ) {
 
                     }
-
   });
 
   promise.then(function(){
@@ -233,37 +210,29 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
   .catch(function(){
     return failureFn(res);
   });
-
 }
 
 
 //============================================================
 // Global Event Handler
 //------------------------------------------------------------
-
 function globalEventHandler(){
-
   $(".history-back").off('click').on('click',function(){
     history.back();
   });
-
   $(".history-home").off('click').on('click',function(){
     window.location.replace('./index.html');
   });
-
   $("woot-click").off('click').on('click',function(){
     initiator($(this).attr("href"));
     history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
   });
-
 }
 
 //============================================================
 // Timestamp Converter
 //------------------------------------------------------------
-
 function timestampConverter(timestamp){
-
   var a       = new Date(timestamp * 1000);
   var months  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   var year    = a.getFullYear();
@@ -289,22 +258,16 @@ function timestampConverter(timestamp){
 //============================================================
 // image element delete (Special case)
 //------------------------------------------------------------
-
 function imageElementDelete(e,inputOrder){
-
   $("#write-section-item-photo-preview-" + inputOrder).removeClass("selected").empty();
-
   // Reset input
   $("#write-posting-input-photo-wrapper").find("input").each(function(){
-
     if(this.getAttribute('data-inputOrder') == inputOrder){
       $(this).val("");
     }
-
   });
 
   $("#write-section-item-photo-button").removeClass("disabled");
-
 }
 
 
@@ -315,11 +278,15 @@ function imageElementDelete(e,inputOrder){
 // View Configuration
 //------------------------------------------------------------
 var viewConfig = {
-
   "/index" : {
     "controller"  : "mainCtrl",
     "template"    : serverParentURL + "/index",
     "header"      : "./header/index.html"
+  },
+  "/invalid_status": {
+    "controller": "loginCtrl",
+    "template": serverParentURL + "/account/invalid_status/",
+    "footerHide": true
   },
   "/login" : {
     "controller"  : "loginCtrl",
@@ -335,6 +302,11 @@ var viewConfig = {
     "controller"  : "signupCtrl",
     "template"    : serverParentURL + "/login/signup",
     "footerHide"  : true
+  },
+  "/signup": {
+    "controller": "signupCtrl",
+    "template": serverParentURL + "/account/signup/",
+    "footerHide": true
   },
   "/signup/1" : {
     "controller"  : "signupCtrl",
@@ -484,14 +456,12 @@ var viewConfig = {
     "template"    : serverParentURL + "/debug",
     "header"      : "./header/index.html"
   },
-
   "/gathering/like" : {
     "controller"  : "gatheringCtrl",
     "template"    : serverParentURL + "/gathering/like",
     "header"      : "./header/gathering.like.html",
     "footerHide"  : true
   },
-  
 }
 
 if (server_toggle){
@@ -500,7 +470,9 @@ if (server_toggle){
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
 
     // login.html
+  viewConfig["/login"]["template"] = serverParentURL + "/account/login/";
   viewConfig["/login/intro"]["template"] = serverParentURL + "/misc/intro";
+  viewConfig["/signup"]["template"] = serverParentURL + "/account/signup/";
   viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
   viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
   viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
@@ -528,8 +500,7 @@ if (server_toggle){
 }
 
 var api = {
-
-  get : function(url,successFn){
+  get : function(url, successFn){
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -557,7 +528,7 @@ var api = {
     });
   },
 
-  post : function(url,data,successFn){
+  post : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -587,10 +558,9 @@ var api = {
         $("#popup-message").remove();
       }, 5000);
     });
-
   },
 
-  delete : function(url,data,successFn){
+  delete : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -628,7 +598,6 @@ var api = {
 
 var initAjax = "";
 function initiator(newPath){
-
   $("#template-view").css({"overflow":""});
   $("body").css({"overflow":"inherit"});
 
@@ -647,12 +616,11 @@ function initiator(newPath){
     if (pathHtml == "index.html") {
       pathname = "/index";
     } else if (pathHtml == "login.html") {
-      pathname = "/login";
+      pathname = "/invalid_status";
     }
   }
 
   var pathParent  = pathname.split("/")[1];
-
   // Footer Processing
   $("#footer").find(".footer-item").removeClass("selected");
   $("#footer").find(".footer-item-" + pathParent).addClass("selected");
@@ -663,14 +631,11 @@ function initiator(newPath){
   }
   $(".footer-special-element").remove();
 
-
   // Path Parameter to Json
   var pathParams  = pathsplit.split("?")[1] || "";
   var pathParamsJson = {};
-
   if(pathParams != ""){
     var pathParamsArray = pathParams.split("&");
-
     $.each(pathParamsArray,function(index,value){
       pathParamsJson[value.split("=")[0]] = value.split("=")[1];
     });
@@ -707,11 +672,7 @@ function initiator(newPath){
 
   // Activate Controller for Current view
   $.each(Object.keys(viewConfig),function(index,value){
-
-    if (pathname != value) {
-      return;
-    }
-
+    if (pathname != value) { return; }
     $("#template-view-loading").css({"display":"block"});
     $("#template-view-loading").css({"opacity":"1"});
     $("#template-view").html("");
@@ -781,7 +742,6 @@ function initiator(newPath){
     });
 
   });
-
 }
 
 function button_liked() {
@@ -816,32 +776,22 @@ function button_liked() {
 
 /* Controller */
 var controller = {
-
   /* Main Ctrl */
   mainCtrl : function(pathParams){
-
-
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
       },
     });
-
-
     // Header Notification Highlight
     if(pathParams.headerHighlight > 0){
       $(".header-right-index-item.notification").append('<span class="header-item-noti">' + pathParams.headerHighlight + '</span>');
     }
-
-
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
-
-
     // Post API: Like
     $(".button-like").off('click').on('click', button_liked);
-
     return;
   },
 
@@ -853,10 +803,8 @@ var controller = {
 
   /* Login Ctrl */
   loginCtrl : function(){
-
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
-
 
     var swiper = new Swiper('.swiper-container', {
       pagination: {
@@ -867,152 +815,139 @@ var controller = {
     $("#login-form input[type='submit']").off('click').on('click',function(e){
       e.preventDefault();
       $.ajax({
-
             url       : serverParentURL + "/account/login/",
             type      : 'POST',
             data      : $("#login-form").serialize(),
             xhrFields : { withCredentials: true },
             success   : function( response ) {
-
-                        if(response["ok"]){
+                        if(response['ok']){
                           window.location.replace('./index.html');
                         }
-
                       },
-            error     : function( request, status, error ) {
-                          
-                      }
-
+            error     : function( request, status, error ) {}
       });
     });
-
     return;
   },
 
-  signupCtrl : function(){
+  signupCtrl : function() {
+      $("#header").hide();
+      $("#footer").hide();
 
-    $("#header").css({"display":"none"});
-    $("#footer").css({"display":"none"});
-
-    $("#signup-item-input-email").focusout(function(){
-
-      var email = $("#signup-item-input-email").val();
-
-      api.get("/api/v1/get/signupEmailCheck?email=" + email,function(response){
-
-        $(".message-email").css({"display":"block"});
-        if(response){
-          $(".message-email").find("span").css({"color":"#2ecc71"}).text("가입 가능한 이메일입니다.");
-        }else{
-          $(".message-email").find("span").css({"color":"#e74c3c"}).text("이미 가입되어 있는 이메일입니다.");
-        }
-
+      $("#signup-item-input-email").focusout(function(){
+          var data = { email: $("#signup-item-input-email").val() }
+          api.post("/account/validate_email/", data, function(response){
+              $(".message-email").css({"display":"block"});
+              console.log(response);
+              if(response['ok']){
+                  $(".message-email")
+                  .find("span")
+                  .css({"color":"#2ecc71"})
+                  .text("가입 가능한 이메일입니다.");
+              }else{
+                  $(".message-email")
+                  .find("span")
+                  .css({"color":"#e74c3c"})
+                  .text("이미 가입되어 있는 이메일입니다.");
+              }
+          });
       });
 
-    });
+      $("#signup-item-input-password-confirm").keyup(function(){
+          if($(this).val() == $("#signup-item-input-password").val()){
+              $(".message-password").css({"display":"none"});
+          }else{
+              $(".message-password").css({"display":"block"});
+              $(".message-password").find("span").css({"color":"#e74c3c"}).text("비밀번호가 일치하지 않습니다.");
+          }
+      });
 
-    $("#signup-item-input-password-confirm").keyup(function(){
-      if($(this).val() == $("#signup-item-input-password").val()){
-        $(".message-password").css({"display":"none"});
-      }else{
-        $(".message-password").css({"display":"block"});
-        $(".message-password").find("span").css({"color":"#e74c3c"}).text("비밀번호가 일치하지 않습니다.");
-      }
-    });
+      $("#signup-address-submit").off('click').on('click',function(){
+        var address = $("#signup-address-input").val();
+        $("#signup-address-result").html("");
+        $.ajax({
+            method    : "POST",
+            url       : "http://www.juso.go.kr/addrlink/addrLinkApiJsonp.do",
+            data      : {
+              keyword : address,
+              countPerPage : 100,
+              currentPage : 1,
+              resultType : "json",
+              confmKey : "U01TX0FVVEgyMDE4MDgxNDEzNDU1MTEwODA3NTU="
+            },
+            dataType  : 'jsonp',
+            crossDomain : true,
+            success   : function( response ) {
+                if (response.results.common.totalCount == 0) {
+                    var $ul = $("<ul><li><span>검색 결과가 없습니다.</span></li></ul>");
+                    $("#signup-address-result").append($ul);
+                } else {
+                    var $ul = $("<ul>");
+                    $(response.results.juso).each(function(){
+                        var $li = $("<li>")
+                        $('<span>').text(this.jibunAddr).appendTo($li);
+                        $li.data('addr', this.jibunAddr);
+                        $li.data('postcode', this.zipNo);
+                        $ul.append($li);
+                    });
+                    $("#signup-address-result").append($ul);
+                    $("#signup-address-result li").off('click').on('click', function(){
+                        var data = $(this).data();
 
-
-    $("#signup-address-submit").off('click').on('click',function(){
-      var address = $("#signup-address-input").val();
-
-      $("#signup-address-result").html("");
-      $.ajax({
-              method    : "POST",
-              url       : "http://www.juso.go.kr/addrlink/addrLinkApiJsonp.do",
-              data      : {
-                keyword : address,
-                countPerPage : 100,
-                currentPage : 1,
-                resultType : "json",
-                confmKey : "U01TX0FVVEgyMDE4MDgxNDEzNDU1MTEwODA3NTU="
+                        // validate address and show signable blocks
+                        api.post("/account/validate_addr/", data, function(response){
+                            $("#signup-address-result").hide();
+                            $("#signup-address-block-result").css({"display":"block"});
+                            $("#signup-address-block-result ul").html("");
+                            if (response['ok']){
+                                // TODO: enable '다음' button
+                                console.log('ok');
+                                console.log(response['area']);
+                            } else {
+                                // TODO: show error and reset search form(다시 검색 가능하도록 화면 초기화)
+                                console.log('not ok');
+                            }
+                            // TODO: show signable blocks
+                            // $.each(res['blocks'], function(index, value){
+                            //   $("#signup-address-block-result ul").append('<li>' +
+                            //                                                 '<div class="block-title">' +
+                            //                                                   '<span>' + value.title + '</span>' +
+                            //                                                 '</div>' +
+                            //                                                 '<div class="block-subtitle">' +
+                            //                                                   '<span>' + value.subtitle + '</span>' +
+                            //                                                 '</div>' +
+                            //                                               '</li>');
+                            // });
+                        });
+                        // save address data
+                        // globalScopeVariable["signup_address"] = currentAdd;
+                    });
+                } // else
               },
-              dataType  : 'jsonp',
-              crossDomain : true,
-              success   : function( response ) {
-
-                          var elm = "<ul>";
-
-                          if(response.results.common.totalCount == 0){
-
-                            elm = elm + "<li><span>검색 결과가 없습니다.</span></li>";
-                            $("#signup-address-result").append(elm + "</ul>");
-
-                          }else{
-
-                            $(response.results.juso).each(function(){
-
-                              elm = elm + "<li><span>"+ this.jibunAddr + "</span></li>";
-
-                            });
-
-                            $("#signup-address-result").append(elm + "</ul>");
-
-                            $("#signup-address-result li").off('click').on('click',function(){
-                              var currentAdd = $(this).find("span").text();
-                              $("#signup-address-input-hidden").val(currentAdd);
-                              $("#signup-address-input").val(currentAdd);
-                              $("#signup-address-result").html("");
-
-                              // Showing Signable Block
-                              api.get("/api/v1/get/signupBlockCheck?address=" + currentAdd,function(res){
-                                $("#signup-address-block-result").css({"display":"block"});
-                                $("#signup-address-block-result ul").html("");
-                                $.each(res,function(index,value){
-                                  $("#signup-address-block-result ul").append('<li>' +
-                                                                                '<div class="block-title">' +
-                                                                                  '<span>' + value.title + '</span>' +
-                                                                                '</div>' +
-                                                                                '<div class="block-subtitle">' +
-                                                                                  '<span>' + value.subtitle + '</span>' +
-                                                                                '</div>' +
-                                                                              '</li>');
-                                });
-                              });
-
-                              // Saving address data
-                              globalScopeVariable["signup_address"] = currentAdd;
-
-                            })                            
-                          }
-
-                        },
-              error     : function( request, status, error ) {
-
-                        }
+            error     : function( request, status, error ) {}
+        });
       });
-    });
 
-    // Radio
-    $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
+      // Radio
+      $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
+        var container   = $(this).parent();
+        var radioValue  = $(this).data("radio");
 
-      var container   = $(this).parent();
-      var radioValue  = $(this).data("radio");
+        $(container).find(".signup-radio-button").removeClass("selected");
+        $(this).addClass("selected");
+        $(container).find("input").val(radioValue);
 
-      $(container).find(".signup-radio-button").removeClass("selected");
-      $(this).addClass("selected");
-      $(container).find("input").val(radioValue);
+      });
 
-    });
+      $(".signup-footer-item-forward-4").off('click').on('click',function(){
+        $("#signup-4-wrapper").css({"display":"block"});
+      });
 
-    $(".signup-footer-item-forward-4").off('click').on('click',function(){
-      $("#signup-4-wrapper").css({"display":"block"});
-    });
-
-    return;
+      return;
   },
 
   /* Signup Confirm Ctrl */
   signupConfirmCtrl : function(){
-
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
 
@@ -1052,7 +987,6 @@ var controller = {
 
   /* WriteCtrl */
   writeCtrl : function(){
-
     $("#footer").css({"display":"none"});
 
     /* Global */
@@ -1061,14 +995,12 @@ var controller = {
     });
 
     /* subheader */
-
     if($(".subheader-tab").length){
         $(".write-section-gathering").show();
         $(".write-section-posting").hide();
     }
 
     $(".subheader-tab").off('click').on('click',function(){
-
         var tab = $(this).data("tab");
 
         if(tab == "gathering"){
@@ -1241,7 +1173,6 @@ var controller = {
         });
 
         $("#calendar-input-minute").change(function(){
-
           var minute = $(this).val();
           if(minute >= 60){
             minute = 59;
@@ -1254,12 +1185,10 @@ var controller = {
           }else{
             $(this).val(parseInt(minute));
           }
-
         });
 
         // Submit Click Event Handler
         $(".calendar-submit").off('click').on('click',function(){
-
           var date        = $("#calendar-input-date").val();
           var ampm        = $("#calendar-input-am-pm").val();
           var hour        = $("#calendar-input-hour").val();
@@ -1268,10 +1197,10 @@ var controller = {
 
           if(ampm == "am"){
             timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
-          }else{
+          }
+          else{
             timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
           }
-
           $("#write-gathering-input-time").val(timestamp);
           $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
 
@@ -1286,15 +1215,14 @@ var controller = {
             easing: 'linear',
             direction: 'alternate'
           });
+        });
 
-        })
-      });
-    });
+      }); // pullupMenu
+    }); // Gathering Time
 
 
     $("#write-gathering-input-agelimit-fake").off('click').on('click',function(){
       pullupMenu("pullup_write_agelimit",function(){
-
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
           $("#pullup-agelimit-input-min-fake .roller").css({"display":"block"});
@@ -1372,7 +1300,6 @@ var controller = {
 
     /*
     $("#write-gathering-submit").off('click').on('click',function(){
-
       var inputs = [
                       {"id":"sticker","require":true},
                       {"id":"title","require":true},
@@ -1390,7 +1317,6 @@ var controller = {
       var data = {};
 
       $.each(inputs, function(ind,val){
-
         data[val.id] = $("#write-posting-input-" + val.id).val();
 
         if(val.require){ // Check required fields
@@ -1442,7 +1368,6 @@ var controller = {
       });
 
       if(required){ // All requirements are met
-
         api.post("/api/v1/post/gathering",data,function(){
           return document.location.replace("./gathering.my.html");
         });
@@ -1456,11 +1381,8 @@ var controller = {
 
     // Board Select
     $("#write-posting-input-board-fake").off('click').on('click',function(){
-
       pullupMenu("pullup_write_posting_category",function(){
-
         $(".board-select").off('click').on('click',function(){
-
           $("#pullup .background").click();
           var bid = $(this).data("bid");
 
@@ -1474,41 +1396,31 @@ var controller = {
             easing: 'linear',
             direction: 'alternate'
           });
-
           renderTemplate(serverParentURL + "/write/posting.addon?bid=" + bid, "#write-section-addon");
 
         });
-
       });
-
     });
 
 
     $("#write-section-item-photo-button").off('click').on('click',function(){
-
       $("#write-posting-input-photo-wrapper").find("input").each(function(index,val){
-
         if(val.files.length == 0){
           $(this).click();
           return false;
         }
-
       });
-
     });
 
 
     // Image Upload
     function imageProcessor(dataURL, fileType, inputOrder) {
-
       var image = new Image();
       var srcOrientation = 1;
       image.src = dataURL;
 
       image.onload = function () {
-
         EXIF.getData(image, function() {
-
           srcOrientation = EXIF.getTag(this, "Orientation");
           var newWidth = image.width;
           var newHeight = image.height;
@@ -1541,19 +1453,17 @@ var controller = {
             }
 
           context.drawImage(image, 0, 0);
-
           dataURL   = canvas.toDataURL(fileType);
-
           var imageID = "image_" + Date.now();
 
-          $("#write-section-item-photo-preview-" + inputOrder).addClass("selected").append("<span class='item-delete ion-close-circled button' onclick='imageElementDelete(this," + inputOrder + ")' data-image='" + imageID + "'></span><img src='" + dataURL + "'/>");
+          $("#write-section-item-photo-preview-" + inputOrder)
+          .addClass("selected")
+          .append("<span class='item-delete ion-close-circled button' onclick='imageElementDelete(this," + inputOrder + ")' data-image='" + imageID + "'></span><img src='" + dataURL + "'/>");
 
           if($("#write-section-item-photo-preview-wrapper .selected").length == 3){
             $("#write-section-item-photo-button").addClass("disabled");
           }
-
         });
-
       };
 
       image.onerror = function () {
@@ -1564,17 +1474,13 @@ var controller = {
 
     if(window.File && window.FileList && window.FileReader){
       var $filesInput = $("#write-posting-input-photo-wrapper").find("input");
-
       $filesInput.on("change", function(event){
-
           var inputOrder = event.target.getAttribute('data-inputOrder');
           var file = event.target.files[0];
           var picReader = new FileReader();
 
           picReader.onloadend = function(){
-
               imageProcessor(picReader.result, file.type, inputOrder);
-
           };
 
           picReader.readAsDataURL(file);
@@ -1585,7 +1491,6 @@ var controller = {
 
     // Posting Submit
     $("#write-posting-submit").off('click').on('click',function(){
-
       var inputs = [
                       {"id":"board","require":true},
                       {"id":"description","require":true},
@@ -1598,11 +1503,9 @@ var controller = {
       var required = true;
 
       $.each(inputs, function(ind,val){
-
         if(val.require){ // Check required fields
 
           if( $("#write-posting-input-" + val.id).val().length == 0 ){
-
             $("#write-posting-input-" + val.id).css({"border-bottom":"1px solid #eb3b5a"}).change(function(){
               $(this).css({"border-bottom":"1px solid rgb(210,210,210)"});
             });
@@ -1622,17 +1525,13 @@ var controller = {
             }, 5000);
 
             required = false;
-
           }
 
         };
-
       });
 
       if(required){ // All requirements are met
-
         var formData = $("#write-posting-form").serialize();
-
         api.post("/api/v1/post/posting",formData,function(res){
           return document.location.replace("./board.posting.detail.html?pid=" + res.pid);
         });
@@ -1650,7 +1549,6 @@ var controller = {
     $("#header-title").text(userdata.block);
 
     $("#people-filtering").off('click').on('click',function(){
-
       pullupMenu('pullup_more_filtering',function(){
 
         var interestArray = [];
@@ -1669,7 +1567,6 @@ var controller = {
         });
 
         $("#submit-filtering").off('click').on('click',function(){
-
           $("#people-filtering").addClass("filtered").find("span").text("필터됨");
           $("#pullup .background").click();
           $(".people-section-all .people-item").each(function(index,value){
@@ -1704,7 +1601,6 @@ var controller = {
 
   /* Profile Ctrl */
   profileCtrl : function(){
-
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
@@ -1716,11 +1612,9 @@ var controller = {
 
     // History Tab
     $(".profile-section-statistics-tab").off('click').on('click',function(){
-
       var tab = $(this).data("tab");
 
       if(tab == "badge"){
-
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
 
@@ -1731,7 +1625,6 @@ var controller = {
         // renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
 
       } else if(tab == "posting"){
-
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
         $(".badge-discover-contents").hide();
@@ -1741,7 +1634,6 @@ var controller = {
         // renderTemplate(serverParentURL + "/people/profile.posting?uid=" + profiledata.uid,"#profile-section-history");
 
       } else if(tab == "woot"){
-
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
         $(".badge-discover-contents").hide();
@@ -1749,7 +1641,6 @@ var controller = {
         $(".people-contents").show();
 
         // renderTemplate(serverParentURL + "/people/profile.woot?uid=" + profiledata.uid,"#profile-section-history");
-
       }
 
     });
@@ -1815,11 +1706,9 @@ var controller = {
 
         $(".profile-report-unblock").off('click').on('click',function(){
           api.post("/api/v1/post/user/unblock",{uid:targetUid},function(){
-
             var elm = '<div id="popup-message">' +
                         '<span>해당 유저 차단을 해제했습니다.</span>' +
                       '</div>';
-
             $("body").append(elm);
 
             setTimeout(function(){
@@ -1832,12 +1721,10 @@ var controller = {
 
       });
     });
-
     return;
-  },
+  }, // profileCtrl
 
   profileEditCtrl : function(){
-
     $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
@@ -1849,27 +1736,18 @@ var controller = {
       $("#footer").css({"display":"block"});
     });
 
-
     // Profile Avatar Change
     $("#profile-avatar-change-button").off('click').on('click',function(){
-
       api.get("/api/v1/get/avatarChange",function(response){
-
         $("#profile-avatar").css({"background-image":"url(" +response.image + ")"});
         $("#profile-edit-input-avatar").val(response.avatarID);
-
       });
-
     });
-
 
     // Profile Interest Edit
     $("#profile-edit-input-interest-fake").off('click').on('click',function(){
-
       pullupMenu("pullup_edit_interest",function(){
-
         var interestArray = JSON.parse($("#profile-edit-input-interest").val() || null);
-
         $(".pullup-interest-content").find(".interest").each(function(indx,val){
           if(interestArray.indexOf($(this).data("interest")) > -1){
             $(this).addClass("selected");
@@ -1878,29 +1756,22 @@ var controller = {
 
         $(".pullup-interest-content").find(".interest").off('click').on('click',function(){
           if($(this).hasClass("selected")){
-
             $(this).removeClass("selected");
             var interestValue = $(this).data("interest");
             interestArray.splice(interestArray.indexOf(interestValue), 1);
-
-          }else{
-
+          }
+          else{
             $(this).addClass("selected");
             var interestValue = $(this).data("interest");
             interestArray.push(interestValue);
-
           }
-
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
           $("#profile-edit-input-interest-fake").html("");
           $.each(interestArray,function(indx,val){
             $("#profile-edit-input-interest-fake").prepend("<span>" + val + "</span>");
           });
-
         });
-
-      });
-
+      }); // pullupMenu
     });
 
     $("#profile-edit-input-push-fake").change(function(){
@@ -1912,57 +1783,41 @@ var controller = {
     });
 
     $("#profile-edit-submit").off('click').on('click',function(){
-
       if($("#profile-edit-input-avatar").val()      == "" ||
         $("#profile-edit-input-description").val()  == "" ||
         $("#profile-edit-input-interest").val()     == ""){
-
         var elm = '<div id="popup-message">' +
                     '<span>모든 값을 정확히 입력해주세요.</span>' +
                   '</div>';
-
         $("body").append(elm);
 
         setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
-
         return;
-
       }
 
       var serializedData = $("#profile-edit-form").serialize();
-
       $.ajax({
-
             url       : serverParentURL + "/api/v1/post/profile",
             type      : 'POST',
             data      : serializedData,
             xhrFields : { withCredentials: true },
             success   : function( response ) {
-
                         var res = JSON.parse(response);
                         if(res.redirect){
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
                         }
-
                       },
-            error     : function( request, status, error ) {
-
-                      }
-
+            error     : function( request, status, error ) {}
       });
-
     });
-
     return;
   },
 
   passwordEditCtrl : function(){
-
     $("#profile-password-edit-submit").off('click').on('click',function(){
-
       if($("#profile-edit-password-input-current").val()    == "" ||
         $("#profile-edit-password-input-new").val()         == "" ||
         $("#profile-edit-password-input-new-confirm").val() == ""){
@@ -1982,25 +1837,19 @@ var controller = {
       }
 
       if($("#profile-edit-password-input-new").val() != $("#profile-edit-password-input-new-confirm").val()){
-
         var elm = '<div id="popup-message">' +
                     '<span>새로운 비밀번호를 확인해주세요.</span>' +
                   '</div>';
-
         $("body").append(elm);
 
         setTimeout(function(){
           $("#popup-message").remove();
         }, 5000);
-
         return;
-
       }
 
       var serializedData = $("#profile-edit-password-form").serialize();
-
       $.ajax({
-
             url       : serverParentURL + "/api/v1/post/password",
             type      : 'POST',
             data      : serializedData,
@@ -2011,22 +1860,15 @@ var controller = {
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
                         }
-
                       },
-            error     : function( request, status, error ) {
-
-                      }
-
+            error     : function( request, status, error ) {}
       });
-
     });
-
     return;
   },
 
   /* Board Ctrl */
   postListCtrl : function(){
-
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
@@ -2070,7 +1912,7 @@ var controller = {
             easing: 'easeInOutQuart'
         });
 
-        renderTemplate(serverParentURL + "/comment/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
+        renderTemplate(serverParentURL + "/misc/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
 
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
@@ -2088,7 +1930,6 @@ var controller = {
 
           // Post API: Comment - Default
           $("#footer-textarea-submit").off('click').on('click',function(){
-
             var data = {
               text : $("#footer-textarea").val()
             };
@@ -2101,7 +1942,6 @@ var controller = {
 
           // Comment Edit Button
           $(".comment-edit-button").off('click').on('click',function(){
-
             var cid = $(this).data("cid");
 
             $(".posting-comment").removeClass("selected");
@@ -2142,7 +1982,6 @@ var controller = {
 
           // Comment Recomment Button
           $(".recomment-button").off('click').on('click',function(){
-
             var cid = $(this).data("cid");
 
             $(".posting-comment").removeClass("selected");
@@ -2162,7 +2001,6 @@ var controller = {
 
               // Post API: Comment
               $("#footer-textarea-submit").off('click').on('click',function(){
-
                 var data = {
                   parentCid : cid,
                   text : $("#footer-textarea").val()
@@ -2184,7 +2022,6 @@ var controller = {
 
       // Overlap : Like
       $(".overlap-button-like").off('click').on('click',function(){
-
         $("#template-view").css({"overflow":"hidden"});
         $("body").css({"overflow":"hidden"});
 
@@ -2206,7 +2043,6 @@ var controller = {
             easing: 'easeInOutQuart'
         });
         renderTemplate(serverParentURL + "/board/overlap.like?pid=" + pid,"#posting-overlap-view",function(){
-
           // Event Handler
           $(".overlap-close").off('click').on('click',function(){
             anime({
@@ -2224,20 +2060,15 @@ var controller = {
         });
 
       });
-
     }
     overlapHandler();
 
     // Infinite Scroll
-
     var infiniteScroll = function(){
-
       $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
-
         var eventScroll = $("#posting-wrapper").height() - $("#template-view").height() + 150;
 
         if( eventScroll < $("#template-view").scrollTop() ){
-
           $(this).unbind("scroll.board");
 
           if($("#posting-wrapper").length > 0){
@@ -2259,26 +2090,19 @@ var controller = {
                                 }
 
                               },
-                    error     : function( request, status, error ) {
-
-                              }
-
+                    error     : function( request, status, error ) {}
             });
           }
-
         }
 
       });
     }
-
     infiniteScroll();
-
     return;
   },
 
   /* Board Detail Ctrl */
   postDetailCtrl : function(urlParameter){
-
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
@@ -2286,7 +2110,6 @@ var controller = {
     });
 
     $("#footer").css({"display":"none"});
-
     $('<div id="footer-input" class="row footer-special-element">' +
       '<div class="footer-item-wrapper col-lg-24 col-md-24 col-sm-24 col-xs-24">' +
         '<div class="footer-textarea-wrapper">' +
@@ -2335,7 +2158,6 @@ var controller = {
 
     // Comment Edit Button
     $(".comment-edit-button").off('click').on('click',function(){
-
       var cid = $(this).data("cid");
 
       $(".posting-comment").removeClass("selected");
@@ -2376,7 +2198,6 @@ var controller = {
 
     // Comment Recomment Button
     $(".recomment-button").off('click').on('click',function(){
-
       var cid = $(this).data("cid");
 
       $(".posting-comment").removeClass("selected");
@@ -2396,7 +2217,6 @@ var controller = {
 
         // Post API: Comment
         $("#footer-textarea-submit").off('click').on('click',function(){
-
           var data = {
             parentCid : cid,
             text : $("#footer-textarea").val()
@@ -2418,7 +2238,6 @@ var controller = {
 
   /* Gathering Ctrl */
   gatheringCtrl : function(){
-
     // Gathering Participate
     $("#gathering-participate-button").off('click').on('click',function(){
 
@@ -2474,36 +2293,24 @@ var controller = {
     });
 
     $(".gathering-detail-tab").off('click').on('click',function(){
-
       var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
-
       var tab = $(this).data("tab");
 
       if(tab == "information"){
-
         $(".gathering-detail-tab").removeClass("selected");
         $(this).addClass("selected");
-
         renderTemplate(serverParentURL + "/gathering/detail.information?gid=" + gatheringdata.gid,"#gathering-details-view");
 
       }else if(tab == "review"){
-
         $(".gathering-detail-tab").removeClass("selected");
         $(this).addClass("selected");
-
         renderTemplate(serverParentURL + "/gathering/detail.review?uid=" + gatheringdata.gid,"#gathering-details-view");
-
       }else if(tab == "comment"){
-
         $(".gathering-detail-tab").removeClass("selected");
         $(this).addClass("selected");
-
         renderTemplate(serverParentURL + "/gathering/detail.comment?uid=" + gatheringdata.gid,"#gathering-details-view");
-
       }
-
     });
-
 
     $("#footer").css({"display":"none"});
     return;
@@ -2511,7 +2318,6 @@ var controller = {
 
   /* Gathering Review Ctrl */
   gatheringReviewCtrl : function(){
-
     var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     $("#chat-title").text(gatheringdata.gname);
 
@@ -2521,11 +2327,9 @@ var controller = {
 
   /* Chat Ctrl */
   chatCtrl : function(){
-
     var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     $("#chat-title").text(gatheringdata.gname);
     $("#chat-detail-link").attr("href","/gathering/detail?gid=" + gatheringdata.gid);
-
     $("#footer").css({"display":"none"});
 
     if(!gatheringdata.expired){
@@ -2558,13 +2362,9 @@ var controller = {
     $("#template-view").scrollTop($("#template-view").height());
 
     var infiniteScroll = function(){
-
       $("#template-view").unbind("scroll.chat").bind("scroll.chat",function() {
-
         var eventScroll = 500;
-
         if( eventScroll > $("#template-view").scrollTop() ){
-
           $(this).unbind("scroll.chat");
 
           if($("#chat-room").length > 0){
@@ -2573,41 +2373,30 @@ var controller = {
                     url       : serverParentURL + "/gathering/chat.infinitescroll",
                     xhrFields: {withCredentials: true},
                     success   : function( response ) {
-
                                 if(response){
                                   $("#chat-room").prepend($.parseHTML(response));
                                   infiniteScroll();
                                 }
-
                               },
-                    error     : function( request, status, error ) {
-
-                              }
-
+                    error     : function( request, status, error ) {}
             });
           }
-
         }
-
       });
     }
 
     infiniteScroll();
-
     return;
-
   },
 
 
   /* Debug Ctrl */
   debugCtrl : function(){
-
     return;
   },
 
   /* Message Ctrl */
   messageCtrl : function(){
-
     $("#message-search-input").focus(function(){
       $("#footer").css({"display":"none"});
     });
@@ -2617,32 +2406,22 @@ var controller = {
 
     // Message Search
     $("#message-search-input").off('keyup').on('keyup',function(){
-
       var query     = $(this).val();
       var noResult  = true;
 
       if( query != ""){
-
         $(".message-people-item").each(function(){
-
           if($(this).data("username").search(new RegExp(query, "i")) == -1){
-
             $(this).addClass("displayNone");
-
           }else{
-
             noResult = false;
             $(this).removeClass("displayNone");
-
           }
-
         });
-
-      }else{
-
+      }
+      else{
         noResult = false;
         $(".message-people-item").removeClass("displayNone");
-
       }
 
       if(noResult){
@@ -2650,16 +2429,12 @@ var controller = {
       }else{
         $(".message-people-item-no").css({"display":"none"});
       }
-
     });
-
-
     return;
   },
 
   /* Message Inbox Ctrl */
   messageInboxCtrl : function(){
-
     var currentuserdata = JSON.parse($("#hiddenInput_currentuserdata").val() || null);
     $("#header-title").text(currentuserdata.uname);
 
@@ -2687,11 +2462,31 @@ var controller = {
 /* End of Controller */
 
 
+/* Other global functions */
+
+//============================================================
+// Factory function that makes ajax submit handlers.
+// Note that this depends on api variable so the url
+// shouldn't start with http://
+//------------------------------------------------------------
+function makeAjaxSubmitHandler(success_fn) {
+
+    function handler(e) {
+        e.preventDefault();
+        var url = $(this).attr("action");
+        api.post(url, $(this).serialize(), success_fn);
+    }
+
+    return handler;
+}
+
+/* End of other global functions */
+
+
 //============================================================
 // Initiate functions
 //------------------------------------------------------------
 $(document).ready(function(){
-
   initiator();
 
   //============================================================
@@ -2715,10 +2510,7 @@ $(document).ready(function(){
                       }
 
                     },
-          error     : function( request, status, error ) {
-
-                    }
-
+          error     : function( request, status, error ) {}
   });
 
 
@@ -2726,26 +2518,17 @@ $(document).ready(function(){
   // Cordova Plugin
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
-
     // cordova-plugin-fcm : Push Notification
     FCMPlugin.onNotification(function(data){
-
         if(data.wasTapped){
-
           //Notification was received on device tray and tapped by the user.
           if(data.url){
-
             initiator(data.url);
             history.pushState(null, null, document.location.pathname + '#' + data.url);
-
           }
-
         }else{
-
           //Notification was received in foreground. Maybe the user needs to be notified.
-
         }
-
     });
 
     // Cordova-plugin-screen-orientation : Orientation Lock
@@ -2759,26 +2542,19 @@ $(document).ready(function(){
   // Android Back Button Overwrite
   var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
   document.addEventListener("backbutton", function (e){
-
       e.preventDefault();
       if (exitApp) {
-
         clearInterval(intval) 
         (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-
       }else {
-
         if($("#posting-overlap-view").hasClass("activated")){
           $(".overlap-close").click();
         }else{
           exitApp = true
           navigator.app.backHistory();            
         }
-
       } 
-
   }, false);
-
 });
 
 window.addEventListener('popstate', function(event) {
