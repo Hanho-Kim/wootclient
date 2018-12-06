@@ -303,6 +303,11 @@ var viewConfig = {
     "template"    : serverParentURL + "/login/signup",
     "footerHide"  : true
   },
+  "/signup": {
+    "controller": "signupCtrl",
+    "template": serverParentURL + "/account/signup/",
+    "footerHide": true
+  },
   "/signup/1" : {
     "controller"  : "signupCtrl",
     "template"    : serverParentURL + "/account/address",
@@ -467,6 +472,7 @@ if (server_toggle){
     // login.html
   viewConfig["/login"]["template"] = serverParentURL + "/account/login/";
   viewConfig["/login/intro"]["template"] = serverParentURL + "/misc/intro";
+  viewConfig["/signup"]["template"] = serverParentURL + "/account/signup/";
   viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
   viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
   viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
@@ -2427,6 +2433,27 @@ var controller = {
 
 }
 /* End of Controller */
+
+
+/* Other global functions */
+
+//============================================================
+// Factory function that makes ajax submit handlers.
+// Note that this depends on api variable so the url
+// shouldn't start with http://
+//------------------------------------------------------------
+function makeAjaxSubmitHandler(success_fn) {
+
+    function handler(e) {
+        e.preventDefault();
+        var url = $(this).attr("action");
+        api.post(url, $(this).serialize(), success_fn);
+    }
+
+    return handler;
+}
+
+/* End of other global functions */
 
 
 //============================================================
