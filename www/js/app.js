@@ -529,7 +529,7 @@ if (server_toggle){
 
 var api = {
 
-  get : function(url,successFn){
+  get : function(url, successFn){
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -557,7 +557,7 @@ var api = {
     });
   },
 
-  post : function(url,data,successFn){
+  post : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -590,7 +590,7 @@ var api = {
 
   },
 
-  delete : function(url,data,successFn){
+  delete : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
     var promise = $.ajax({
@@ -853,10 +853,8 @@ var controller = {
 
   /* Login Ctrl */
   loginCtrl : function(){
-
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
-
 
     var swiper = new Swiper('.swiper-container', {
       pagination: {
@@ -867,48 +865,36 @@ var controller = {
     $("#login-form input[type='submit']").off('click').on('click',function(e){
       e.preventDefault();
       $.ajax({
-
             url       : serverParentURL + "/account/login/",
             type      : 'POST',
             data      : $("#login-form").serialize(),
             xhrFields : { withCredentials: true },
             success   : function( response ) {
-
-                        if(response["ok"]){
+                        if(response['ok']){
                           window.location.replace('./index.html');
                         }
-
                       },
-            error     : function( request, status, error ) {
-                          
-                      }
-
+            error     : function( request, status, error ) {}
       });
     });
-
     return;
   },
 
   signupCtrl : function(){
-
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
 
     $("#signup-item-input-email").focusout(function(){
-
       var email = $("#signup-item-input-email").val();
 
       api.get("/api/v1/get/signupEmailCheck?email=" + email,function(response){
-
         $(".message-email").css({"display":"block"});
         if(response){
           $(".message-email").find("span").css({"color":"#2ecc71"}).text("가입 가능한 이메일입니다.");
         }else{
           $(".message-email").find("span").css({"color":"#e74c3c"}).text("이미 가입되어 있는 이메일입니다.");
         }
-
       });
-
     });
 
     $("#signup-item-input-password-confirm").keyup(function(){
@@ -938,56 +924,58 @@ var controller = {
               dataType  : 'jsonp',
               crossDomain : true,
               success   : function( response ) {
-
-                          var elm = "<ul>";
-
                           if(response.results.common.totalCount == 0){
-
-                            elm = elm + "<li><span>검색 결과가 없습니다.</span></li>";
-                            $("#signup-address-result").append(elm + "</ul>");
-
-                          }else{
-
+                            var $ul = $("<ul><li><span>검색 결과가 없습니다.</span></li></ul>");
+                            $("#signup-address-result").append($ul);
+                          }
+                          else
+                          {
+                            var $ul = $("<ul>");
                             $(response.results.juso).each(function(){
-
-                              elm = elm + "<li><span>"+ this.jibunAddr + "</span></li>";
-
+                              var $li = $("<li>")
+                              $('<span>').text(this.jibunAddr).appendTo($li);
+                              $li.data('addr', this.jibunAddr);
+                              $li.data('postcode', this.zipNo);
+                              $ul.append($li);
                             });
+                            $("#signup-address-result").append($ul);
 
-                            $("#signup-address-result").append(elm + "</ul>");
+                            $("#signup-address-result li").off('click').on('click', function(){
+                              var data = $(this).data();
 
-                            $("#signup-address-result li").off('click').on('click',function(){
-                              var currentAdd = $(this).find("span").text();
-                              $("#signup-address-input-hidden").val(currentAdd);
-                              $("#signup-address-input").val(currentAdd);
-                              $("#signup-address-result").html("");
-
-                              // Showing Signable Block
-                              api.get("/api/v1/get/signupBlockCheck?address=" + currentAdd,function(res){
+                              // validate address and show signable blocks
+                              api.post("/account/validate_addr/", data, function(res){
+                                $("#signup-address-result").hide();
                                 $("#signup-address-block-result").css({"display":"block"});
                                 $("#signup-address-block-result ul").html("");
-                                $.each(res,function(index,value){
-                                  $("#signup-address-block-result ul").append('<li>' +
-                                                                                '<div class="block-title">' +
-                                                                                  '<span>' + value.title + '</span>' +
-                                                                                '</div>' +
-                                                                                '<div class="block-subtitle">' +
-                                                                                  '<span>' + value.subtitle + '</span>' +
-                                                                                '</div>' +
-                                                                              '</li>');
-                                });
+
+                                if (res['ok']){
+                                  // TODO: enable '다음' button
+                                  console.log('ok');
+                                  console.log(res['area']);
+                                }
+                                else {
+                                  // TODO: show error and reset search form(다시 검색 가능하도록 화면 초기화)
+                                  console.log('not ok');
+                                }
+                                // TODO: show signable blocks
+                                // $.each(res['blocks'], function(index, value){
+                                //   $("#signup-address-block-result ul").append('<li>' +
+                                //                                                 '<div class="block-title">' +
+                                //                                                   '<span>' + value.title + '</span>' +
+                                //                                                 '</div>' +
+                                //                                                 '<div class="block-subtitle">' +
+                                //                                                   '<span>' + value.subtitle + '</span>' +
+                                //                                                 '</div>' +
+                                //                                               '</li>');
+                                // });
                               });
-
-                              // Saving address data
-                              globalScopeVariable["signup_address"] = currentAdd;
-
+                              // save address data
+                              // globalScopeVariable["signup_address"] = currentAdd;
                             })                            
                           }
-
                         },
-              error     : function( request, status, error ) {
-
-                        }
+              error     : function( request, status, error ) {}
       });
     });
 
