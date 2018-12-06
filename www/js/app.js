@@ -112,9 +112,7 @@ function getCookie(name) {
 //============================================================
 // Pullup Menu
 //------------------------------------------------------------
-
 function pullupMenu(menu,successFn){
-
   var successFn = successFn || function(){};
 
   $("#pullup").css({"display":"block"});
@@ -127,9 +125,7 @@ function pullupMenu(menu,successFn){
     duration: 500,
     easing: 'easeInOutQuart'
   });
-
   $("#pullup .pullup-inner").css({"display":"block"}).html('<span class="loading-spinner"></span>');
-
   var res;
   var promise = $.ajax({
           method    : "GET",
@@ -141,7 +137,6 @@ function pullupMenu(menu,successFn){
 
                       // Event Handler Enactive
                       $("#pullup .background").off('click').on('click',function(){
-
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
@@ -150,11 +145,9 @@ function pullupMenu(menu,successFn){
                           translateY: '100%',
                           duration: 10
                         });
-
                       });
 
                       $("#pullup .pullup-item").off('click').on('click',function(){
-
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
@@ -163,25 +156,20 @@ function pullupMenu(menu,successFn){
                           translateY: '100%',
                           duration: 10
                         });
-
                       });
 
                       $("woot-click").off('click').on('click',function(){
-
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
                         initiator($(this).attr("href"));
                         history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
-
                       });
-
                     },
           error     : function( request, status, error ) {
 
                     }
   });
-
   promise.then(function(){
     successFn(res);
   });
@@ -192,11 +180,9 @@ function pullupMenu(menu,successFn){
 //============================================================
 // Render template
 //------------------------------------------------------------
-
 function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
   var successFn = successFn || function(){};
   var failureFn = failureFn || function(){};
-
   var res;
   var promise = $.ajax({
           method    : "GET",
@@ -216,7 +202,6 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
           error     : function( request, status, error ) {
 
                     }
-
   });
 
   promise.then(function(){
@@ -225,7 +210,6 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
   .catch(function(){
     return failureFn(res);
   });
-
 }
 
 
@@ -236,16 +220,13 @@ function globalEventHandler(){
   $(".history-back").off('click').on('click',function(){
     history.back();
   });
-
   $(".history-home").off('click').on('click',function(){
     window.location.replace('./index.html');
   });
-
   $("woot-click").off('click').on('click',function(){
     initiator($(this).attr("href"));
     history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
   });
-
 }
 
 //============================================================
@@ -279,18 +260,14 @@ function timestampConverter(timestamp){
 //------------------------------------------------------------
 function imageElementDelete(e,inputOrder){
   $("#write-section-item-photo-preview-" + inputOrder).removeClass("selected").empty();
-
   // Reset input
   $("#write-posting-input-photo-wrapper").find("input").each(function(){
-
     if(this.getAttribute('data-inputOrder') == inputOrder){
       $(this).val("");
     }
-
   });
 
   $("#write-section-item-photo-button").removeClass("disabled");
-
 }
 
 
@@ -305,6 +282,11 @@ var viewConfig = {
     "controller"  : "mainCtrl",
     "template"    : serverParentURL + "/index",
     "header"      : "./header/index.html"
+  },
+  "/invalid_status": {
+    "controller": "loginCtrl",
+    "template": serverParentURL + "/account/invalid_status/",
+    "footerHide": true
   },
   "/login" : {
     "controller"  : "loginCtrl",
@@ -610,7 +592,6 @@ var api = {
 
 var initAjax = "";
 function initiator(newPath){
-
   $("#template-view").css({"overflow":""});
   $("body").css({"overflow":"inherit"});
 
@@ -629,12 +610,11 @@ function initiator(newPath){
     if (pathHtml == "index.html") {
       pathname = "/index";
     } else if (pathHtml == "login.html") {
-      pathname = "/login";
+      pathname = "/invalid_status";
     }
   }
 
   var pathParent  = pathname.split("/")[1];
-
   // Footer Processing
   $("#footer").find(".footer-item").removeClass("selected");
   $("#footer").find(".footer-item-" + pathParent).addClass("selected");
@@ -645,14 +625,11 @@ function initiator(newPath){
   }
   $(".footer-special-element").remove();
 
-
   // Path Parameter to Json
   var pathParams  = pathsplit.split("?")[1] || "";
   var pathParamsJson = {};
-
   if(pathParams != ""){
     var pathParamsArray = pathParams.split("&");
-
     $.each(pathParamsArray,function(index,value){
       pathParamsJson[value.split("=")[0]] = value.split("=")[1];
     });
@@ -690,7 +667,6 @@ function initiator(newPath){
   // Activate Controller for Current view
   $.each(Object.keys(viewConfig),function(index,value){
     if (pathname != value) { return; }
-
     $("#template-view-loading").css({"display":"block"});
     $("#template-view-loading").css({"opacity":"1"});
     $("#template-view").html("");
@@ -760,7 +736,6 @@ function initiator(newPath){
     });
 
   });
-
 }
 
 function button_liked() {
@@ -849,121 +824,120 @@ var controller = {
     return;
   },
 
-  signupCtrl : function(){
-    $("#header").css({"display":"none"});
-    $("#footer").css({"display":"none"});
+  signupCtrl : function() {
+      $("#header").hide();
+      $("#footer").hide();
 
-    $("#signup-item-input-email").focusout(function(){
-      var email = $("#signup-item-input-email").val();
-
-      api.get("/api/v1/get/signupEmailCheck?email=" + email,function(response){
-        $(".message-email").css({"display":"block"});
-        if(response){
-          $(".message-email").find("span").css({"color":"#2ecc71"}).text("가입 가능한 이메일입니다.");
-        }else{
-          $(".message-email").find("span").css({"color":"#e74c3c"}).text("이미 가입되어 있는 이메일입니다.");
-        }
+      $("#signup-item-input-email").focusout(function(){
+          var data = { email: $("#signup-item-input-email").val() }
+          api.post("/account/validate_email/", data, function(response){
+              $(".message-email").css({"display":"block"});
+              console.log(response);
+              if(response['ok']){
+                  $(".message-email")
+                  .find("span")
+                  .css({"color":"#2ecc71"})
+                  .text("가입 가능한 이메일입니다.");
+              }else{
+                  $(".message-email")
+                  .find("span")
+                  .css({"color":"#e74c3c"})
+                  .text("이미 가입되어 있는 이메일입니다.");
+              }
+          });
       });
-    });
 
-    $("#signup-item-input-password-confirm").keyup(function(){
-      if($(this).val() == $("#signup-item-input-password").val()){
-        $(".message-password").css({"display":"none"});
-      }else{
-        $(".message-password").css({"display":"block"});
-        $(".message-password").find("span").css({"color":"#e74c3c"}).text("비밀번호가 일치하지 않습니다.");
-      }
-    });
+      $("#signup-item-input-password-confirm").keyup(function(){
+          if($(this).val() == $("#signup-item-input-password").val()){
+              $(".message-password").css({"display":"none"});
+          }else{
+              $(".message-password").css({"display":"block"});
+              $(".message-password").find("span").css({"color":"#e74c3c"}).text("비밀번호가 일치하지 않습니다.");
+          }
+      });
 
+      $("#signup-address-submit").off('click').on('click',function(){
+        var address = $("#signup-address-input").val();
+        $("#signup-address-result").html("");
+        $.ajax({
+            method    : "POST",
+            url       : "http://www.juso.go.kr/addrlink/addrLinkApiJsonp.do",
+            data      : {
+              keyword : address,
+              countPerPage : 100,
+              currentPage : 1,
+              resultType : "json",
+              confmKey : "U01TX0FVVEgyMDE4MDgxNDEzNDU1MTEwODA3NTU="
+            },
+            dataType  : 'jsonp',
+            crossDomain : true,
+            success   : function( response ) {
+                if (response.results.common.totalCount == 0) {
+                    var $ul = $("<ul><li><span>검색 결과가 없습니다.</span></li></ul>");
+                    $("#signup-address-result").append($ul);
+                } else {
+                    var $ul = $("<ul>");
+                    $(response.results.juso).each(function(){
+                        var $li = $("<li>")
+                        $('<span>').text(this.jibunAddr).appendTo($li);
+                        $li.data('addr', this.jibunAddr);
+                        $li.data('postcode', this.zipNo);
+                        $ul.append($li);
+                    });
+                    $("#signup-address-result").append($ul);
+                    $("#signup-address-result li").off('click').on('click', function(){
+                        var data = $(this).data();
 
-    $("#signup-address-submit").off('click').on('click',function(){
-      var address = $("#signup-address-input").val();
-
-      $("#signup-address-result").html("");
-      $.ajax({
-              method    : "POST",
-              url       : "http://www.juso.go.kr/addrlink/addrLinkApiJsonp.do",
-              data      : {
-                keyword : address,
-                countPerPage : 100,
-                currentPage : 1,
-                resultType : "json",
-                confmKey : "U01TX0FVVEgyMDE4MDgxNDEzNDU1MTEwODA3NTU="
+                        // validate address and show signable blocks
+                        api.post("/account/validate_addr/", data, function(response){
+                            $("#signup-address-result").hide();
+                            $("#signup-address-block-result").css({"display":"block"});
+                            $("#signup-address-block-result ul").html("");
+                            if (response['ok']){
+                                // TODO: enable '다음' button
+                                console.log('ok');
+                                console.log(response['area']);
+                            } else {
+                                // TODO: show error and reset search form(다시 검색 가능하도록 화면 초기화)
+                                console.log('not ok');
+                            }
+                            // TODO: show signable blocks
+                            // $.each(res['blocks'], function(index, value){
+                            //   $("#signup-address-block-result ul").append('<li>' +
+                            //                                                 '<div class="block-title">' +
+                            //                                                   '<span>' + value.title + '</span>' +
+                            //                                                 '</div>' +
+                            //                                                 '<div class="block-subtitle">' +
+                            //                                                   '<span>' + value.subtitle + '</span>' +
+                            //                                                 '</div>' +
+                            //                                               '</li>');
+                            // });
+                        });
+                        // save address data
+                        // globalScopeVariable["signup_address"] = currentAdd;
+                    });
+                } // else
               },
-              dataType  : 'jsonp',
-              crossDomain : true,
-              success   : function( response ) {
-                          if(response.results.common.totalCount == 0){
-                            var $ul = $("<ul><li><span>검색 결과가 없습니다.</span></li></ul>");
-                            $("#signup-address-result").append($ul);
-                          }
-                          else
-                          {
-                            var $ul = $("<ul>");
-                            $(response.results.juso).each(function(){
-                              var $li = $("<li>")
-                              $('<span>').text(this.jibunAddr).appendTo($li);
-                              $li.data('addr', this.jibunAddr);
-                              $li.data('postcode', this.zipNo);
-                              $ul.append($li);
-                            });
-                            $("#signup-address-result").append($ul);
-
-                            $("#signup-address-result li").off('click').on('click', function(){
-                              var data = $(this).data();
-
-                              // validate address and show signable blocks
-                              api.post("/account/validate_addr/", data, function(res){
-                                $("#signup-address-result").hide();
-                                $("#signup-address-block-result").css({"display":"block"});
-                                $("#signup-address-block-result ul").html("");
-
-                                if (res['ok']){
-                                  // TODO: enable '다음' button
-                                  console.log('ok');
-                                  console.log(res['area']);
-                                }
-                                else {
-                                  // TODO: show error and reset search form(다시 검색 가능하도록 화면 초기화)
-                                  console.log('not ok');
-                                }
-                                // TODO: show signable blocks
-                                // $.each(res['blocks'], function(index, value){
-                                //   $("#signup-address-block-result ul").append('<li>' +
-                                //                                                 '<div class="block-title">' +
-                                //                                                   '<span>' + value.title + '</span>' +
-                                //                                                 '</div>' +
-                                //                                                 '<div class="block-subtitle">' +
-                                //                                                   '<span>' + value.subtitle + '</span>' +
-                                //                                                 '</div>' +
-                                //                                               '</li>');
-                                // });
-                              });
-                              // save address data
-                              // globalScopeVariable["signup_address"] = currentAdd;
-                            })                            
-                          }
-                        },
-              error     : function( request, status, error ) {}
+            error     : function( request, status, error ) {}
+        });
       });
-    });
 
-    // Radio
-    $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
-      var container   = $(this).parent();
-      var radioValue  = $(this).data("radio");
+      // Radio
+      $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
+        var container   = $(this).parent();
+        var radioValue  = $(this).data("radio");
 
-      $(container).find(".signup-radio-button").removeClass("selected");
-      $(this).addClass("selected");
-      $(container).find("input").val(radioValue);
+        $(container).find(".signup-radio-button").removeClass("selected");
+        $(this).addClass("selected");
+        $(container).find("input").val(radioValue);
 
-    });
+      });
 
-    $(".signup-footer-item-forward-4").off('click').on('click',function(){
-      $("#signup-4-wrapper").css({"display":"block"});
-    });
+      $(".signup-footer-item-forward-4").off('click').on('click',function(){
+        $("#signup-4-wrapper").css({"display":"block"});
+      });
 
-    return;
+      return;
   },
 
   /* Signup Confirm Ctrl */
