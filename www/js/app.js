@@ -270,6 +270,20 @@ function imageElementDelete(e,inputOrder){
   $("#write-section-item-photo-button").removeClass("disabled");
 }
 
+//============================================================
+// Factory function that makes ajax submit handlers.
+// Note that this depends on api variable so the url
+// shouldn't start with http://
+//------------------------------------------------------------
+function makeAjaxSubmitHandler(successFn) {
+    function handler(e) {
+        e.preventDefault();
+        var url = $(this).attr("action");
+        api.post(url, $(this).serialize(), successFn);
+    }
+
+    return handler;
+}
 
 /* End of Global Functions */
 
@@ -720,7 +734,6 @@ function initiator(newPath){
             }
           }
           */
-
           controller[viewConfig[value]["controller"]](pathParamsJson);
           globalEventHandler();
       })
@@ -1280,23 +1293,38 @@ var controller = {
         $('#write-gathering-input-sticker').val(code); // 인풋필드에 넣고
     }); 
 
-    $('#write-gathering-submit').click(function() {
-        var url = $(this).parents("form").attr("action");
-        api.post(
-            url, 
-            $('form.gathering_write').serialize(), 
-            function(){
-                if (data['ok']){
-                    $('form.gathering_write input[type=submit]').click();
-                    // 바로 글 쓴 곳으로 이동
-                } else {
-                    console.log("fail");
-                    // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
-                    // 채우라는 에러메세지
-                }
-            }
-        )
+    var write_gathering_handler = makeAjaxSubmitHandler(function(response){
+        if (response['ok']){
+           console.log("gotcha!");
+        } else {
+            console.log("fail");
+            // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
+            // 채우라는 에러메세지
+        }
     });
+
+    $('form.gathering_write').on('submit', write_gathering_handler);
+    $('#write-gathering-submit').click(function() {
+        $('form.gathering_write').submit();
+    });
+      
+//     $('#write-gathering-submit').click(function() {
+//         var url = $(this).parents("form").attr("action");
+//         api.post(
+//             url, 
+//             $('form.gathering_write').serialize(), 
+//             function(){
+//                 if (data['ok']){
+//                     $('form.gathering_write input[type=submit]').click();
+//                     // 바로 글 쓴 곳으로 이동
+//                 } else {
+//                     console.log("fail");
+//                     // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
+//                     // 채우라는 에러메세지
+//                 }
+//             }
+//         )
+//     });
 
     /*
     $("#write-gathering-submit").off('click').on('click',function(){
@@ -2462,25 +2490,6 @@ var controller = {
 /* End of Controller */
 
 
-/* Other global functions */
-
-//============================================================
-// Factory function that makes ajax submit handlers.
-// Note that this depends on api variable so the url
-// shouldn't start with http://
-//------------------------------------------------------------
-function makeAjaxSubmitHandler(success_fn) {
-
-    function handler(e) {
-        e.preventDefault();
-        var url = $(this).attr("action");
-        api.post(url, $(this).serialize(), success_fn);
-    }
-
-    return handler;
-}
-
-/* End of other global functions */
 
 
 //============================================================
