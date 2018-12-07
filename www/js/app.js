@@ -162,8 +162,7 @@ function pullupMenu(menu,successFn){
                         $("#pullup").css({"display":"none"});
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
-                        initiator($(this).attr("href"));
-                        history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
+                        initiator($(this).attr("href"), true);
                       });
                     },
           error     : function( request, status, error ) {
@@ -194,8 +193,7 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
                       $(targetElm).append($.parseHTML(response, null, true));
                       $(targetElm).css({"display":"block"});
                       $("woot-click").off('click').on('click',function(){
-                        initiator($(this).attr("href"));
-                        history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
+                        initiator($(this).attr("href"), true);
                       });
 
                     },
@@ -224,8 +222,7 @@ function globalEventHandler(){
     window.location.replace('./index.html');
   });
   $("woot-click").off('click').on('click',function(){
-    initiator($(this).attr("href"));
-    history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
+    initiator($(this).attr("href"), true);
   });
 }
 
@@ -611,12 +608,17 @@ var api = {
 
 
 var initAjax = "";
-function initiator(newPath){
+function initiator(newPath, pushState){
   $("#template-view").css({"overflow":""});
   $("body").css({"overflow":"inherit"});
 
-  if(initAjax != ""){ // Delete last template Ajax call if exists
+  // Delete last template Ajax call if exists
+  if (initAjax != "") { 
     initAjax.abort();
+  }
+
+  if (pushState) {
+      history.pushState(null, null, document.location.pathname + '#' + newPath);
   }
 
   var pathsplit   = newPath || window.location.hash.split("#")[1] || "";
@@ -702,8 +704,7 @@ function initiator(newPath){
                           $("#template-view").append($.parseHTML(response, null, true));
                           $("#template-view").css({"display":"block"});
                           $("woot-click").off('click').on('click', function(){
-                            initiator($(this).attr("href"));
-                            history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
+                            initiator($(this).attr("href"), true);
                           });
                         },
               error     : function( request, status, error ) {}
@@ -849,7 +850,7 @@ var controller = {
 
       $("#signup-item-input-email").focusout(function(){
           var data = { email: $("#signup-item-input-email").val() }
-          api.post("/account/validate_email/", data, function(response){
+          api.post("/account/signup/validate_email/", data, function(response){
               $(".message-email").css({"display":"block"});
               console.log(response);
               if(response['ok']){
@@ -908,7 +909,7 @@ var controller = {
                         var data = $(this).data();
 
                         // validate address and show signable blocks
-                        api.post("/account/validate_addr/", data, function(response){
+                        api.post("/account/signup/address/", data, function(response){
                             $("#signup-address-result").hide();
                             $("#signup-address-block-result").css({"display":"block"});
                             $("#signup-address-block-result ul").html("");
@@ -1290,8 +1291,7 @@ var controller = {
            console.log("gotcha!");
            var gid = response['gid'].toString();
            var cordovaLocation = '/gathering_detail?gid=' + gid
-           initiator(cordovaLocation);
-           history.pushState(null, null, document.location.pathname + '#' + cordovaLocation);
+           initiator(cordovaLocation, true);
         } else {
             console.log("fail");
             // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
@@ -2105,8 +2105,7 @@ var controller = {
                                 if(response){
                                   $("#posting-wrapper").append($.parseHTML(response));
                                   $("woot-click").off('click').on('click',function(){
-                                    initiator($(this).attr("href"));
-                                    history.pushState(null, null, document.location.pathname + '#' + $(this).attr("href"));
+                                    initiator($(this).attr("href"), true);
                                   });
                                   overlapHandler();
                                   likeHandler();
