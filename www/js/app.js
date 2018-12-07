@@ -484,12 +484,6 @@ if (server_toggle){
   viewConfig["/login"]["template"] = serverParentURL + "/account/login/";
   viewConfig["/login/intro"]["template"] = serverParentURL + "/misc/intro";
   viewConfig["/signup"]["template"] = serverParentURL + "/account/signup/";
-  viewConfig["/signup/1"]["template"] = serverParentURL + "/account/signup/address";
-  viewConfig["/signup/2"]["template"] = serverParentURL + "/account/signup/register";
-  viewConfig["/signup/3"]["template"] = serverParentURL + "/account/signup/info";
-  viewConfig["/signup/4"]["template"] = serverParentURL + "/account/signup/block_select";
-  viewConfig["/signup/5"]["template"] = serverParentURL + "/account/signup/verify";
-  viewConfig["/signup/6"]["template"] = serverParentURL + "/account/to_be_approved";
 
   viewConfig["/message"]["template"] = serverParentURL + "/misc/message_list";     
     
