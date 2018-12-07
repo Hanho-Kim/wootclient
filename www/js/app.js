@@ -397,7 +397,7 @@ var viewConfig = {
     "template"    : serverParentURL + "/board/detail",
     "header"      : "./header/board.posting.html"
   },
-  "/board/posting/detail/like" : {
+  "/post_users_liking" : {
     "controller"  : "voidCtrl",
     "template"    : serverParentURL + "/board/like",
     "header"      : "./header/board.posting.like.html"
@@ -497,6 +497,7 @@ if (server_toggle){
   viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
   viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
   viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
+  viewConfig["/post_users_liking"]["template"] = serverParentURL + "/post_users_liking";
     
   viewConfig["/account/more"]["template"] = serverParentURL + "/account/more";
   viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";
@@ -1293,10 +1294,7 @@ var controller = {
         }
     });
 
-    $('form.gathering_write').on('submit', writeGatheringHandler);
-    $('#write-gathering-submit').click(function() {
-        $('form.gathering_write').submit();
-    });
+    $('form.gathering_write').off('submit').on('submit', writeGatheringHandler);
       
 //     $('#write-gathering-submit').click(function() {
 //         var url = $(this).parents("form").attr("action");
@@ -1930,7 +1928,7 @@ var controller = {
             easing: 'easeInOutQuart'
         });
 
-        renderTemplate(serverParentURL + "/misc/comment_list_iframe?pid=" + pid, "#posting-overlap-view", function(){
+            renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + pid, "#posting-overlap-view", function(){
 
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
@@ -2005,7 +2003,7 @@ var controller = {
             $(".posting-comment").removeClass("selected");
             $("#posting-comment-" + cid).addClass("selected");
 
-            renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
+            renderTemplate(serverParentURL + "/comment/comment.recomment?cid=" + cid,"#footer-input",function(){
 
               $("#footer-textarea").focus();
 
@@ -2060,7 +2058,7 @@ var controller = {
             duration: 300,
             easing: 'easeInOutQuart'
         });
-        renderTemplate(serverParentURL + "/board/overlap.like?pid=" + pid,"#posting-overlap-view",function(){
+            renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
           // Event Handler
           $(".overlap-close").off('click').on('click',function(){
             anime({
