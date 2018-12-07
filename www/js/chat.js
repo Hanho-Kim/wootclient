@@ -598,7 +598,6 @@ function displayMessage(key, username, uid, text, avatarUrl, avatarColor, time, 
 
     if(uid == chatConfig.user.uid){
         $(div).addClass("chat-item-my");
-        messageInputElement.focus();
     }
 
   }

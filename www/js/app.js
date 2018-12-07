@@ -407,7 +407,7 @@ var viewConfig = {
     "header"      : "./header/board.posting.like.html"
   },
   "/gathering" : {
-    "controller"  : "voidCtrl",
+    "controller"  : "gatheringDiscoverCtrl",
     "template"    : serverParentURL + "/gathering/discover",
     "header"      : "./header/gathering.html"
   },
@@ -621,7 +621,13 @@ function initiator(newPath){
   if(pathsplit){
     pathname  = pathsplit.split("?")[0];
   }else{
-    pathname  = "/index";
+    var pathHtmlSplit = window.location.href.split("/");
+    var pathHtml      = pathHtmlSplit[pathHtmlSplit.length -1]
+    if(pathHtml == "login.html"){
+      pathname  = "/login";
+    }else{
+      pathname  = "/index";
+    }
   }
 
   var pathParent  = pathname.split("/")[1];
@@ -842,14 +848,17 @@ var controller = {
       e.preventDefault();
       $.ajax({
 
-            url       : serverParentURL + "/api/v1/post/authentification",
+            url       : serverParentURL + "/account/login",
             type      : 'POST',
             data      : $("#login-form").serialize(),
             xhrFields : { withCredentials: true },
             success   : function( response ) {
 
-                        if(response == "1"){
+                        if(response["ok"]){
                           window.location.replace('./index.html');
+                        }else{
+                          $(".login-alert").css({"display":"block"});
+                          $(".login-alert span").text(response["message"]);
                         }
 
                       },
@@ -1018,6 +1027,12 @@ var controller = {
         $(".signup-confirm-form-wrapper .post").css({"display":"none"});
         $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
       }
+
+      // Close
+      $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
+        $(".signup-confirm-form-wrapper").css({"display":"none"});
+      });
+
     });
 
     return;
@@ -1377,6 +1392,131 @@ var controller = {
   writePostingCtrl : function(){
 
     $("#footer").css({"display":"none"});
+
+    var woottagArray = []; // Post this array to server-side
+    var woottagMaxLength;
+    var woottagMaxNumber;
+
+    var woottag = {
+
+      init : function( maxLength, maxNumber ){
+
+        // Configuration
+        woottagMaxLength = maxLength || 10;
+        woottagMaxNumber = maxNumber || 10;
+
+        $("#woot-tag-wrapper").click(function(){
+          $("#woot-tag-input").focus(); 
+        });
+
+
+        // Space-add Event Handler
+        $("#woot-tag-input").bind("input",function(){
+
+          let str = $(this).val();
+
+          if( str.indexOf(" ") == -1 && str.length > woottagMaxLength ){
+
+            $(this).val(str.slice( 0, woottagMaxLength ));
+            woottag.errorHandler.maxLengthExceed();
+
+          }
+
+          if(str.indexOf(" ") != -1){
+
+            str = str.replace(" ","");
+            woottag.createTag(str);
+
+            $(this).val("");
+
+          }
+
+        })
+
+
+        // Click-add Event Handler
+        $("#woot-tag-recommendation").find(".woot-tag").click(function(){
+
+          let str = $(this).text().replace(/\s/g,"").replace("#","");
+
+          woottag.createTag(str);
+
+        });
+
+
+      },
+
+      createTag : function(str){
+
+        let duplicate   = ( woottagArray.indexOf("#" + str) > -1 );
+        let empty     = ( str == "" );
+
+        // Create Tag
+        if( !duplicate && !empty ) {
+
+          if( woottagArray.length == woottagMaxNumber ){
+
+            woottag.errorHandler.maxNumberExceed();
+
+          } else {
+
+            woottagArray.push("#" + str);
+
+            $("#woot-tag-wrapper").find(".woot-tag").remove();
+            $.each(woottagArray.slice().reverse(),function(index, value){
+              var reverseIndex = parseInt(woottagArray.length -1 - index);
+              $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
+            });
+
+            $("#woot-tag-wrapper").find("input[type='hidden']").val(String(woottagArray).replace(/,/g," "));
+            
+            var deleteHandler = function(){
+              $("#woot-tag-wrapper").find(".woot-tag").off("click").on("click",function(){
+
+                woottagArray.splice($(this).data("index"),1);
+
+                $("#woot-tag-wrapper").find(".woot-tag").remove();
+                $.each(woottagArray.slice().reverse(),function(index, value){
+                  var reverseIndex = parseInt(woottagArray.length -1 - index);
+                  $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
+                });
+
+                $("#woot-tag-wrapper").find("input[type='hidden']").val(String(woottagArray).replace(/,/g," "));
+
+                return deleteHandler();
+
+              });
+            }
+
+            deleteHandler();
+
+          }
+
+        }
+
+      },
+
+      errorHandler : {
+
+        /* When length of tag is exceeded maximum length */
+        maxLengthExceed : function(){
+
+          console.log("Maximum tag length exceeded");
+
+        },
+
+        /* When count of tags is exceeded maximum number */
+        maxNumberExceed : function(){
+
+          console.log("Maximum tag number exceeded");
+
+        }
+
+      }
+
+    }
+
+    woottag.init(20, 5);
 
     /* Global */
 
@@ -2383,6 +2523,24 @@ var controller = {
     return;
   },
 
+  /* Gathering Discover Ctrl */
+  gatheringDiscoverCtrl : function(){
+    
+    // Gathering Banner Close
+    var banner_date = new Date();
+
+    $(".gathering-banner .close-button").off('click').on('click',function(){
+      $(".gathering-banner").css({"display":"none"});
+      setCookie("gathering_banner_close",banner_date.getDate(),1);
+    });
+
+    if(getCookie("gathering_banner_close") == banner_date.getDate()){
+      $(".gathering-banner").css({"display":"none"});
+    }
+
+    return;
+  },
+
   /* Gathering Ctrl */
   gatheringCtrl : function(){
 
@@ -2716,33 +2874,35 @@ $(document).ready(function(){
     // Cordova-plugin-cache-clear : Cache Clear
     window.CacheClear(function(){}, function(){});
 
+    // Android Back Button Overwrite
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+    document.addEventListener("backbutton", function (e){
+
+        e.preventDefault();
+        if (exitApp) {
+
+          clearInterval(intval) 
+          (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
+
+        }else {
+
+          if($("#posting-overlap-view").hasClass("activated")){
+            $(".overlap-close").click();
+          }else{
+            exitApp = true
+            navigator.app.backHistory();            
+          }
+
+        } 
+
+    }, false);
+
   });
-
-  // Android Back Button Overwrite
-  var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
-  document.addEventListener("backbutton", function (e){
-
-      e.preventDefault();
-      if (exitApp) {
-
-        clearInterval(intval) 
-        (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-
-      }else {
-
-        if($("#posting-overlap-view").hasClass("activated")){
-          $(".overlap-close").click();
-        }else{
-          exitApp = true
-          navigator.app.backHistory();            
-        }
-
-      } 
-
-  }, false);
 
 });
 
 window.addEventListener('popstate', function(event) {
   initiator();
 });
+
+
