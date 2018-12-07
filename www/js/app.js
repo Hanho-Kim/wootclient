@@ -1952,7 +1952,7 @@ var controller = {
               text : $("#footer-textarea").val()
             };
 
-            api.post("{% url 'comment:write' %}",data,function(){
+            api.post("/comment/write/",data,function(){
               location.reload(true);
             });
 
