@@ -39,7 +39,7 @@ function chatInit() {
     }
 
     var gid = pathParamsJson["gid"];
-    var apiPathConfigInfo = serverParentURL + "chat/gathering_config_info/";
+    var apiPathConfigInfo = serverParentURL + "/chat/gathering_config_info/";
     var apiPathInfo = serverParentURL + "/chat/gathering_info/";
 
     if (!gid) {
@@ -184,7 +184,7 @@ function refreshRoomInfo(url) {
         $(".chat-title").text(fields.title);
         $(".chat-date").text(fields.datetime);
         $(".chat-place").text(fields.address);
-        $(".chat-description").html("").append($.parseHTML(roomInfos.description));
+        $(".chat-description").html("").append($.parseHTML(fields.content));
     });
 }
 
