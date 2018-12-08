@@ -218,10 +218,10 @@ function infiniteScroll() {
 
 
 function signIn() {
-  //firebase.auth().signInAnonymously();
-  firebase.auth().signInWithEmailAndPassword(
-    chatConfig.firebase.authEmail,
-    chatConfig.firebase.authKey);
+    //firebase.auth().signInAnonymously();
+    firebase.auth().signInWithEmailAndPassword(
+        chatConfig.firebase.authEmail,
+        chatConfig.firebase.authKey);
 }
 
 function signOut() {
@@ -229,7 +229,7 @@ function signOut() {
 }
 
 function initFirebaseAuth() {
-  firebase.auth().onAuthStateChanged(authStateObserver);
+    firebase.auth().onAuthStateChanged(authStateObserver);
 }
 
 // Returns true if a user is signed-in.
@@ -238,22 +238,22 @@ function isUserSignedIn() {
 }
 
 function trimDate(date) {
-  var date      = new Date(date);
-  var week      = new Array('일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일');
-  var weeklabel = date.getDay();
-  var dateLocal = date.toLocaleString('ko-KR');
+    var date = new Date(date);
+    var week = new Array('일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일');
+    var weeklabel = date.getDay();
+    var dateLocal = date.toLocaleString('ko-KR');
 
-  var splited = dateLocal.split(" 오전 ");
-  if(splited.length > 1){
-    splited[0] = splited[0] + " " + week[weeklabel];
-    splited[1] = "오전 " + String(splited[1]).slice(0,-3);
-    return splited;
-  } else {
-    splited = dateLocal.split(" 오후 ");
-    splited[0] = splited[0] + " " + week[weeklabel];
-    splited[1] = "오후 " + String(splited[1]).slice(0,-3);
-    return splited;
-  }
+    var splited = dateLocal.split(" 오전 ");
+    if (splited.length > 1) {
+        splited[0] = splited[0] + " " + week[weeklabel];
+        splited[1] = "오전 " + String(splited[1]).slice(0, -3);
+        return splited;
+    } else {
+        splited = dateLocal.split(" 오후 ");
+        splited[0] = splited[0] + " " + week[weeklabel];
+        splited[1] = "오후 " + String(splited[1]).slice(0, -3);
+        return splited;
+    }
 }
 
 // Loads chat messages history and listens for upcoming ones.
@@ -269,7 +269,7 @@ function loadMessages() {
                 $.parseHTML(
                     '<div class="chat-item chat-item-notification-time">' +
                     '<div class="chat-notification">' +
-                        '<span>' + trimDate(data.time)[0] + '</span>' +
+                    '<span>' + trimDate(data.time)[0] + '</span>' +
                     '</div>' +
                     '</div>'));
         }
@@ -287,182 +287,175 @@ function loadMessages() {
 }
 
 
-function loadMessagesOnceInfiniteScroll( keyFrom, count ) {
-  var callback = function(snap) {
-    var array = snap.val();
-    var divWrapper = "<div></div>";
-    $.each(Object.keys(array),function(index,key){
-      var data = array[key];
-      if(index == 0){
-        if(infiniteScrollKey == key){
-          infiniteScrollEnd = true;
-        }
-        infiniteScrollKey = key;
-      }
+function loadMessagesOnceInfiniteScroll(keyFrom, count) {
+    var callback = function (snap) {
+        var array = snap.val();
+        var divWrapper = "<div></div>";
+        $.each(Object.keys(array), function (index, key) {
+            var data = array[key];
+            if (index == 0) {
+                if (infiniteScrollKey == key) {
+                    infiniteScrollEnd = true;
+                }
+                infiniteScrollKey = key;
+            }
+            // Chat-notification : Time
+            if (!lastChatDataTimeInfiniteScroll) {
+                lastChatDataTimeInfiniteScroll = $(".chat-item-notification-time:first-child").find("span").text();
+            }
+            $(".chat-item-notification-time:first-child").remove();
+            if (trimDate(data.time)[0] != trimDate(lastChatDataTimeInfiniteScroll)[0]) {
+                $(divWrapper).append($.parseHTML('<div class="chat-item chat-item-notification-time">' +
+                    '<div class="chat-notification">' +
+                    '<span>' + trimDate(data.time)[0] + '</span>' +
+                    '</div>' +
+                    '</div>'));
+            }
+            lastChatDataTimeInfiniteScroll = data.time;
+            divWrapper = $(divWrapper).append(
+                displayMessage(key, data.name, data.uid, data.text,
+                    data.avatarUrl, data.avatarColor, data.time,
+                    data.notification, data.imageUrl, false));
+        }); // $.each ends
 
-      // Chat-notification : Time
-      if(!lastChatDataTimeInfiniteScroll){
-        lastChatDataTimeInfiniteScroll = $(".chat-item-notification-time:first-child").find("span").text();
-      }
-      $(".chat-item-notification-time:first-child").remove();
-      if(trimDate(data.time)[0] != trimDate(lastChatDataTimeInfiniteScroll)[0]){
-        $(divWrapper).append($.parseHTML('<div class="chat-item chat-item-notification-time">' +
-                                            '<div class="chat-notification">' +
-                                                '<span>' + trimDate(data.time)[0] + '</span>' +
-                                            '</div>' +
-                                          '</div>'));
-      }
-
-      lastChatDataTimeInfiniteScroll = data.time;
-      divWrapper = $(divWrapper).append(
-        displayMessage(key, data.name, data.uid, data.text,
-                       data.avatarUrl, data.avatarColor, data.time,
-                       data.notification, data.imageUrl, false));
-    }); // $.each ends
-    
-    $(messageListElement).prepend(divWrapper);
-
-    setTimeout(function () {
-      $(divWrapper).find("chat-item").add('visible')}, 1);
-    setTimeout(function (){
-      $("#chat-room-scroll").scrollTop($(divWrapper).height() - 150);}, 100);
-  };
-
-  firebase.database().ref(chatConfig.firebase.instancePath)
-  .orderByKey().endAt(keyFrom).limitToLast(count).once('value').then(callback);
+        $(messageListElement).prepend(divWrapper);
+        setTimeout(function () {
+            $(divWrapper).find("chat-item").add('visible')
+        }, 1);
+        setTimeout(function () {
+            $("#chat-room-scroll").scrollTop($(divWrapper).height() - 150);
+        }, 100);
+    };
+    firebase.database().ref(chatConfig.firebase.instancePath)
+        .orderByKey().endAt(keyFrom).limitToLast(count).once('value').then(callback);
 
 }
 
 // Saves a new message on the Firebase DB.
 function saveMessage(messageText) {
-  // TODO 8: Push a new message to Firebase.
-  var time = new Date();
-  var fields = chatConfig.profile.fields;
-  return firebase.database().ref(chatConfig.firebase.instancePath).push({
-    name          : fields.nick || "noname",
-    uid           : fields.user_id,
-    text          : messageText,
-    avatarUrl     : fields.profile_image_url,
-    avatarColor   : "#26de81",
-    time          : String(time),
-    notification  : false
-  }).catch(function(error) {
-    console.error('Error writing new message to Firebase Database', error);
-  });
+    // TODO 8: Push a new message to Firebase.
+    var time = new Date();
+    var fields = chatConfig.profile.fields;
+    return firebase.database().ref(chatConfig.firebase.instancePath).push({
+        name: fields.nick || "noname",
+        uid: fields.user_id,
+        text: messageText,
+        avatarUrl: fields.profile_image_url,
+        avatarColor: "#26de81",
+        time: String(time),
+        notification: false
+    }).catch(function (error) {
+        console.error('Error writing new message to Firebase Database', error);
+    });
 }
 
 // Saves a new message containing an image in Firebase.
 // This first saves the image in Firebase storage.
 function saveImageMessage(file) {
-  var time = new Date();
-  var fields = chatConfig.profile.fields;
-  firebase.database().ref(chatConfig.firebase.instancePath).push({
-    name          : fields.nick || "noname",
-    uid           : fields.user_id,
-    text          : "이미지 업로드중..",
-    avatarUrl     : fields.profile_image_url,
-    avatarColor: "#26de81",
-    time          : String(time),
-    notification  : false,
-    imageUrl      : ""
-  }).then(function(messageRef) {
-    // 2 - Upload the image to Cloud Storage.
-    var filePath = fields.user_id + '/' + messageRef.key + '/' + file.name;
-    return firebase.storage().ref(filePath).put(file).then(function(fileSnapshot) {
-      // 3 - Generate a public URL for the file.
-      return fileSnapshot.ref.getDownloadURL().then((url) => {
-        // 4 - Update the chat message placeholder with the image's URL.
-        return messageRef.update({
-          text    : "",
-          imageUrl: url,
-          storageUri: fileSnapshot.metadata.fullPath
+    var time = new Date();
+    var fields = chatConfig.profile.fields;
+    firebase.database().ref(chatConfig.firebase.instancePath).push({
+        name: fields.nick || "noname",
+        uid : fields.user_id,
+        text: "이미지 업로드중..",
+        avatarUrl   : fields.profile_image_url,
+        avatarColor : "#26de81",
+        time        : String(time),
+        notification: false,
+        imageUrl    : ""
+    }).then(function (messageRef) {
+        // 2 - Upload the image to Cloud Storage.
+        var filePath = fields.user_id + '/' + messageRef.key + '/' + file.name;
+        return firebase.storage().ref(filePath).put(file).then(function (fileSnapshot) {
+            // 3 - Generate a public URL for the file.
+            return fileSnapshot.ref.getDownloadURL().then((url) => {
+                // 4 - Update the chat message placeholder with the image's URL.
+                return messageRef.update({
+                    text: "",
+                    imageUrl: url,
+                    storageUri: fileSnapshot.metadata.fullPath
+                });
+            });
         });
-
-      });
-
+    }).catch(function (error) {
+        console.error('There was an error uploading a file to Cloud Storage:', error);
     });
-
-  }).catch(function(error) {
-    console.error('There was an error uploading a file to Cloud Storage:', error);
-  });
-
 }
 
 // Saves the messaging device token to the datastore.
 function saveMessagingDeviceToken() {
-  // TODO 10: Save the device token in the realtime datastore
+    // TODO 10: Save the device token in the realtime datastore
 }
 
 // Requests permissions to show notifications.
 function requestNotificationsPermissions() {
-  // TODO 11: Request permissions to send notifications.
+    // TODO 11: Request permissions to send notifications.
 }
 
 // Triggered when a file is selected via the media picker.
 function onMediaFileSelected(event) {
-  event.preventDefault();
-  var file = event.target.files[0];
+    event.preventDefault();
+    var file = event.target.files[0];
 
-  // Clear the selection in the file picker input.
-  imageFormElement.reset();
+    // Clear the selection in the file picker input.
+    imageFormElement.reset();
 
-  // Check if the file is an image.
-  if (!file.type.match('image.*')) {
-    var data = {
-      message: 'You can only share images',
-      timeout: 2000
-    };
-    signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
-    return;
-  }
-  // Check if the user is signed-in
-  if (checkSignedInWithMessage()) {
-    saveImageMessage(file);
-  }
+    // Check if the file is an image.
+    if (!file.type.match('image.*')) {
+        var data = {
+            message: 'You can only share images',
+            timeout: 2000
+        };
+        signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
+        return;
+    }
+    // Check if the user is signed-in
+    if (checkSignedInWithMessage()) {
+        saveImageMessage(file);
+    }
 }
 
 // Triggered when the send new message form is submitted.
 function onMessageFormSubmit(e) {
-  e.preventDefault();
-  // Check that the user entered a message and is signed in.
-  if (messageInputElement.value && checkSignedInWithMessage()) {
-    saveMessage(messageInputElement.value).then(function() {
-      // Clear message text field and re-enable the SEND button.
-      resetMaterialTextfield(messageInputElement);
-      toggleButton();
-    });
-  }
+    e.preventDefault();
+    // Check that the user entered a message and is signed in.
+    if (messageInputElement.value && checkSignedInWithMessage()) {
+        saveMessage(messageInputElement.value).then(function () {
+            // Clear message text field and re-enable the SEND button.
+            resetMaterialTextfield(messageInputElement);
+            toggleButton();
+        });
+    }
 }
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
 function authStateObserver(user) {
-  if (user) {
-  } else {
-    // Make users always signed in
-    signIn();
-  }
+    if (user) {} else {
+        // Make users always signed in
+        signIn();
+    }
 }
 
 // Returns true if user is signed-in. Otherwise false and displays a message.
 function checkSignedInWithMessage() {
-  // Return true if the user is signed in Firebase
-  if (isUserSignedIn()) {
-    return true;
-  }
+    // Return true if the user is signed in Firebase
+    if (isUserSignedIn()) {
+        return true;
+    }
 
-  // Display a message to the user using a Toast.
-  var data = {
-    message: 'You must sign-in first',
-    timeout: 2000
-  };
-  signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
-  return false;
+    // Display a message to the user using a Toast.
+    var data = {
+        message: 'You must sign-in first',
+        timeout: 2000
+    };
+    signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
+    return false;
 }
 
 // Resets the given MaterialTextField.
 function resetMaterialTextfield(element) {
-  element.value = '';
-  //element.parentNode.MaterialTextfield.boundUpdateClassesHandler();
+    element.value = '';
+    //element.parentNode.MaterialTextfield.boundUpdateClassesHandler();
 }
 
 // Template for messages.
@@ -493,93 +486,101 @@ var NOTIFICATION_TEMPLATE =
 // A loading image URL.
 var LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif?a';
 
+
 // Displays a Message in the UI.
 function displayMessage(key, username, uid, text, avatarUrl,
-  avatarColor, time, notification, imageUrl, appendBool) {
+    avatarColor, time, notification, imageUrl, appendBool) {
 
-  var div = document.getElementById(key);
-  if (!div) { // Not Child_change
-    var container = document.createElement('div');
-    if(notification){
-      container.innerHTML = NOTIFICATION_TEMPLATE;
-    } else {
-      container.innerHTML = MESSAGE_TEMPLATE;
-    }
-    div = container.firstChild;
-    div.setAttribute('id', key);
-    if (appendBool) {
-      $(messageListElement).append(div);
-    }
-  }
-
-  // Set Username, Avatar, Time
-  if (notification) {
-    div.querySelector('.chat-notification span').textContent  = text;
-  } else {
-    div.querySelector('.username').textContent          = username;
-    div.querySelector('.avatar').style.backgroundImage  = 'url(' + avatarUrl + ')';
-    div.querySelector('.avatar').style.backgroundColor  = avatarColor;
-    div.querySelector('.time').textContent              = trimDate(time)[1];
-    div.setAttribute('data-time', time);
-
-    // Add Message
-    var messageElement = div.querySelector('.message-cloud p');
-    var imageElement   = div.querySelector('.message-cloud .message-image');
-    if (text) { // If the message is text.
-      messageElement.textContent = text;
-      // Replace all line breaks by <br>.
-      messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
-    } else if (imageUrl) { // If the message is an image.
-      var image = document.createElement('img');
-      image.addEventListener('load', function() {
-        if(appendBool){
-          $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+    var div = document.getElementById(key);
+    if (!div) { // Not Child_change
+        var container = document.createElement('div');
+        if (notification) {
+            container.innerHTML = NOTIFICATION_TEMPLATE;
+        } else {
+            container.innerHTML = MESSAGE_TEMPLATE;
         }
-      });
-      image.src = imageUrl + '&' + new Date().getTime();
-      $(messageElement).remove();
-      imageElement.innerHTML = '';
-      $(imageElement).append(image);
-      $(imageElement).off('click').on('click',function(){
-        $("#chat-room-image").css({"display":"block","background-image":"url('" + image.src +"')"});
-        $("#chat-room-image .chat-room-image-close").off('click').on('click',function(){
-          $("#chat-room-image").css({"display":"none"});
-        });
-      });
+        div = container.firstChild;
+        div.setAttribute('id', key);
+        if (appendBool) {
+            $(messageListElement).append(div);
+        }
     }
 
-    if (uid == chatConfig.profile.fields.user_id) {
-        $(div).addClass("chat-item-my");
-        messageInputElement.focus();
-    }
-  }
+    // Set Username, Avatar, Time
+    if (notification) {
+        div.querySelector('.chat-notification span').textContent = text;
+    } else {
+        div.querySelector('.username').textContent = username;
+        div.querySelector('.avatar').style.backgroundImage = 'url(' + avatarUrl + ')';
+        div.querySelector('.avatar').style.backgroundColor = avatarColor;
+        div.querySelector('.time').textContent = trimDate(time)[1];
+        div.setAttribute('data-time', time);
 
-  // Show the card fading-in and scroll to view the new message.
-  setTimeout(function() {div.classList.add('visible')}, 1);
-  if (appendBool) {
-    $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
-  }
-  
-  return div;
+        // Add Message
+        var messageElement = div.querySelector('.message-cloud p');
+        var imageElement = div.querySelector('.message-cloud .message-image');
+        if (text) { // If the message is text.
+            messageElement.textContent = text;
+            // Replace all line breaks by <br>.
+            messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
+        } else if (imageUrl) { // If the message is an image.
+            var image = document.createElement('img');
+            image.addEventListener('load', function () {
+                if (appendBool) {
+                    $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+                }
+            });
+            image.src = imageUrl + '&' + new Date().getTime();
+            $(messageElement).remove();
+            imageElement.innerHTML = '';
+            $(imageElement).append(image);
+            $(imageElement).off('click').on('click', function () {
+                $("#chat-room-image").css({
+                    "display": "block",
+                    "background-image": "url('" + image.src + "')"
+                });
+                $("#chat-room-image .chat-room-image-close").off('click').on('click', function () {
+                    $("#chat-room-image").css({
+                        "display": "none"
+                    });
+                });
+            });
+        }
+
+        if (uid == chatConfig.profile.fields.user_id) {
+            $(div).addClass("chat-item-my");
+            messageInputElement.focus();
+        }
+    }
+
+    // Show the card fading-in and scroll to view the new message.
+    setTimeout(function () {
+        div.classList.add('visible')
+    }, 1);
+    if (appendBool) {
+        $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+    }
+
+    return div;
 }
 
 // Enables or disables the submit button depending on the values of the input
 // fields.
 function toggleButton() {
-  if (messageInputElement.value) {
-    submitButtonElement.removeAttribute('disabled');
-  } else {
-    submitButtonElement.setAttribute('disabled', 'true');
-  }
+    if (messageInputElement.value) {
+        submitButtonElement.removeAttribute('disabled');
+    } else {
+        submitButtonElement.setAttribute('disabled', 'true');
+    }
 }
 
 // Checks that the Firebase SDK has been correctly setup and configured.
 function checkSetup() {
-  if (!window.firebase || !(firebase.app instanceof Function) || !firebase.app().options) {
-    window.alert('You have not configured and imported the Firebase SDK. ' +
-        'Make sure you go through the codelab setup instructions and make ' +
-        'sure you are running the codelab using `firebase serve`');
-  }
+    if (!window.firebase || !(firebase.app instanceof Function) || !firebase.app().options) {
+        window.alert('You have not configured and imported the Firebase SDK. ' +
+            'Make sure you go through the codelab setup instructions and make ' +
+            'sure you are running the codelab using `firebase serve`');
+    }
 }
 
 // Checks that Firebase has been imported.
@@ -606,14 +607,14 @@ messageInputElement.addEventListener('keyup', toggleButton);
 messageInputElement.addEventListener('change', toggleButton);
 
 // Events for image upload.
-imageButtonElement.addEventListener('click', function(e) {
-  e.preventDefault();
-  mediaCaptureElement.click();
+imageButtonElement.addEventListener('click', function (e) {
+    e.preventDefault();
+    mediaCaptureElement.click();
 });
 mediaCaptureElement.addEventListener('change', onMediaFileSelected);
 
 chatInit();
 
 $("textarea").on('keydown keyup', function () {
-  $(this).height(1).height( $(this).prop('scrollHeight') );  
+    $(this).height(1).height($(this).prop('scrollHeight'));
 });
