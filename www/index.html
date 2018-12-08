@@ -19,25 +19,6 @@
 		<script src="./lib/jquery/jquery-ui-1.12.1.min.js"></script>
 		<link rel="stylesheet" href="./lib/jquery/jquery-ui-1.12.1.min.css">
 
-		<!-- Dealing with CSRF token is complicated
-			especially, when you have two domains at hand.
-
-			https://docs.djangoproject.com/en/2.1/ref/csrf/
-			This document didn't help.
-
-			With xhrFields: { withCredentials: true }, the problem was solved
-			transparently. withCredentials means that crendential cookes are 
-			kept. The exact mechanism should be figured out later!-->
-		<script>
-		function csrfSafeMethod(method) {
-			// these HTTP methods do not require CSRF protection
-			return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-		}
-		$.ajaxSetup({
-			xhrFields: { withCredentials: true },
-		});
-		</script>
-
 		<!-- bootstrap -->
 		<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 		<script src="./lib/bootstrap/js/bootstrap.min.js"></script>
