@@ -23,6 +23,8 @@ var lastChatDataTimeInfiniteScroll = "";
 var infiniteScrollKey;
 var infiniteScrollEnd = false;
 
+var serverParentURL = "http://derek-kim.com:8000";
+// var serverParentURL = "http://127.0.0.1:8000";
 
 function chatInit() {
     var pathParams = location.search.replace("?", "") || "";
@@ -37,8 +39,8 @@ function chatInit() {
     }
 
     var gid = pathParamsJson["gid"];
-    var apiPathConfigInfo = "http://127.0.0.1:8000/chat/gathering_config_info/";
-    var apiPathInfo = "http://127.0.0.1:8000/chat/gathering_info/";
+    var apiPathConfigInfo = serverParentURL + "chat/gathering_config_info/";
+    var apiPathInfo = serverParentURL + "/chat/gathering_info/";
 
     if (!gid) {
         var elm = '<div id="popup-message">' +
