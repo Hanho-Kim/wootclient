@@ -1928,7 +1928,7 @@ var controller = {
             easing: 'easeInOutQuart'
         });
 
-            renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + pid, "#posting-overlap-view", function(){
+        renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + pid, "#posting-overlap-view", function(){
 
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
@@ -1946,25 +1946,27 @@ var controller = {
 
           // Post API: Comment - Default
           $("#footer-textarea-submit").off('click').on('click',function(){
-            var data = {
-              text : $("#footer-textarea").val()
-            };
+              var data = {
+                    content : $("#footer-textarea").val(),
+                    content_type : $('[name="content_type"]').val(),
+                    content_id : $('[name="content_id"]').val()
+                  };
 
-            api.post("/comment/write/",data,function(){
-              location.reload(true);
-            });
+              api.post("/comment/write/",data,function(){
+                location.reload(true);
+              });
 
           });
 
           // Comment Edit Button
           $(".comment-edit-button").off('click').on('click',function(){
-            var cid = $(this).data("cid");
+            var cid = $(this).closest(".posting-comment").data("cid");
 
             $(".posting-comment").removeClass("selected");
             $("#posting-comment-" + cid).addClass("selected");
 
-            renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
-
+            // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
+            $(function(){
               $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
               $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
 
@@ -1982,29 +1984,54 @@ var controller = {
 
                 var data = {
                   cid : cid,
-                  text : $("#footer-textarea").val()
+                  content : $("#footer-textarea").val(),
+                  content_type : $('[name="content_type"]').val(),
+                  content_id : $('[name="content_id"]').val()
                 };
-
-                api.post("/api/v1/post/comment",data,function(){
+                // url for edit needed
+                api.post("/comment/write/",data,function(){
                   location.reload(true);
                 });
-
+            
               });
-
+            
             });
 
           });
+          // Comment Delete Button
+          $('.comment-delete-button').off('click').on('click',function(){
+              var yes = confirm("정말 삭제하시겠습니까?");
+              if (yes === false){
+                  return;  
+              }
+              
+              var comment = $(this).closest(".posting-comment");
+              var cid = $(this).closest(".posting-comment").data('cid');
+              // var comment_count = $("");
+              $.get('/comment/delete/' + cid + '/',
+                  {},
+                  function(data){
+                      console.log(data['msg']);
+                      if(data['status'] == 'ok'){
+                          comment.hide();
+                          // var previous_count = parseInt(comment_count.text()) - 1;
+                          // comment_count.text(previous_count);
+                      }
+                  }
+              );
+          });
+
 
 
           // Comment Recomment Button
           $(".recomment-button").off('click').on('click',function(){
-            var cid = $(this).data("cid");
+            var cid = $(this).closest(".posting-comment").data("cid");
 
             $(".posting-comment").removeClass("selected");
             $("#posting-comment-" + cid).addClass("selected");
 
-            renderTemplate(serverParentURL + "/comment/comment.recomment?cid=" + cid,"#footer-input",function(){
-
+            // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
+            $(function() {
               $("#footer-textarea").focus();
 
               $("#footer-textarea").on('keydown keyup', function () {
@@ -2018,11 +2045,11 @@ var controller = {
               // Post API: Comment
               $("#footer-textarea-submit").off('click').on('click',function(){
                 var data = {
-                  parentCid : cid,
-                  text : $("#footer-textarea").val()
+                  content : $("#footer-textarea").val(),
+                  comment_id : cid,
                 };
 
-                api.post("/api/v1/post/recomment",data,function(){
+                api.post("/comment/replycomment_write/" + cid + '/', data,function(){
                   location.reload(true);
                 });
 
@@ -2058,7 +2085,8 @@ var controller = {
             duration: 300,
             easing: 'easeInOutQuart'
         });
-            renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
+        renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
+
           // Event Handler
           $(".overlap-close").off('click').on('click',function(){
             anime({
@@ -2173,13 +2201,13 @@ var controller = {
 
     // Comment Edit Button
     $(".comment-edit-button").off('click').on('click',function(){
-      var cid = $(this).data("cid");
+      var cid = $(this).closest(".posting-comment").data("cid");
 
       $(".posting-comment").removeClass("selected");
       $("#posting-comment-" + cid).addClass("selected");
 
-      renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
-
+      // renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
+      $(function() {
         $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
         $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
 
@@ -2195,14 +2223,16 @@ var controller = {
         // Post API: Comment
         $("#footer-textarea-submit").off('click').on('click',function(){
 
-          var data = {
-            cid : cid,
-            text : $("#footer-textarea").val()
-          };
-
-          api.post("/api/v1/post/comment",data,function(){
-            location.reload(true);
-          });
+            var data = {
+              parentCid : cid,
+              content : $("#footer-textarea").val(),
+              content_type : $('[name="content_type"]').val(),
+              content_id : $('[name="content_id"]').val()
+            };
+            // url for edit needed
+            api.post("/comment/write/",data,function(){
+              location.reload(true);
+            });
 
         });
 
@@ -2213,13 +2243,13 @@ var controller = {
 
     // Comment Recomment Button
     $(".recomment-button").off('click').on('click',function(){
-      var cid = $(this).data("cid");
+      var cid = $(this).closest(".posting-comment").data("cid");
 
       $(".posting-comment").removeClass("selected");
       $("#posting-comment-" + cid).addClass("selected");
 
-      renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
-
+      // renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
+      $(function() {
         $("#footer-textarea").focus();
 
         $("#footer-textarea").on('keydown keyup', function () {
@@ -2232,14 +2262,14 @@ var controller = {
 
         // Post API: Comment
         $("#footer-textarea-submit").off('click').on('click',function(){
-          var data = {
-            parentCid : cid,
-            text : $("#footer-textarea").val()
-          };
+            var data = {
+              content : $("#footer-textarea").val(),
+              comment_id : cid
+            };
 
-          api.post("/api/v1/post/recomment",data,function(){
-            location.reload(true);
-          });
+            api.post("/comment/replycomment_write/" + cid + '/', data,function(){
+              location.reload(true);
+            });
 
         });
 
