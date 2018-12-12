@@ -15,6 +15,23 @@
  */
 'use strict';
 
+// TODO: 마지막 대화 시간 업데이트
+// ex) serverParentURL + "/gathering_last_chat_update/<gathering_id>/"
+// 서버의 부담을 줄이기 위하여 last_updated_time 등..변수 하나를 두어서  마지막 업데이트 시간 후 
+// 5분? 이내에는 다시 업데이트 하지 않도록 한다
+
+// last_updated_time = null; // global variable
+// function last_chat_update() {
+//     var now = some_get_current_time_function..()
+//     if (last_updated_time && (now - 5 분) < last_updated_time) {
+//         // skip
+//         return;
+//     }
+//     // update to this url serverParentURL + "/gathering_last_chat_update/<gathering_id>/"
+//     last_updated_time = now;
+// }
+// $('some element').on('some keyboard input submit event, last_chat_update);
+
 // refer to https: //github.com/firebase/friendlychat-web
 
 var chatConfig;
