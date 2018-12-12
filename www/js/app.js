@@ -1037,13 +1037,13 @@ var controller = {
 
     // Sticker Change
     $(".write-gathering-sticker").off('click').on('click',function(){
-      var stickerID = $(this).data("sticker");
-      $("#write-gathering-input-sticker").val(stickerID);
+      var stickerID = $(this).data("code");
+      $("#write-gathering-input-sticker").val(code);
 
       $(".write-gathering-sticker").removeClass("selected");
       $(this).addClass("selected");
     });
-
+      
     // Number Restriction
     $(".write-gathering-input-number").change(function(){
       $(this).val(Math.abs(parseInt($(this).val())));
@@ -1276,11 +1276,6 @@ var controller = {
     });
 
     // Gathering Submit  
-    $('.write-gathering-sticker').click(function() { // 카테고리 선택시
-        var code = $(this).data('code');
-        $('#write-gathering-input-sticker').val(code); // 인풋필드에 넣고
-    }); 
-
     var writeGatheringHandler = makeAjaxSubmitHandler(function(response){
         if (response['ok']){
            console.log("gotcha!");
@@ -1950,10 +1945,10 @@ var controller = {
                     content : $("#footer-textarea").val(),
                     content_type : $('[name="content_type"]').val(),
                     content_id : $('[name="content_id"]').val()
-                  };
+              };
 
               api.post("/comment/write/",data,function(){
-                location.reload(true);
+                  location.reload(true);
               });
 
           });
@@ -2008,7 +2003,7 @@ var controller = {
               var comment = $(this).closest(".posting-comment");
               var cid = $(this).closest(".posting-comment").data('cid');
               // var comment_count = $("");
-              $.get('/comment/delete/' + cid + '/',
+              api.get('/comment/delete/' + cid + '/',
                   {},
                   function(data){
                       console.log(data['msg']);
@@ -2194,7 +2189,10 @@ var controller = {
       };
 
       api.post("/comment/write/",data,function(){
-        location.reload(true);
+        // location.reload(true);
+        // show the response right away
+        // comment 쓴 곳으로 scroll 이동
+        $('.comment .count').text(parseInt($('.comment .count').text()) + 1);
       });
 
     });
@@ -2276,6 +2274,30 @@ var controller = {
       });
 
     });
+      
+    // Comment Delete Button
+    $('.comment-delete-button').off('click').on('click',function(){
+        var yes = confirm("정말 삭제하시겠습니까?");
+        if (yes === false){
+            return;  
+        }
+        var comment = $(this).closest(".posting-comment");
+        var cid = $(this).closest(".posting-comment").data('cid');
+        // var comment_count = $("");
+
+        api.get('/comment/delete/' + cid + '/',
+            {},
+            function(data){
+                console.log(data['msg']);
+                if(data['status'] == 'ok'){
+                    comment.hide();
+                    // var previous_count = parseInt(comment_count.text()) - 1;
+                    // comment_count.text(previous_count);
+                }
+            }
+        );
+    });
+
 
 
     return;
@@ -2333,10 +2355,10 @@ var controller = {
               }, 5000);
 
       });
-      */
+      
 
     });
-
+      
     $(".gathering-detail-tab").off('click').on('click',function(){
       var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
       var tab = $(this).data("tab");
@@ -2355,7 +2377,14 @@ var controller = {
         $(this).addClass("selected");
         renderTemplate(serverParentURL + "/gathering/detail.comment?uid=" + gatheringdata.gid,"#gathering-details-view");
       }
+      */
+    
     });
+
+    /* updating the required number of people */
+    var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+    var req_count = gdata.min_num_people - gdata.current_joining_people;
+    $('.tobevaild-count').text(req_count);
 
     $("#footer").css({"display":"none"});
     return;
