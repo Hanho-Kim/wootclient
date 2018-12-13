@@ -503,6 +503,7 @@ if (server_toggle){
   viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";
   viewConfig["/account/edit"]["template"] = serverParentURL + "/account/edit";
   viewConfig["/account/change_password"]["template"] = serverParentURL + "/account/change_password";
+
 }
 
 var api = {
@@ -1792,6 +1793,15 @@ var controller = {
         $("#profile-edit-input-push").val(false);
       }
     });
+    
+    $("#profile-edit-input-message-fake").change(function(){
+      if($(this).is(":checked")){
+        $("#profile-edit-input-message").val(true);
+      }else{
+        $("#profile-edit-input-message").val(false);
+      }
+    });
+
 
     $("#profile-edit-submit").off('click').on('click',function(){
       if($("#profile-edit-input-avatar").val()      == "" ||
@@ -1828,7 +1838,17 @@ var controller = {
   },
 
   passwordEditCtrl : function(){
-    $("#profile-password-edit-submit").off('click').on('click',function(){
+      $('[name="old_password"]')
+        .attr("id", "profile-edit-password-input-current")
+        .attr("placeholder", "기존 비밀번호를 입력해주세요");
+      $('[name="new_password1"]')
+        .attr("id", "profile-edit-password-input-new")
+        .attr("placeholder", "8자 이상의 새로운 비밀번호를 입력해주세요");
+      $('[name="new_password2"]')
+        .attr("id", "profile-edit-password-input-new-confirm")
+        .attr("placeholder", "새로운 비밀번호를 다시 한번 입력해주세요");
+
+      $("#profile-password-edit-submit").off('click').on('click',function(){
       if($("#profile-edit-password-input-current").val()    == "" ||
         $("#profile-edit-password-input-new").val()         == "" ||
         $("#profile-edit-password-input-new-confirm").val() == ""){
@@ -1861,7 +1881,7 @@ var controller = {
 
       var serializedData = $("#profile-edit-password-form").serialize();
       $.ajax({
-            url       : serverParentURL + "/api/v1/post/password",
+            url       : serverParentURL + "/account/change_password/",
             type      : 'POST',
             data      : serializedData,
             // xhrFields : { withCredentials: true },

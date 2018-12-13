@@ -110,7 +110,7 @@ input,textarea{
   content: "";
   height: 12px;
   width: 12px;
-  right: 4px;
+  left: 4px;
   bottom: 4px;
   background-color: white;
   -webkit-transition: .4s;
@@ -126,9 +126,9 @@ input,textarea{
 }
 
 .switch input:checked + .slider:before {
-  -webkit-transform: translateX(-10px);
-  -ms-transform: translateX(-10px);
-  transform: translateX(-10px);
+  -webkit-transform: translateX(10px);
+  -ms-transform: translateX(10px);
+  transform: translateX(10px);
 }
 
 .slider{
