@@ -1039,7 +1039,7 @@ var controller = {
     // Sticker Change
     $(".write-gathering-sticker").off('click').on('click',function(){
       var stickerID = $(this).data("code");
-      $("#write-gathering-input-sticker").val(code);
+      $("#write-gathering-input-sticker").val(stickerID);
 
       $(".write-gathering-sticker").removeClass("selected");
       $(this).addClass("selected");
@@ -1825,7 +1825,7 @@ var controller = {
             data      : serializedData,
             // xhrFields : { withCredentials: true },
             success   : function( response ) {
-                        var res = JSON.parse(response);
+                        var res = response;
                         if(res.redirect){
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
@@ -1886,7 +1886,7 @@ var controller = {
             data      : serializedData,
             // xhrFields : { withCredentials: true },
             success   : function( response ) {
-                        var res = JSON.parse(response);
+                        var res = response;
                         if(res.redirect){
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
@@ -1899,7 +1899,7 @@ var controller = {
   },
 
   /* Board Ctrl */
-  postListCtrl : function(){
+    postListCtrl : function(){
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
@@ -1910,7 +1910,48 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
+          
+    $(".button-misc").off('click').on('click',function(){
+        var targetPid = $(this).data("pid");
+        var targetPost = $(this).closest("#posting-item-" + targetPid);
 
+        // post edit, delete
+        if ($(this).data("right") == "yes") {
+            pullupMenu('pullup_post_edit?pid=' + targetPid, function(){
+  
+                // post delete
+                $(".pullup-item-post-delete").off('click').on('click',function(e){
+                    e.preventDefault();
+                    var yes = confirm("정말 삭제하시겠습니까?");
+                    if (yes === false){
+                        return;  
+                    }
+                    api.get('/post_delete/' + targetPid + '/', function(){
+                        targetPost.remove();
+                        location.reload(true);
+                    });
+                });
+                
+                // post edit
+                // $(".pullup-item-post-delete").off('click').on('click',function(e){
+                //   api.get('/post_edit/' + targetPid + '/', function(data){
+                //     targetPost.remove();
+                //     location.reload(true);
+                //   });
+                // });
+
+            });
+        
+        // post report
+        } else {
+            pullupMenu('pullup_post_report?pid=' + targetPid, function(){
+                console.log('hold');
+            });
+        }
+    });     
+
+        // Post Edit
+          
     // Post API: Like
     var likeHandler = function(){
       $(".button-like").off('click').on('click', button_liked);
