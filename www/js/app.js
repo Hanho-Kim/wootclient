@@ -762,27 +762,34 @@ function button_liked() {
 
   // TODO: need to add error handling
   if (button.hasClass("liked")) { // Already Liked
-    api.post("/post_like/", data, function () { });
-    var next_action = "on";
+    api.post("/post_like/", data, function (res) {
+      if(res['status'] == "ko") {
+        var next_action = "on";
+        button.data("action", next_action);
 
-    button.removeClass("liked");
-    button.html("<span class='ion-ios-heart-outline'></span>");
-    var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-    $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
+        button.removeClass("liked");
+        button.html("<span class='ion-ios-heart-outline'></span>");
+
+        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
+        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
+      }      
+    });
+      
+  } else {
+    api.post("/post_like/", data, function () {
+      if(res['status'] == "ko") {
+        var next_action = "off";
+        button.data("action", next_action);
+
+        button.addClass("liked");
+        button.html("<span class='ion-ios-heart'></span>");
+
+        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
+        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
+      }
+    });
   }
-  else {
-    api.post("/post_like/", data, function () { });
-    var next_action = "off";
-
-    button.addClass("liked");
-    button.html("<span class='ion-ios-heart'></span>");
-    var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-    $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
-  }
-
-  button.data("action", next_action);
 }
-
 
 /* Controller */
 var controller = {
@@ -1659,14 +1666,24 @@ var controller = {
 
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
+      var $this = $(this);
+      var targetUid = $(this).data("uid");
+      var action = $(this).data("action");
       if($(this).hasClass("liked")){
-        var targetUid = $(this).data("uid");
-        api.delete("/api/v1/post/user/woot",{uid:targetUid});
-        $(this).removeClass("liked");
+        api.post("/account/woot/",{id:targetUid, action:action},function(res){
+          if(res.status == 'ok'){
+            $this.removeClass("liked");
+            $this.data("action", "woot");
+          }
+        });
+
       }else{
-        var targetUid = $(this).data("uid");
-        api.post("/api/v1/post/user/woot",{uid:targetUid});
-        $(this).addClass("liked");
+        api.post("/account/woot/",{id:targetUid, action:action},function(res){
+          if(res.status == 'ok'){
+            $this.addClass("liked");
+            $this.data('action', 'unwoot');
+          }
+        });
       }
     });
 
@@ -1933,12 +1950,11 @@ var controller = {
                 });
                 
                 // post edit
-                // $(".pullup-item-post-delete").off('click').on('click',function(e){
-                //   api.get('/post_edit/' + targetPid + '/', function(data){
-                //     targetPost.remove();
-                //     location.reload(true);
-                //   });
-                // });
+                $(".pullup-item-post-edit").off('click').on('click',function(e){
+                  api.get('/post_edit/' + targetPid + '/', function(data){
+                    console.log(data);
+                  });
+                });
 
             });
         
