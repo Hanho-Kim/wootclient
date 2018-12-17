@@ -1229,7 +1229,10 @@ var controller = {
             timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
           }
           
-          $("#write-gathering-input-time").val(timestamp);
+          var ServerDate = new Date(timestamp*1000);
+          $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
+          $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
+
           $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
 
           $("#pullup").css({"display":"none"});
@@ -1280,10 +1283,16 @@ var controller = {
             $("#pullup .background").click();
             $("#write-gathering-input-agelimit-fake").val("");
             $("#write-gathering-input-agelimit").val("");
+
+            $("#write-gathering-input-agelimit-has").val(0);
+
           }else if(minage && maxage){
             $("#pullup .background").click();
             $("#write-gathering-input-agelimit-fake").val(minage + " ~ " + maxage);
-            $("#write-gathering-input-agelimit").val(minage + " ~ " + maxage);
+
+            $("#write-gathering-input-agelimit-min").val(minage);
+            $("#write-gathering-input-agelimit-max").val(maxage);
+            $("#write-gathering-input-agelimit-has").val(1);
           }else{
 
             var elm = '<div id="popup-message">' +
@@ -1303,10 +1312,78 @@ var controller = {
       });
     });
 
+    $("#write-gathering-input-prestage").off('click').on('click',function(){
+      pullupMenu("prestage",function(){
+
+        // Prestage Event Handler
+        $("#pullup-prestage-input-duration input").off('click').on('click',function(){
+          $("#pullup-prestage-input-duration .roller").css({"display":"block"});
+
+          $("#pullup-prestage-input-duration li").off('click').on('click',function(){
+            $("#pullup-prestage-input-duration input").val($(this).data("duration"));
+            $("#pullup-prestage-input-duration .roller").css({"display":"none"});
+          });
+        });
+
+        $("#pullup-prestage-input-min-people input").off('click').on('click',function(){
+          $("#pullup-prestage-input-min-people .roller").css({"display":"block"});
+
+          $("#pullup-prestage-input-min-people li").off('click').on('click',function(){
+            $("#pullup-prestage-input-min-people input").val($(this).data("people"));
+            $("#pullup-prestage-input-min-people .roller").css({"display":"none"});
+          });
+        });
+
+        // Prestage Submit
+        $("#pullup-prestage-submit").off('click').on('click',function(){
+          var duration = $("#pullup-prestage-input-duration input").val();
+          var minpeople = $("#pullup-prestage-input-min-people input").val();
+
+          if(!duration && !minpeople){
+            $("#pullup .background").click();
+            $("#write-gathering-input-prestage").val("");
+            $("#write-gathering-input-prestage-duration").val("");
+            $("#write-gathering-input-prestage-minpeople").val("");
+          }else if(duration && minpeople){
+            $("#pullup .background").click();
+            $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
+            $("#write-gathering-input-prestage-duration").val(duration);
+            $("#write-gathering-input-prestage-minpeople").val(minpeople);
+          }else{
+
+            var elm = '<div id="popup-message">' +
+                        '<span>모든 값을 정확히 입력해주세요</span>' +
+                      '</div>';
+
+            $("body").append(elm);
+
+            setTimeout(function(){ 
+              $("#popup-message").remove();
+            }, 5000);
+
+          }
+
+        });
+
+      });
+    });
+
+
+    // Gathering Max People Num
+    $("#write-gathering-input-maxpeople").off('change').on('change',function(){
+      if($(this).val() == ""){
+        $("#write-gathering-input-maxpeople-has").val(0);
+      }else{
+        $("#write-gathering-input-maxpeople-has").val(1);
+      }
+    })
+
     // Gathering Submit
 
     $("#write-gathering-submit").off('click').on('click',function(){
 
+      console.log($("#write-gathering-form").serialize());
+      /*
       var inputs = [
                       {"id":"sticker","require":true},
                       {"id":"title","require":true},
@@ -1382,6 +1459,7 @@ var controller = {
         });
 
       }
+      */
 
     });
 
