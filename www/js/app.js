@@ -378,7 +378,7 @@ var viewConfig = {
   },
   "/write/posting/edit" : {
     "controller"  : "writePostingCtrl",
-    "template"    : serverParentURL + "/write/posting.edit",
+    "template"    : serverParentURL + "/post_edit",
     "header"      : "./header/write.posting.edit.html",
     "footerHide"  : true
   },
@@ -837,10 +837,13 @@ var controller = {
             data      : $("#login-form").serialize(),
             // xhrFields : { withCredentials: true },
             success   : function( response ) {
-                        if(response['ok']){
-                          window.location.replace('./index.html');
-                        }
-                      },
+                            if(response['ok'] == true){
+                              window.location.replace('./index.html');
+                            } else {
+                              alert('아이디 혹은 비밀번호가 일치하지 않습니다.');
+                              window.location.reload(true);
+                            }
+                        },
             error     : function( request, status, error ) {}
       });
     });
@@ -851,6 +854,9 @@ var controller = {
       $("#header").hide();
       $("#footer").hide();
 
+      // redirection to login or signup
+      $('#redirect-signup').trigger('click');
+      
       $("#signup-item-input-email").focusout(function(){
           var data = { email: $("#signup-item-input-email").val() }
           api.post("/account/signup/validate_email/", data, function(response){
@@ -1117,7 +1123,7 @@ var controller = {
 
     // Gathering Time
     $("#write-gathering-input-time-fake").off('click').on('click',function(){
-      pullupMenu("pullup_write_calendar",function(){
+      pullupMenu("pullup_calendar",function(){
 
         // Date Select
         function dateSelect(){
@@ -1130,8 +1136,16 @@ var controller = {
         var mm     = days14.getMonth()+1;
         var yyyy   = days14.getFullYear();
 
-        if (dd < 10) { dd = '0' + dd; }
-        if (mm < 10) { mm = '0' + mm; }
+        if(dd<10){
+
+            dd = '0' + dd;
+
+        } 
+        if(mm<10){
+
+            mm = '0' + mm;
+
+        }
 
         var myCalendar = new HelloWeek({
               selector: '.calendar',
@@ -1182,6 +1196,7 @@ var controller = {
         });
 
         $("#calendar-input-minute").change(function(){
+
           var minute = $(this).val();
           if(minute >= 60){
             minute = 59;
@@ -1194,10 +1209,12 @@ var controller = {
           }else{
             $(this).val(parseInt(minute));
           }
+
         });
 
         // Submit Click Event Handler
         $(".calendar-submit").off('click').on('click',function(){
+
           var date        = $("#calendar-input-date").val();
           var ampm        = $("#calendar-input-am-pm").val();
           var hour        = $("#calendar-input-hour").val();
@@ -1206,11 +1223,14 @@ var controller = {
 
           if(ampm == "am"){
             timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
-          }
-          else{
+          }else{
             timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
           }
-          $("#write-gathering-input-time").val(timestamp);
+          
+          var ServerDate = new Date(timestamp*1000);
+          $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
+          $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
+
           $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
 
           $("#pullup").css({"display":"none"});
@@ -1224,14 +1244,15 @@ var controller = {
             easing: 'linear',
             direction: 'alternate'
           });
-        });
 
-      }); // pullupMenu
-    }); // Gathering Time
+        })
+      });
+    });
 
 
     $("#write-gathering-input-agelimit-fake").off('click').on('click',function(){
-      pullupMenu("pullup_write_agelimit",function(){
+      pullupMenu("pullup_agelimit",function(){
+
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
           $("#pullup-agelimit-input-min-fake .roller").css({"display":"block"});
@@ -1260,10 +1281,16 @@ var controller = {
             $("#pullup .background").click();
             $("#write-gathering-input-agelimit-fake").val("");
             $("#write-gathering-input-agelimit").val("");
+
+            $("#write-gathering-input-agelimit-has").val(0);
+
           }else if(minage && maxage){
             $("#pullup .background").click();
             $("#write-gathering-input-agelimit-fake").val(minage + " ~ " + maxage);
-            $("#write-gathering-input-agelimit").val(minage + " ~ " + maxage);
+
+            $("#write-gathering-input-agelimit-min").val(minage);
+            $("#write-gathering-input-agelimit-max").val(maxage);
+            $("#write-gathering-input-agelimit-has").val(1);
           }else{
 
             var elm = '<div id="popup-message">' +
@@ -1272,7 +1299,7 @@ var controller = {
 
             $("body").append(elm);
 
-            setTimeout(function(){
+            setTimeout(function(){ 
               $("#popup-message").remove();
             }, 5000);
 
@@ -1282,6 +1309,72 @@ var controller = {
 
       });
     });
+
+    $("#write-gathering-input-prestage").off('click').on('click',function(){
+      pullupMenu("pullup_prestage",function(){
+
+        // Prestage Event Handler
+        $("#pullup-prestage-input-duration input").off('click').on('click',function(){
+          $("#pullup-prestage-input-duration .roller").css({"display":"block"});
+
+          $("#pullup-prestage-input-duration li").off('click').on('click',function(){
+            $("#pullup-prestage-input-duration input").val($(this).data("duration"));
+            $("#pullup-prestage-input-duration .roller").css({"display":"none"});
+          });
+        });
+
+        $("#pullup-prestage-input-min-people input").off('click').on('click',function(){
+          $("#pullup-prestage-input-min-people .roller").css({"display":"block"});
+
+          $("#pullup-prestage-input-min-people li").off('click').on('click',function(){
+            $("#pullup-prestage-input-min-people input").val($(this).data("people"));
+            $("#pullup-prestage-input-min-people .roller").css({"display":"none"});
+          });
+        });
+
+        // Prestage Submit
+        $("#pullup-prestage-submit").off('click').on('click',function(){
+          var duration = $("#pullup-prestage-input-duration input").val();
+          var minpeople = $("#pullup-prestage-input-min-people input").val();
+
+          if(!duration && !minpeople){
+            $("#pullup .background").click();
+            $("#write-gathering-input-prestage").val("");
+            $("#write-gathering-input-prestage-duration").val("");
+            $("#write-gathering-input-prestage-minpeople").val("");
+          }else if(duration && minpeople){
+            $("#pullup .background").click();
+            $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
+            $("#write-gathering-input-prestage-duration").val(duration);
+            $("#write-gathering-input-prestage-minpeople").val(minpeople);
+          }else{
+
+            var elm = '<div id="popup-message">' +
+                        '<span>모든 값을 정확히 입력해주세요</span>' +
+                      '</div>';
+
+            $("body").append(elm);
+
+            setTimeout(function(){ 
+              $("#popup-message").remove();
+            }, 5000);
+
+          }
+
+        });
+
+      });
+    });
+
+
+    // Gathering Max People Num
+    $("#write-gathering-input-maxpeople").off('change').on('change',function(){
+      if($(this).val() == ""){
+        $("#write-gathering-input-maxpeople-has").val(0);
+      }else{
+        $("#write-gathering-input-maxpeople-has").val(1);
+      }
+    })
 
     // Gathering Submit  
     var writeGatheringHandler = makeAjaxSubmitHandler(function(response){
@@ -1398,24 +1491,149 @@ var controller = {
 
 /* Write Posting */
 
+    var woottagArray = []; // Post this array to server-side
+    var woottagMaxLength;
+    var woottagMaxNumber;
+
+    var woottag = {
+
+      init : function( maxLength, maxNumber ){
+
+        // Configuration
+        woottagMaxLength = maxLength || 10;
+        woottagMaxNumber = maxNumber || 10;
+
+        $("#woot-tag-wrapper").click(function(){
+          $("#woot-tag-input").focus(); 
+        });
+
+
+        // Space-add Event Handler
+        $("#woot-tag-input").bind("input",function(){
+
+          let str = $(this).val();
+
+          if( str.indexOf(" ") == -1 && str.length > woottagMaxLength ){
+
+            $(this).val(str.slice( 0, woottagMaxLength ));
+            woottag.errorHandler.maxLengthExceed();
+
+          }
+
+          if(str.indexOf(" ") != -1){
+
+            str = str.replace(" ","");
+            woottag.createTag(str);
+
+            $(this).val("");
+
+          }
+
+        })
+
+
+        // Click-add Event Handler
+        $("#woot-tag-recommendation").find(".woot-tag").click(function(){
+
+          let str = $(this).text().replace(/\s/g,"").replace("#","");
+
+          woottag.createTag(str);
+
+        });
+
+      },
+
+      createTag : function(str){
+
+        let duplicate   = ( woottagArray.indexOf("#" + str) > -1 );
+        let empty     = ( str == "" );
+
+        // Create Tag
+        if( !duplicate && !empty ) {
+
+          if( woottagArray.length == woottagMaxNumber ){
+
+            woottag.errorHandler.maxNumberExceed();
+
+          } else {
+
+            woottagArray.push("#" + str);
+
+            $("#woot-tag-wrapper").find(".woot-tag").remove();
+            $.each(woottagArray.slice().reverse(),function(index, value){
+              var reverseIndex = parseInt(woottagArray.length -1 - index);
+              $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
+            });
+
+            $("#woot-tag-wrapper").find("input[type='hidden']").val(String(woottagArray).replace(/,/g," "));
+            
+            var deleteHandler = function(){
+              $("#woot-tag-wrapper").find(".woot-tag").off("click").on("click",function(){
+
+                woottagArray.splice($(this).data("index"),1);
+
+                $("#woot-tag-wrapper").find(".woot-tag").remove();
+                $.each(woottagArray.slice().reverse(),function(index, value){
+                  var reverseIndex = parseInt(woottagArray.length -1 - index);
+                  $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
+                });
+
+                $("#woot-tag-wrapper").find("input[type='hidden']").val(String(woottagArray).replace(/,/g," "));
+
+                return deleteHandler();
+
+              });
+            }
+
+            deleteHandler();
+
+          }
+
+        }
+
+      },
+
+      errorHandler : {
+
+        /* When length of tag is exceeded maximum length */
+        maxLengthExceed : function(){
+
+          console.log("Maximum tag length exceeded");
+
+        },
+
+        /* When count of tags is exceeded maximum number */
+        maxNumberExceed : function(){
+
+          console.log("Maximum tag number exceeded");
+
+        }
+
+      }
+
+    }
+
+    woottag.init(20, 5);
+
+
     // Board Select
-    $("#write-posting-input-board-fake").off('click').on('click',function(){
+    $("#write-posting-input-topic-fake").off('click').on('click',function(){
       pullupMenu("pullup_write_posting_category",function(){
         $(".board-select").off('click').on('click',function(){
           $("#pullup .background").click();
-          var bid = $(this).data("bid");
+          var code = $(this).data("code");
 
-          $("#write-posting-input-board-fake").val($(this).find("span").text());
-          $("#write-posting-input-board").val(bid);
+          $("#write-posting-input-topic-fake").val($(this).find("span").text());
+          $("#write-posting-input-topic").val(code);
 
           anime({
-            targets: '#write-posting-input-board-fake',
+            targets: '#write-posting-input-topic-fake',
             opacity:0.3,
             duration: 300,
             easing: 'linear',
             direction: 'alternate'
           });
-          renderTemplate(serverParentURL + "/write/posting.addon?bid=" + bid, "#write-section-addon");
+        // 주변 블록 공개 옵션: renderTemplate(serverParentURL + "/write/posting.addon?bid=" + bid, "#write-section-addon");
 
         });
       });
@@ -1507,16 +1725,30 @@ var controller = {
       });
     }
 
-
     // Posting Submit
+    var writePostingHandler = makeAjaxSubmitHandler(function(response){
+        if (response['ok']){
+           var pid = response['pid'].toString();
+           var cordovaLocation = '/post_detail?pid=' + pid
+           initiator(cordovaLocation, true);
+        } else {
+            console.log("fail");
+            // 안 채운 부분들 중 가장 먼저있는 곳으로 focus 
+            // 채우라는 에러메세지
+        }
+    });
+    
+    $('form#write-posting-form').off('submit').on('submit', writePostingHandler);
+
+    /* 
     $("#write-posting-submit").off('click').on('click',function(){
       var inputs = [
-                      {"id":"board","require":true},
-                      {"id":"description","require":true},
+                      {"id":"topic","require":true},
+                      {"id":"title","require":true},
+                      {"id":"content","require":true},
                       {"id":"file-1","require":false},
                       {"id":"file-2","require":false},
                       {"id":"file-3","require":false},
-                      {"id":"location","require":false}
                    ];
 
       var required = true;
@@ -1551,24 +1783,26 @@ var controller = {
 
       if(required){ // All requirements are met
         var formData = $("#write-posting-form").serialize();
-        api.post("/api/v1/post/posting",formData,function(res){
-          return document.location.replace("./board.posting.detail.html?pid=" + res.pid);
+        api.post("/post_write/",formData,function(res){
+          return document.location.replace("/post_detail/?pid=" + res.pid);
         });
 
       }
 
     });
+    */
 
     return;
   },
-
+      
   /* People Ctrl */
   accountMoreCtrl : function(){
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
 
     $("#people-filtering").off('click').on('click',function(){
-      pullupMenu('pullup_more_filtering',function(){
+
+      pullupMenu('people.filtering',function(){
 
         var interestArray = [];
         $(".pullup-interest-content .interest").off('click').on('click',function(){
@@ -1586,6 +1820,7 @@ var controller = {
         });
 
         $("#submit-filtering").off('click').on('click',function(){
+
           $("#people-filtering").addClass("filtered").find("span").text("필터됨");
           $("#pullup .background").click();
           $(".people-section-all .people-item").each(function(index,value){
@@ -1594,14 +1829,14 @@ var controller = {
 
             if(interestArray.length != 0){
               var personInterestArray = $(this).find(".interest").data("interestarray");
-              var orChecker = false;
+              var andChecker = true;
               $.each(interestArray,function(index, value){
-                if(personInterestArray.indexOf(value) > -1){
-                  orChecker = true;
+                if(personInterestArray.indexOf(value) == -1){
+                  andChecker = false;
                 }
               });
 
-              if(!orChecker){
+              if(!andChecker){
                 $(this).css({"display":"none"});
               }
             }
