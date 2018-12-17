@@ -755,41 +755,53 @@ function initiator(newPath, pushState){
 }
 
 function button_liked() {
-  var pid = $(this).data("pid");
+  var id = $(this).data("pid") || $(this).data("gid");
   var action = $(this).data("action");
-  var data = { 'pid': pid, 'action': action};
+  var type = ( ($(this).data('pid')) > 0 ? 'post' : 'gath' );
+  var data = (type == 'post') ? {'pid': id, 'action': action} : {'gid': id, 'action': action};
+  var url = (type == 'post') ? "/post_like/" : "/gathering_like/";
   var button = $(this);
 
   // TODO: need to add error handling
   if (button.hasClass("liked")) { // Already Liked
-    api.post("/post_like/", data, function (res) {
-      if(res['status'] == "ko") {
+    api.post(url, data, function (res) {
+      if(res['status'] == "ko" || "ok") {
         var next_action = "on";
         button.data("action", next_action);
 
         button.removeClass("liked");
         button.html("<span class='ion-ios-heart-outline'></span>");
 
-        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count - 1);
-      }      
+        if (type == 'post'){
+          var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
+          $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
+        } else {
+          var count = parseInt($("#gathering-stats-like").text());
+          $("#gathering-stats-like").text(count - 1);
+        }
+      }
     });
-      
+
   } else {
-    api.post("/post_like/", data, function () {
-      if(res['status'] == "ko") {
+    api.post(url, data, function (res) {
+      if(res['status'] == "ko" || "ok") {
         var next_action = "off";
         button.data("action", next_action);
-
+        
         button.addClass("liked");
         button.html("<span class='ion-ios-heart'></span>");
-
-        var count = parseInt($("#posting-item-" + pid).find(".posting-stat .like .count").text());
-        $("#posting-item-" + pid).find(".posting-stat .like .count").text(count + 1);
+        if (type == 'post'){
+          var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
+          $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
+        } else {
+          var count = parseInt($("#gathering-stats-like").text());
+          $("#gathering-stats-like").text(count + 1);
+        }
       }
     });
   }
 }
+
 
 /* Controller */
 var controller = {
@@ -2617,6 +2629,8 @@ var controller = {
 
   /* Gathering Ctrl */
   gatheringCtrl : function(){
+    $("#footer").css({"display":"none"});
+
     // Gathering Participate
     $("#gathering-participate-button").off('click').on('click',function(){
 
@@ -2693,12 +2707,16 @@ var controller = {
     
     });
 
+    $("#gathering-stats-like").text(parseInt($("#gathering-stats-like").text() - 1));
+    $("#gathering-stats-participate").text(parseInt($("#gathering-stats-participate").text() - 1));
+      
+    $(".button-like").off('click').on('click', button_liked);
+    
     /* updating the required number of people */
     var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     var req_count = gdata.min_num_people - gdata.current_joining_people;
     $('.tobevaild-count').text(req_count);
 
-    $("#footer").css({"display":"none"});
     return;
   },
 
