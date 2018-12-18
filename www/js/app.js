@@ -754,7 +754,7 @@ function initiator(newPath, pushState){
   });
 }
 
-function button_liked() {
+function button_like() {
   var id = $(this).data("pid") || $(this).data("gid");
   var action = $(this).data("action");
   var type = ( ($(this).data('pid')) > 0 ? 'post' : 'gath' );
@@ -802,7 +802,6 @@ function button_liked() {
   }
 }
 
-
 /* Controller */
 var controller = {
   /* Main Ctrl */
@@ -820,7 +819,7 @@ var controller = {
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
     // Post API: Like
-    $(".button-like").off('click').on('click', button_liked);
+    $(".button-like").off('click').on('click', button_like);
     return;
   },
 
@@ -1519,58 +1518,38 @@ var controller = {
           $("#woot-tag-input").focus(); 
         });
 
-
         // Space-add Event Handler
         $("#woot-tag-input").bind("input",function(){
-
           let str = $(this).val();
-
           if( str.indexOf(" ") == -1 && str.length > woottagMaxLength ){
-
             $(this).val(str.slice( 0, woottagMaxLength ));
             woottag.errorHandler.maxLengthExceed();
-
           }
 
           if(str.indexOf(" ") != -1){
-
             str = str.replace(" ","");
             woottag.createTag(str);
-
             $(this).val("");
-
           }
-
-        })
-
+        });
 
         // Click-add Event Handler
         $("#woot-tag-recommendation").find(".woot-tag").click(function(){
-
           let str = $(this).text().replace(/\s/g,"").replace("#","");
-
           woottag.createTag(str);
-
         });
-
       },
 
       createTag : function(str){
-
         let duplicate   = ( woottagArray.indexOf("#" + str) > -1 );
         let empty     = ( str == "" );
-
+        
         // Create Tag
         if( !duplicate && !empty ) {
-
           if( woottagArray.length == woottagMaxNumber ){
-
             woottag.errorHandler.maxNumberExceed();
-
           } else {
-
             woottagArray.push("#" + str);
-
             $("#woot-tag-wrapper").find(".woot-tag").remove();
             $.each(woottagArray.slice().reverse(),function(index, value){
               var reverseIndex = parseInt(woottagArray.length -1 - index);
@@ -1581,52 +1560,36 @@ var controller = {
             
             var deleteHandler = function(){
               $("#woot-tag-wrapper").find(".woot-tag").off("click").on("click",function(){
-
                 woottagArray.splice($(this).data("index"),1);
-
                 $("#woot-tag-wrapper").find(".woot-tag").remove();
                 $.each(woottagArray.slice().reverse(),function(index, value){
                   var reverseIndex = parseInt(woottagArray.length -1 - index);
                   $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
                 });
-
                 $("#woot-tag-wrapper").find("input[type='hidden']").val(String(woottagArray).replace(/,/g," "));
 
                 return deleteHandler();
-
               });
             }
-
             deleteHandler();
-
           }
-
         }
-
       },
 
       errorHandler : {
 
         /* When length of tag is exceeded maximum length */
         maxLengthExceed : function(){
-
           console.log("Maximum tag length exceeded");
-
         },
 
         /* When count of tags is exceeded maximum number */
         maxNumberExceed : function(){
-
           console.log("Maximum tag number exceeded");
-
         }
-
       }
-
     }
-
     woottag.init(20, 5);
-
 
     // Board Select
     $("#write-posting-input-topic-fake").off('click').on('click',function(){
@@ -2217,7 +2180,7 @@ var controller = {
           
     // Post API: Like
     var likeHandler = function(){
-      $(".button-like").off('click').on('click', button_liked);
+      $(".button-like").off('click').on('click', button_like);
     }
     likeHandler();
 
@@ -2501,7 +2464,7 @@ var controller = {
     });
 
     // Post API: Like
-    $(".button-like").off('click').on('click', button_liked);
+    $(".button-like").off('click').on('click', button_like);
 
     // Post API: Comment - Default
     $("#footer-textarea-submit").off('click').on('click',function(){
@@ -2709,13 +2672,63 @@ var controller = {
 
     $("#gathering-stats-like").text(parseInt($("#gathering-stats-like").text() - 1));
     $("#gathering-stats-participate").text(parseInt($("#gathering-stats-participate").text() - 1));
-      
-    $(".button-like").off('click').on('click', button_liked);
-    
+
+    // gathering like  
+    $(".button-like").off('click').on('click', button_like);
+ 
+    // gathering join
+    $('.button-participate').off('click').on('click', function(){
+      var gid = $(this).data("gid");
+      var action = $(this).data("action");
+      var data = {'gid': gid, 'action': action};
+      var button = $(this);
+      var url = "/gathering_join/"
+
+      if (button.hasClass("joined")) { // Already Liked
+        var yes = confirm("정말 참여 취소하시겠습니까?");
+        if (yes === false){ return; }
+        api.post(url, data, function (res) {
+          if(res['status'] == "ok") {
+            var next_action = "on";
+            button.data("action", next_action);
+            button.removeClass("joined");
+            button.html("<span>참여하기</span>")
+
+            // pre-stage인 경우
+            var count_pre = parseInt($(".tobevalid-count").text());
+            $(".tobevalid-count").text(count_pre + 1);
+
+            // normal인 경우
+            var count_nor = parseInt($(".gathering-stats-participate").text());
+            $(".gathering-stats-participate").text(count_nor - 1);            
+
+          }
+        });
+
+      } else {
+        api.post(url, data, function (res) {
+          if(res['status'] == "ok") {
+            var next_action = "off";
+            button.data("action", next_action);
+            button.addClass("joined");
+            button.html("<span>참여취소</span>")
+
+            // pre-stage인 경우
+            var count_pre = parseInt($(".tobevalid-count").text());
+            $(".tobevalid-count").text(count_pre - 1);
+
+            // normal인 경우
+            var count_nor = parseInt($(".gathering-stats-participate").text());
+            $(".gathering-stats-participate").text(count_nor + 1);
+          }
+        });
+      }
+    });
+
     /* updating the required number of people */
     var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     var req_count = gdata.min_num_people - gdata.current_joining_people;
-    $('.tobevaild-count').text(req_count);
+    $('.tobevalid-count').text(req_count);
 
     return;
   },
