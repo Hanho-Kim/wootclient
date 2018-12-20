@@ -2593,6 +2593,13 @@ var controller = {
   /* Gathering Ctrl */
   gatheringCtrl : function(){
     $("#footer").css({"display":"none"});
+    
+    /* updating the required number of people */
+    var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null); 
+    var req_count = gdata.min_num_people - gdata.current_joining_people;
+    $('.tobevalid-count').text(req_count);
+      
+    
 
     // Gathering Participate
     $("#gathering-participate-button").off('click').on('click',function(){
@@ -2725,10 +2732,10 @@ var controller = {
       }
     });
 
-    /* updating the required number of people */
-    var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
-    var req_count = gdata.min_num_people - gdata.current_joining_people;
-    $('.tobevalid-count').text(req_count);
+    /* block the access when not joining user enters into the chat when gathering finished */
+    $('.button-participate-end').off('click').on('click', function(){
+        alert('게더링에 참가하신 분들만 지난 채팅을 볼 수 있습니다.');
+    });
 
     return;
   },
