@@ -15,21 +15,6 @@
  */
 'use strict';
 
-// TODO: 마지막 대화 시간 업데이트
-// ex) serverParentURL + "/gathering_last_chat_update/<gathering_id>/"
-// 서버의 부담을 줄이기 위하여 last_updated_time 등..변수 하나를 두어서  마지막 업데이트 시간 후 
-// 5분? 이내에는 다시 업데이트 하지 않도록 한다
-
-// last_updated_time = null; // global variable
-// function last_chat_update() {
-//     var now = some_get_current_time_function..()
-//     if (last_updated_time && (now - 5 분) < last_updated_time) {
-//         // skip
-//         return;
-//     }
-//     // update to this url serverParentURL + "/gathering_last_chat_update/<gathering_id>/"
-//     last_updated_time = now;
-// }
 // $('some element').on('some keyboard input submit event, last_chat_update);
 
 // refer to https: //github.com/firebase/friendlychat-web
@@ -42,6 +27,38 @@ var infiniteScrollEnd = false;
 
 var serverParentURL = "http://derek-kim.com:8000";
 // var serverParentURL = "http://127.0.0.1:8000";
+
+
+var last_updated_time = null; // global variable
+var globalGid = ""; // global variable
+
+function last_chat_update() {
+
+   var now = Date.now();
+   if (last_updated_time && (now - 5*60*1000) < last_updated_time) {
+         return;
+   }
+    
+    $.ajax({
+        method: "GET",
+        url: serverParentURL + "/gathering_last_chat_update/" + globalGid,
+        xhrFields: {
+            withCredentials: true
+        },
+        success: function (response) {
+            last_updated_time = now;
+        },
+        error: function (request, status, error) {
+            var elm = '<div id="popup-message">' +
+                '<span>API 서버 연결 오류</span>' +
+                '</div>';
+            $("body").append(elm);
+            setTimeout(function () {
+                $("#popup-message").remove();
+            }, 5000);
+        }
+    });
+}
 
 function chatInit() {
     var pathParams = location.search.replace("?", "") || "";
@@ -56,6 +73,8 @@ function chatInit() {
     }
 
     var gid = pathParamsJson["gid"];
+    globalGid = pathParamsJson["gid"];
+    
     var apiPathConfigInfo = serverParentURL + "/chat/gathering_config_info/";
     var apiPathInfo = serverParentURL + "/chat/gathering_info/";
 
@@ -202,6 +221,14 @@ function refreshRoomInfo(url) {
         $(".chat-date").text(fields.datetime);
         $(".chat-place").text(fields.address);
         $(".chat-description").html("").append($.parseHTML(fields.content));
+        
+        $(".chat-room-overlap-section-participants").find(".title").text("참여자 (" + fields.users_joining.length + ")명");
+        $(".participants-item-wrapper").html("");
+        $.each(fields.users_joining,function(index,value){
+            var participants_username = value[1];
+            var participants_avatar = value[2];
+            $(".participants-item-wrapper").append('<div class="participants-item"><div class="avatar"></div><div class="username">' + participants_username + '</div></div>');
+        });
     });
 }
 
@@ -443,6 +470,7 @@ function onMessageFormSubmit(e) {
             // Clear message text field and re-enable the SEND button.
             resetMaterialTextfield(messageInputElement);
             toggleButton();
+            last_chat_update();
         });
     }
 }

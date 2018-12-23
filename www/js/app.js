@@ -17,6 +17,10 @@ if (serverParentURL != "http://derek-kim.com:8000") {
 $('body').append(info)
 
 
+var signupVariable = {
+      address : "",
+      postcode : ""      
+};
 
 /* Global Functions */
 
@@ -768,9 +772,7 @@ function button_like() {
       if(res['ok']) {
         var next_action = "on";
         button.data("action", next_action);
-
         button.removeClass("liked");
-        button.html("<span class='ion-ios-heart-outline'></span>");
 
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
@@ -778,6 +780,7 @@ function button_like() {
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count - 1);
+          $('#gathering-stats-nor').find("woot-click").removeAttr("href");
         }
       }
     });
@@ -786,16 +789,16 @@ function button_like() {
     api.post(url, data, function (res) {
       if(res['ok']) {
         var next_action = "off";
-        button.data("action", next_action);
-
+        button.data("action", next_action)
         button.addClass("liked");
-        button.html("<span class='ion-ios-heart'></span>");
+
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
+          $('#gathering-stats-nor').find("woot-click").attr("href", "/gathering_members?gid=" + id);
         }
       }
     });
@@ -895,7 +898,7 @@ var controller = {
               $(".message-password").find("span").css({"color":"#e74c3c"}).text("비밀번호가 일치하지 않습니다.");
           }
       });
-
+      
       $("#signup-address-submit").off('click').on('click',function(){
         var address = $("#signup-address-input").val();
         $("#signup-address-result").html("");
@@ -927,7 +930,10 @@ var controller = {
                     $("#signup-address-result").append($ul);
                     $("#signup-address-result li").off('click').on('click', function(){
                         var data = $(this).data();
-
+                        
+                        signupVariable["address"] = JSON.parse(JSON.stringify(data.addr));
+                        signupVariable["postcode"] = JSON.parse(JSON.stringify(data.postcode));
+                        
                         // validate address and show signable blocks
                         api.post("/account/signup/address/", data, function(response){
                             $("#signup-address-result").hide();
@@ -962,6 +968,9 @@ var controller = {
         });
       });
 
+      $("#signup-3-form-address").val(signupVariable["address"]);
+      $("#signup-3-form-postcode").val(signupVariable["postcode"]);
+      
       // Radio
       $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
         var container   = $(this).parent();
@@ -976,6 +985,43 @@ var controller = {
       $(".signup-footer-item-forward-4").off('click').on('click',function(){
         $("#signup-4-wrapper").css({"display":"block"});
       });
+      
+      
+    var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
+    $("#model-house-item-wrapper").html("");
+
+    $.each(modelHouseHTML,function(index,elm){
+      setTimeout(function(){ 
+        $("#model-house-item-wrapper").prepend(elm);
+        anime({
+          targets: '.model-house-item:nth-child(1)',
+          opacity: 0,
+          duration: 1000,
+          easing: 'easeInOutQuart',
+          direction: 'reverse'
+        });
+      }, 5000 * index);
+    });
+
+
+    // Confirm Form
+    $(".signup-confirm-button").off('click').on('click',function(){
+      $(".signup-confirm-form-wrapper").css({"display":"block"});
+      var type = $(this).data("confirm");
+      if(type == "post"){
+        $(".signup-confirm-form-wrapper .post").css({"display":"block"});
+        $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
+      }else{
+        $(".signup-confirm-form-wrapper .post").css({"display":"none"});
+        $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
+      }
+
+      // Close
+      $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
+        $(".signup-confirm-form-wrapper").css({"display":"none"});
+      });
+
+    });
 
       return;
   },
@@ -2598,14 +2644,7 @@ var controller = {
   /* Gathering Ctrl */
   gatheringCtrl : function(){
     $("#footer").css({"display":"none"});
-
-    /* updating the required number of people */
-    var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
-    var req_count = gdata.min_num_people - gdata.current_joining_people;
-    $('.tobevalid-count').text(req_count);
-
-
-
+    
     // Gathering Participate
     $("#gathering-participate-button").off('click').on('click',function(){
 
@@ -2682,8 +2721,34 @@ var controller = {
 
     });
 
+    /* subtract the count of host */
     $("#gathering-stats-like").text(parseInt($("#gathering-stats-like").text() - 1));
     $("#gathering-stats-participate").text(parseInt($("#gathering-stats-participate").text() - 1));
+    
+    /* the required number of people */
+    var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+    var req_count = gdata.min_num_people - gdata.current_joining_people;
+    $('.tobevalid-count').text(req_count);
+      
+    // gathering-member alert
+    $('#gathering-stats-pre').off('click').on('click', function() {
+       alert("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요 :)") 
+    });
+
+    $('#gathering-stats-nor woot-click').off('click').on('click', function(e){
+      e.preventDefault();
+      if ( $('#gathering-like-button').data('action') == "on" && $('#gathering-participate-button').data('action') == "on" ){
+          alert("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요 :)");
+      }
+    });
+
+    /* block the access when not joining user enters into the chat when gathering finished */
+    $('.button-participate-end').off('click').on('click', function(){
+        if ($(this).data('action') == 'on') {
+            alert('게더링에 참가하신 분들만 지난 채팅을 볼 수 있습니다.');
+        }
+    });
+
 
     // gathering like
     $(".button-like").off('click').on('click', button_like);
@@ -2695,10 +2760,13 @@ var controller = {
       var data = {'gid': gid, 'action': action};
       var button = $(this);
       var url = "/gathering_join/"
+      var hdinput = $("#hiddenInput_gatheringdata");
 
       if (button.hasClass("joined")) { // Already Liked
         var yes = confirm("정말 참여 취소하시겠습니까?");
         if (yes === false){ return; }
+        
+        // cancel the joining
         api.post(url, data, function (res) {
           if(res['ok']) {
             var next_action = "on";
@@ -2706,17 +2774,17 @@ var controller = {
             button.removeClass("joined");
             button.html("<span>참여하기</span>")
 
+            // normal인 경우
+            // var count_nor = parseInt($(".gathering-stats-participate").text());
+            // $(".gathering-stats-participate").text(count_nor - 1);
+
             // pre-stage인 경우
             var count_pre = parseInt($(".tobevalid-count").text());
-            $(".tobevalid-count").text(count_pre + 1);
-
-            // normal인 경우
-            var count_nor = parseInt($(".gathering-stats-participate").text());
-            $(".gathering-stats-participate").text(count_nor - 1);
-
+            $(".tobevalid-count").text(count_pre + 1);            
           }
         });
 
+      // joining
       } else {
         api.post(url, data, function (res) {
           if(res['ok']) {
@@ -2724,24 +2792,24 @@ var controller = {
             button.data("action", next_action);
             button.addClass("joined");
             button.html("<span>참여취소</span>")
+            
+            // i. pre-stage
+            if(hdinput.data('tochat') == 'pre') {
+                var count_pre = parseInt($(".tobevalid-count").text());
+                $(".tobevalid-count").text(count_pre - 1);
 
-            // pre-stage인 경우
-            var count_pre = parseInt($(".tobevalid-count").text());
-            $(".tobevalid-count").text(count_pre - 1);
-
-            // normal인 경우
-            var count_nor = parseInt($(".gathering-stats-participate").text());
-            $(".gathering-stats-participate").text(count_nor + 1);
+                if( parseInt($(".tobevalid-count").text()) <= 0 ) {
+                    document.location.replace("./chat.html?gid=" + gid);
+                }
+            } else {
+                var count_nor = parseInt($("#gathering-stats-participate").text());
+                $("#gathering-stats-participate").text(count_nor + 1);
+                
+                document.location.replace("./chat.html?gid=" + gid);
+            }
           }
         });
       }
-    });
-
-    /* block the access when not joining user enters into the chat when gathering finished */
-    $('.button-participate-end').off('click').on('click', function(){
-        if ($(this).data('action') == 'on') {
-            alert('게더링에 참가하신 분들만 지난 채팅을 볼 수 있습니다.');
-        }
     });
 
     return;
