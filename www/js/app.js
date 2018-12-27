@@ -375,7 +375,7 @@ var viewConfig = {
     "header"      : "./header/notification.html"
   },
   "/write" : {
-    "controller"  : "writeCtrl",
+        "controller"  : "writeCtrl",
     "template"    : serverParentURL + "/write/gathering",
     "header"      : "./header/write.html",
     "footerHide"  : true
@@ -780,7 +780,7 @@ function button_like() {
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count - 1);
-          $('#gathering-stats-nor').find("woot-click").removeAttr("href");
+          $('#gathering-stats-nor').data("link", "");
         }
       }
     });
@@ -798,7 +798,7 @@ function button_like() {
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
-          $('#gathering-stats-nor').find("woot-click").attr("href", "/gathering_members?gid=" + id);
+          $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
         }
       }
     });
@@ -1018,12 +1018,12 @@ var controller = {
 
       // Close
       $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
-        $(".signup-confirm-form-wrapper").css({"display":"none"});
+        $(".signup-confirm-form-wrapper").css({"display":"none"}) 
       });
 
     });
 
-      return;
+    return;
   },
 
   /* Signup Confirm Ctrl */
@@ -1423,7 +1423,6 @@ var controller = {
       });
     });
 
-
     // Gathering Max People Num
     $("#write-gathering-input-maxpeople").off('change').on('change',function(){
       if($(this).val() == ""){
@@ -1442,6 +1441,7 @@ var controller = {
            initiator(cordovaLocation, true);
         } else {
             console.log("fail");
+            alert('필수 항목들에 내용을 채워주세요.');
             // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
             // 채우라는 에러메세지
         }
@@ -2142,7 +2142,7 @@ var controller = {
 
       if($("#profile-edit-password-input-new").val() != $("#profile-edit-password-input-new-confirm").val()){
         var elm = '<div id="popup-message">' +
-                    '<span>새로운 비밀번호를 확인해주세요.</span>' +
+                    '<span>새로운 비밀번호가 일치하는지 확인해주세요.</span>' +
                   '</div>';
         $("body").append(elm);
 
@@ -2160,6 +2160,7 @@ var controller = {
             // xhrFields : { withCredentials: true },
             success   : function( response ) {
                         var res = response;
+                        console.log(res);
                         if(res.redirect){
                           initiator(res.redirect);
                           history.pushState(null, null, document.location.pathname + '#' + res.redirect);
@@ -2182,6 +2183,23 @@ var controller = {
     $("textarea").on('keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
+    });
+        
+    $.each($(".posting-item"), function(){
+      var postContentElm = $(this).find(".posting-content .description");
+      var content = postContentElm.find(".content-original")[0].innerText;
+      if(content.length > 200){
+        postContentElm.find(".content-more-button").css({"display":"block"});
+        postContentElm.find(".content-showing").text(content.slice(0,200) + "...");
+      }
+    });
+    
+    // More button click event handler
+    $(".content-more-button").click(function(){
+      var postContentElm = $(this).parent();
+      postContentElm.find(".content-showing").css({"display":"none"});
+      postContentElm.find(".content-original").css({"display":"block"});
+      $(this).remove();
     });
 
     $(".button-misc").off('click').on('click',function(){
@@ -2222,7 +2240,7 @@ var controller = {
         }
     });
 
-        // Post Edit
+    // Post Edit
 
     // Post API: Like
     var likeHandler = function(){
@@ -2280,10 +2298,17 @@ var controller = {
                     content_id : $('[name="content_id"]').val()
               };
 
-              api.post("/comment/write/",data,function(){
-                  location.reload(true);
-              });
+              api.post("/comment/write/",data,function(res){
+                  $('.posting-item-comment').append(res.html);
+                  $('#footer-textarea').val("");
+                  
+                  var heightSum = 0;
+                  $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
+                  $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
 
+                  var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                  comment_count.text(parseInt(comment_count.text()) + 1);
+              });
           });
 
           // Comment Edit Button
@@ -2328,16 +2353,17 @@ var controller = {
           });
           // Comment Delete Button
           $('.comment-delete-button').off('click').on('click',function(){
+              $this = $(this);
               var yes = confirm("정말 삭제하시겠습니까?");
               if (yes === false){
                   return;
               }
-              var cid = $(this).closest(".posting-comment").data('cid');
-              if($(this).data('reply') == 'no') {
-                  var comment = $(this).closest(".posting-comment");
+              var cid = $this.closest(".posting-comment").data('cid');
+              if($this.data('reply') == 'no') {
+                  var comment = $this.closest(".posting-comment-wrap");
                   var url = "/comment/delete/";
               } else {
-                  var comment = $(this).closest(".posting-comment");
+                  var comment = $this.closest(".posting-comment");
                   var url = "/comment/replycomment_delete/";
               }
 
@@ -2346,8 +2372,8 @@ var controller = {
                   console.log(res['msg']);
                   if(res['ok']){
                       comment.hide();
-                      // var previous_count = parseInt(comment_count.text()) - 1;
-                      // comment_count.text(previous_count);
+                      var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                      comment_count.text(parseInt(comment_count.text()) - 1);
                   }
               });
           });
@@ -2362,6 +2388,7 @@ var controller = {
             // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
             $(function() {
               $("#footer-textarea").focus();
+              $("#footer-textarea").attr("placeholder", "답글 달기...");
 
               $("#footer-textarea").on('keydown keyup', function () {
                 $(this).height(1).height( $(this).prop('scrollHeight') );
@@ -2447,12 +2474,12 @@ var controller = {
           if($("#posting-wrapper").length > 0){
             $.ajax({
                     method    : "GET",
-                    url       : serverParentURL + "/board/posting.infinitescroll?lastpid=1",
+                    url       : serverParentURL + "/post_list?uid=life",
                     // xhrFields: {withCredentials: true},
                     success   : function( response ) {
 
                                 if(response){
-                                  $("#posting-wrapper").append($.parseHTML(response));
+                                  $("#template-view").append($.parseHTML(response));
                                   $("woot-click").off('click').on('click',function(){
                                     initiator($(this).attr("href"), true);
                                   });
@@ -2480,6 +2507,49 @@ var controller = {
         el: '.swiper-pagination',
       },
     });
+    
+        $(".button-misc").off('click').on('click',function(){
+        var targetPid = $(this).data("pid");
+        var targetPost = $(this).closest("#posting-item-" + targetPid);
+
+        // post edit, delete
+        if ($(this).data("right") == "yes") {
+            pullupMenu('pullup_post_edit?pid=' + targetPid, function(){
+
+                // post delete
+                $(".pullup-item-post-delete").off('click').on('click',function(e){
+                    e.preventDefault();
+                    var yes = confirm("정말 삭제하시겠습니까?");
+                    if (yes === false){
+                        return;
+                    }
+                    api.get('/post_delete/' + targetPid + '/', function(){
+                        targetPost.remove();
+                        location.reload(true);
+                    });
+                });
+
+                // post edit
+                $(".pullup-item-post-edit").off('click').on('click',function(e){
+                  api.get('/post_edit/' + targetPid + '/', function(data){
+                    console.log(data);
+                  });
+                });
+
+            });
+
+        // post report
+        } else {
+            pullupMenu('pullup_post_report?pid=' + targetPid, function(){
+                console.log('hold');
+            });
+        }
+    });
+  
+    
+    var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
+    $("#header-title").text(boarddata.bname);
+
 
     $("#footer").css({"display":"none"});
     $('<div id="footer-input" class="row footer-special-element">' +
@@ -2522,10 +2592,14 @@ var controller = {
         content_id : $('[name="content_id"]').val()
       };
 
-      api.post("/comment/write/",data,function(){
-        // location.reload(true);
-        // show the response right away
-        // comment 쓴 곳으로 scroll 이동
+      api.post("/comment/write/",data,function(res){
+        $('.posting-item-comment').append(res.html);
+        $('#footer-textarea').val("");
+
+        var heightSum = 0;
+        $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
+        $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
+
         $('.comment .count').text(parseInt($('.comment .count').text()) + 1);
       });
 
@@ -2583,6 +2657,7 @@ var controller = {
       // renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
       $(function() {
         $("#footer-textarea").focus();
+        $("#footer-textarea").attr("placeholder", "답글 달기...");
 
         $("#footer-textarea").on('keydown keyup', function () {
           $(this).height(1).height( $(this).prop('scrollHeight') );
@@ -2618,7 +2693,7 @@ var controller = {
 
         var cid = $(this).closest(".posting-comment").data('cid');
         if($(this).data('reply') == 'no') {
-            var comment = $(this).closest(".posting-comment");
+            var comment = $(this).closest(".posting-comment-wrap");
             var url = "/comment/delete/";
         } else {
             var comment = $(this).closest(".posting-comment");
@@ -2630,8 +2705,7 @@ var controller = {
             console.log(res['msg']);
             if(res['ok']){
                 comment.hide();
-                // var previous_count = parseInt(comment_count.text()) - 1;
-                // comment_count.text(previous_count);
+                $('.comment .count').text(parseInt($('.comment .count').text()) - 1);
             }
         });
     });
@@ -2732,13 +2806,14 @@ var controller = {
       
     // gathering-member alert
     $('#gathering-stats-pre').off('click').on('click', function() {
-       alert("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요 :)") 
+       alert("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.") 
     });
 
-    $('#gathering-stats-nor woot-click').off('click').on('click', function(e){
-      e.preventDefault();
+    $('#gathering-stats-nor').off('click').on('click', function(e){
       if ( $('#gathering-like-button').data('action') == "on" && $('#gathering-participate-button').data('action') == "on" ){
-          alert("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요 :)");
+          alert("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요.");
+      } else {
+          initiator($('#gathering-stats-nor').data('link'), true);
       }
     });
 

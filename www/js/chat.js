@@ -222,15 +222,74 @@ function refreshRoomInfo(url) {
         $(".chat-place").text(fields.address);
         $(".chat-description").html("").append($.parseHTML(fields.content));
         
-        $(".chat-room-overlap-section-participants").find(".title").text("참여자 (" + fields.users_joining.length + ")명");
+        $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
         $.each(fields.users_joining,function(index,value){
             var participants_username = value[1];
             var participants_avatar = value[2];
             $(".participants-item-wrapper").append('<div class="participants-item"><div class="avatar"></div><div class="username">' + participants_username + '</div></div>');
         });
+        
+        $(".chat-room-overlap-section-like").find(".title").text("좋아요 " + fields.users_liking.length + "명");
+        $(".like-item-wrapper").html("");
+        $.each(fields.users_liking,function(index,value){
+            var like_username = value[1];
+            var like_avatar = value[2];
+            $(".like-item-wrapper").append('<div class="like-item"><div class="avatar"></div><div class="username">' + like_username + '</div></div>');
+        });
     });
 }
+
+var api = {
+  post : function(url, data, successFn){
+    var successFn = successFn || function(){};
+    var res;
+    var promise = $.ajax({
+              method    : "POST",
+              data      : data,
+              url       : serverParentURL + url,
+              dataType  : "json",
+              headers   : {
+                      'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              xhrFields : { withCredentials: true },
+              success   : function( response ) {
+                          res = response;
+                        },
+              error     : function( request, status, error ) {}
+    });
+
+    promise.then(function(){
+      return successFn(res);
+    })
+    .catch(function(){
+      var elm = '<div id="popup-message">' +
+                  '<span>API 연결 오류</span>' +
+                '</div>';
+      $("body").append(elm);
+      setTimeout(function(){
+        $("#popup-message").remove();
+      }, 5000);
+    });
+  }
+}
+
+$('#chat-room-button-cancel').off('click').on('click', function(){
+  var link = $(location).attr('href');
+  var gid = link.substr(link.length - 2);
+  var action = $(this).data('action');
+  var data = {'gid': gid, 'action': action};
+  var url = "/gathering_join/";
+
+  var yes = confirm('정말 참여 취소하시겠습니까?');
+  if (yes === false){ return; }
+
+  api.post(url, data, function (res) {
+   if(res['ok']) {
+     document.location.replace("/gathering_detail?gid=" + gid);
+   }
+  });
+});
 
 function infiniteScroll() {
     $("#chat-room-scroll").unbind("scroll.chat")
