@@ -100,6 +100,12 @@ function chatInit() {
     $("#subheader").css({
         "display": "block"
     });
+    
+    if(!chatConfig.is_chatting_on){
+       $(".footer-textarea-wrapper").css({"display":"none"});
+       $(".footer-textarea-wrapper-readonly").css({"display":"block"});
+       $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
+    }
     // Case of Gathering  
     // $(".chat-title").text(chatConfig.room.title);
     // $(".chat-date").text(chatConfig.room.date);
@@ -218,7 +224,7 @@ function refreshRoomInfo(url) {
         var fields = res.fields;
         console.log(fields)
         $(".chat-title").text(fields.title);
-        $(".chat-date").text(fields.datetime);
+        $(".chat-date").text(fields.datetime_kor);
         $(".chat-place").text(fields.address);
         $(".chat-description").html("").append($.parseHTML(fields.content));
         
@@ -229,7 +235,14 @@ function refreshRoomInfo(url) {
             var participants_avatar = value[2];
             $(".participants-item-wrapper").append('<div class="participants-item"><div class="avatar"></div><div class="username">' + participants_username + '</div></div>');
         });
-        
+
+        if(!chatConfig.is_chatting_on){
+          $(".footer-textarea-wrapper").css({"display":"none"});
+          $(".footer-textarea-wrapper-readonly").css({"display":"block"});
+          $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
+        }
+
+        /* 
         $(".chat-room-overlap-section-like").find(".title").text("좋아요 " + fields.users_liking.length + "명");
         $(".like-item-wrapper").html("");
         $.each(fields.users_liking,function(index,value){
@@ -237,7 +250,8 @@ function refreshRoomInfo(url) {
             var like_avatar = value[2];
             $(".like-item-wrapper").append('<div class="like-item"><div class="avatar"></div><div class="username">' + like_username + '</div></div>');
         });
-    });
+        */
+    }); 
 }
 
 var api = {
@@ -274,6 +288,13 @@ var api = {
   }
 }
 
+$('#chat-room-button-like').off('click').on('click', function(){
+  var link = $(location).attr('href');
+  var gid = link.substr(link.length - 2);  
+
+  document.location.replace("/index.html#/gathering_detail?gid=" + gid);
+});
+
 $('#chat-room-button-cancel').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.substr(link.length - 2);
@@ -286,7 +307,7 @@ $('#chat-room-button-cancel').off('click').on('click', function(){
 
   api.post(url, data, function (res) {
    if(res['ok']) {
-     document.location.replace("/gathering_detail?gid=" + gid);
+     document.location.replace("/index.html#/gathering_detail?gid=" + gid);
    }
   });
 });

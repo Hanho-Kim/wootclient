@@ -380,8 +380,14 @@ var viewConfig = {
     "header"      : "./header/write.html",
     "footerHide"  : true
   },
+  "/write/gathering/edit" : {
+    "controller"  : "writeCtrl",
+    "template"    : serverParentURL + "/gathering_edit",
+    "header"      : "./header/write.posting.edit.html",
+    "footerHide"  : true
+  },
   "/write/posting/edit" : {
-    "controller"  : "writePostingCtrl",
+    "controller"  : "writeCtrl",
     "template"    : serverParentURL + "/post_edit",
     "header"      : "./header/write.posting.edit.html",
     "footerHide"  : true
@@ -546,6 +552,42 @@ var api = {
               method    : "POST",
               data      : data,
               url       : serverParentURL + url,
+              dataType  : "json",
+              headers   : {
+                      'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              xhrFields : { withCredentials: true },
+              success   : function( response ) {
+                          res = response;
+                        },
+              error     : function( request, status, error ) {}
+    });
+
+    promise.then(function(){
+      return successFn(res);
+    })
+    .catch(function(){
+      var elm = '<div id="popup-message">' +
+                  '<span>API 연결 오류</span>' +
+                '</div>';
+      $("body").append(elm);
+      setTimeout(function(){
+        $("#popup-message").remove();
+      }, 5000);
+    });
+  },
+    
+  postMulti : function(url, data, successFn){
+    var successFn = successFn || function(){};
+    var res;
+    var promise = $.ajax({
+              method    : "POST",
+              data      : data,
+              url       : serverParentURL + url,
+              enctype   : "multipart/form-data",
+              processData: false,
+              contentType: false,
+              cache: false,
               dataType  : "json",
               headers   : {
                       'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
@@ -777,6 +819,7 @@ function button_like() {
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
+          button.html("<span class='ion-ios-heart-outline'></span>");
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count - 1);
@@ -795,6 +838,7 @@ function button_like() {
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
+          button.html("<span class='ion-ios-heart'></span>");
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
@@ -1443,7 +1487,6 @@ var controller = {
             console.log("fail");
             alert('필수 항목들에 내용을 채워주세요.');
             // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-            // 채우라는 에러메세지
         }
     });
 
@@ -1747,17 +1790,23 @@ var controller = {
     }
 
     // Posting Submit
-    var writePostingHandler = makeAjaxSubmitHandler(function(response){
-        if (response['ok']){
-           var pid = response['pid'].toString();
-           var cordovaLocation = '/post_detail?pid=' + pid
-           initiator(cordovaLocation, true);
-        } else {
-            console.log("fail");
-            // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-            // 채우라는 에러메세지
-        }
-    });
+    var writePostingHandler = function(e){
+        e.preventDefault();
+        var url = $(this).attr("action");
+        var data = new FormData(this);
+
+        api.postMulti(url, data, function(response){
+            if (response['ok']){
+               var pid = response['pid'].toString();
+               var cordovaLocation = '/post_detail?pid=' + pid
+               initiator(cordovaLocation, true);
+            } else {
+                console.log("fail");
+                alert('필수 항목들에 내용을 채워주세요.');
+                // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+            }
+        });
+    }
 
     $('form#write-posting-form').off('submit').on('submit', writePostingHandler);
 
@@ -1823,7 +1872,7 @@ var controller = {
 
     $("#people-filtering").off('click').on('click',function(){
 
-      pullupMenu('people.filtering',function(){
+      pullupMenu('pullup_more_filtering',function(){
 
         var interestArray = [];
         $(".pullup-interest-content .interest").off('click').on('click',function(){
@@ -2159,13 +2208,22 @@ var controller = {
             data      : serializedData,
             // xhrFields : { withCredentials: true },
             success   : function( response ) {
-                        var res = response;
-                        console.log(res);
-                        if(res.redirect){
-                          initiator(res.redirect);
-                          history.pushState(null, null, document.location.pathname + '#' + res.redirect);
-                        }
-                      },
+                            var res = response;
+                            if (res.errors) {
+                                var elm = '<div id="popup-message">' +
+                                            '<span>기존 비밀번호가 일치하는지 확인해주세요.</span>' +
+                                          '</div>';
+                                $("body").append(elm);
+
+                                setTimeout(function(){
+                                  $("#popup-message").remove();
+                                }, 5000);
+                                return;                                
+                            }
+                            if (res['ok']) {
+                                initiator("/account/edit", true);
+                            }
+                        },
             error     : function( request, status, error ) {}
       });
     });
@@ -2184,61 +2242,55 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
-        
-    $.each($(".posting-item"), function(){
-      var postContentElm = $(this).find(".posting-content .description");
-      var content = postContentElm.find(".content-original")[0].innerText;
-      if(content.length > 200){
-        postContentElm.find(".content-more-button").css({"display":"block"});
-        postContentElm.find(".content-showing").text(content.slice(0,200) + "...");
-      }
-    });
-    
-    // More button click event handler
-    $(".content-more-button").click(function(){
-      var postContentElm = $(this).parent();
-      postContentElm.find(".content-showing").css({"display":"none"});
-      postContentElm.find(".content-original").css({"display":"block"});
-      $(this).remove();
-    });
+            
+    var miscHandler = function(){
+        // More button click event handler
+        $(".content-more-button").off('click').on('click',function(){
+          var postContentElm = $(this).parent();
+          postContentElm.find(".content-showing").css({"display":"none"});
+          postContentElm.find(".content-original").css({"display":"block"});
+          $(this).remove();
+        });
 
-    $(".button-misc").off('click').on('click',function(){
-        var targetPid = $(this).data("pid");
-        var targetPost = $(this).closest("#posting-item-" + targetPid);
+        $(".button-misc").off('click').on('click',function(){
+            var targetPid = $(this).data("pid");
+            var targetPost = $(this).closest("#posting-item-" + targetPid);
 
-        // post edit, delete
-        if ($(this).data("right") == "yes") {
-            pullupMenu('pullup_post_edit?pid=' + targetPid, function(){
+            // post edit, delete
+            if ($(this).data("right") == "yes") {
+                pullupMenu('pullup_post_edit?pid=' + targetPid, function(){
 
-                // post delete
-                $(".pullup-item-post-delete").off('click').on('click',function(e){
-                    e.preventDefault();
-                    var yes = confirm("정말 삭제하시겠습니까?");
-                    if (yes === false){
-                        return;
-                    }
-                    api.get('/post_delete/' + targetPid + '/', function(){
-                        targetPost.remove();
-                        location.reload(true);
+                    // post delete
+                    $(".pullup-item-post-delete").off('click').on('click',function(e){
+                        e.preventDefault();
+                        var yes = confirm("정말 삭제하시겠습니까?");
+                        if (yes === false){
+                            return;
+                        }
+                        api.get('/post_delete/' + targetPid + '/', function(){
+                            targetPost.remove();
+                            location.reload(true);
+                        });
                     });
+
+                    // post edit
+                    $(".pullup-item-post-edit").off('click').on('click',function(e){
+                      api.get('/post_edit/' + targetPid + '/', function(data){
+                        console.log(data);
+                      });
+                    });
+
                 });
 
-                // post edit
-                $(".pullup-item-post-edit").off('click').on('click',function(e){
-                  api.get('/post_edit/' + targetPid + '/', function(data){
-                    console.log(data);
-                  });
+            // post report
+            } else {
+                pullupMenu('pullup_post_report?pid=' + targetPid, function(){
+                    console.log('hold');
                 });
-
-            });
-
-        // post report
-        } else {
-            pullupMenu('pullup_post_report?pid=' + targetPid, function(){
-                console.log('hold');
-            });
-        }
-    });
+            }
+        });
+    }
+    miscHandler();
 
     // Post Edit
 
@@ -2464,6 +2516,7 @@ var controller = {
     overlapHandler();
 
     // Infinite Scroll
+    var infiniteScrollPage = 2;
     var infiniteScroll = function(){
       $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
         var eventScroll = $("#posting-wrapper").height() - $("#template-view").height() + 150;
@@ -2474,17 +2527,19 @@ var controller = {
           if($("#posting-wrapper").length > 0){
             $.ajax({
                     method    : "GET",
-                    url       : serverParentURL + "/post_list?uid=life",
+                    url       : serverParentURL + "/post_list/" + boarddata.topic_code + "?page=" + infiniteScrollPage,
                     // xhrFields: {withCredentials: true},
                     success   : function( response ) {
 
                                 if(response){
-                                  $("#template-view").append($.parseHTML(response));
+                                  $("#posting-wrapper").append($.parseHTML(response));
                                   $("woot-click").off('click').on('click',function(){
                                     initiator($(this).attr("href"), true);
                                   });
                                   overlapHandler();
                                   likeHandler();
+                                  miscHandler();
+                                  infiniteScrollPage += 1;
                                   infiniteScroll();
                                 }
 
@@ -2850,12 +2905,14 @@ var controller = {
             button.html("<span>참여하기</span>")
 
             // normal인 경우
-            // var count_nor = parseInt($(".gathering-stats-participate").text());
-            // $(".gathering-stats-participate").text(count_nor - 1);
+            var count_nor = parseInt($(".gathering-stats-participate").text());
+            $(".gathering-stats-participate").text(count_nor - 1);
 
             // pre-stage인 경우
             var count_pre = parseInt($(".tobevalid-count").text());
             $(".tobevalid-count").text(count_pre + 1);            
+            
+            initiator("/gathering_list", true);
           }
         });
 
