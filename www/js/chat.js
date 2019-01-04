@@ -101,11 +101,6 @@ function chatInit() {
         "display": "block"
     });
     
-    if(!chatConfig.is_chatting_on){
-       $(".footer-textarea-wrapper").css({"display":"none"});
-       $(".footer-textarea-wrapper-readonly").css({"display":"block"});
-       $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
-    }
     // Case of Gathering  
     // $(".chat-title").text(chatConfig.room.title);
     // $(".chat-date").text(chatConfig.room.date);

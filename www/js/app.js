@@ -303,6 +303,11 @@ var viewConfig = {
     "template": serverParentURL + "/account/invalid_status/",
     "footerHide": true
   },
+  "/logout": {
+    "controller": "loginCtrl",
+    "template": serverParentURL + "/account/logout/",
+    "footerHide": true
+  },  
   "/login" : {
     "controller"  : "loginCtrl",
     "template"    : serverParentURL + "/login/login",
@@ -323,36 +328,11 @@ var viewConfig = {
     "template": serverParentURL + "/account/signup/",
     "footerHide": true
   },
-  "/signup/1" : {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/account/address",
-    "footerHide"  : true
-  },
-  "/signup/2" : {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.2",
-    "footerHide"  : true
-  },
-  "/signup/3" : {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.3",
-    "footerHide"  : true
-  },
-  "/signup/4": {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.4",
-    "footerHide"  : true
-  },
-  "/signup/5": {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.5",
-    "footerHide"  : true
-  },
-  "/signup/6": {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup.6",
-    "footerHide"  : true
-  },
+  "/signup/to_be_approved": {
+    "controller": "signupCtrl",
+    "template": serverParentURL + "/account/to_be_approved/",
+    "footerHide": true
+  },    
   "/login/signup/confirm" : {
     "controller"  : "signupConfirmCtrl",
     "template"    : serverParentURL + "/login/confirm",
@@ -383,7 +363,7 @@ var viewConfig = {
   "/write/gathering/edit" : {
     "controller"  : "writeCtrl",
     "template"    : serverParentURL + "/gathering_edit",
-    "header"      : "./header/write.posting.edit.html",
+    "header"      : "./header/write.gathering.edit.html",
     "footerHide"  : true
   },
   "/write/posting/edit" : {
@@ -675,6 +655,8 @@ function initiator(newPath, pushState){
       pathname = "/index";
     } else if (pathHtml == "login.html") {
       pathname = "/invalid_status";
+    }else{
+      pathname = "/index";
     }
   }
 
@@ -811,6 +793,7 @@ function button_like() {
   // TODO: need to add error handling
   if (button.hasClass("liked")) { // Already Liked
     api.post(url, data, function (res) {
+      console.log(res);
       if(res['ok']) {
         var next_action = "on";
         button.data("action", next_action);
@@ -830,6 +813,7 @@ function button_like() {
 
   } else {
     api.post(url, data, function (res) {
+      console.log(res);
       if(res['ok']) {
         var next_action = "off";
         button.data("action", next_action)
@@ -946,6 +930,7 @@ var controller = {
       $("#signup-address-submit").off('click').on('click',function(){
         var address = $("#signup-address-input").val();
         $("#signup-address-result").html("");
+        $("#signup-address-result").show();
         $.ajax({
             method    : "POST",
             url       : "http://www.juso.go.kr/addrlink/addrLinkApiJsonp.do",
@@ -974,22 +959,34 @@ var controller = {
                     $("#signup-address-result").append($ul);
                     $("#signup-address-result li").off('click').on('click', function(){
                         var data = $(this).data();
-                        
+                        console.log(data);
+                        $('#signup-address-input').val(JSON.parse(JSON.stringify(data.addr)));
+
                         signupVariable["address"] = JSON.parse(JSON.stringify(data.addr));
                         signupVariable["postcode"] = JSON.parse(JSON.stringify(data.postcode));
                         
                         // validate address and show signable blocks
                         api.post("/account/signup/address/", data, function(response){
                             $("#signup-address-result").hide();
-                            $("#signup-address-block-result").css({"display":"block"});
-                            $("#signup-address-block-result ul").html("");
                             if (response['ok']){
                                 // TODO: enable '다음' button
-                                console.log('ok');
-                                console.log(response['area']);
+                                $("#signup-address-block-result").css({"display":"block"});
+                                $("#signup-address-block-result ul").html("");
+                                
                             } else {
                                 // TODO: show error and reset search form(다시 검색 가능하도록 화면 초기화)
                                 console.log('not ok');
+                                $('#signup-address-input').val("");
+                                var elm = '<div id="popup-message">' +
+                                            '<span>현재 가입이 불가능한 주소입니다.</span>' +
+                                          '</div>';
+
+                                $("body").append(elm);
+
+                                setTimeout(function(){
+                                  $("#popup-message").remove();
+                                }, 5000);
+
                             }
                             // TODO: show signable blocks
                             // $.each(res['blocks'], function(index, value){
@@ -1482,7 +1479,7 @@ var controller = {
            console.log("gotcha!");
            var gid = response['gid'].toString();
            var cordovaLocation = '/gathering_detail?gid=' + gid
-           initiator(cordovaLocation, true);
+           initiator(cordovaLocation, false);
         } else {
             console.log("fail");
             alert('필수 항목들에 내용을 채워주세요.');
@@ -1799,7 +1796,7 @@ var controller = {
             if (response['ok']){
                var pid = response['pid'].toString();
                var cordovaLocation = '/post_detail?pid=' + pid
-               initiator(cordovaLocation, true);
+               initiator(cordovaLocation, false);
             } else {
                 console.log("fail");
                 alert('필수 항목들에 내용을 채워주세요.');
@@ -1891,8 +1888,8 @@ var controller = {
 
         $("#submit-filtering").off('click').on('click',function(){
 
-          $("#people-filtering").addClass("filtered").find("span").text("필터됨");
           $("#pullup .background").click();
+          var filteredCount = 0;
           $(".people-section-all .people-item").each(function(index,value){
 
             $(this).css({"display":"block"});
@@ -1908,10 +1905,13 @@ var controller = {
 
               if(!andChecker){
                 $(this).css({"display":"none"});
+              }else{
+                filteredCount += 1;
               }
             }
 
           });
+          $("#people-filtering").addClass("filtered").find("span").text("필터됨 (" + filteredCount + ")");
 
         });
 
@@ -1927,6 +1927,12 @@ var controller = {
   profileCtrl : function(){
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
+
+    var swiper = new Swiper('.swiper-container', {
+      pagination: {
+        el: '.swiper-pagination',
+      },
+    });
 
     if($("#profile-section-history").length){
       $(".badge-discover-contents").show();
@@ -1968,7 +1974,7 @@ var controller = {
       }
 
     });
-
+    
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
       var $this = $(this);
@@ -2242,6 +2248,12 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
+    
+    var swiper = new Swiper('.swiper-container', {
+      pagination: {
+        el: '.swiper-pagination',
+      },
+    });
             
     var miscHandler = function(){
         // More button click event handler
@@ -2253,12 +2265,12 @@ var controller = {
         });
 
         $(".button-misc").off('click').on('click',function(){
-            var targetPid = $(this).data("pid");
-            var targetPost = $(this).closest("#posting-item-" + targetPid);
+            var pid = $(this).data("pid");
+            var targetPost = $(this).closest("#posting-item-" + pid);
 
             // post edit, delete
             if ($(this).data("right") == "yes") {
-                pullupMenu('pullup_post_edit?pid=' + targetPid, function(){
+                pullupMenu('pullup_post_edit?pid=' + pid, function(){
 
                     // post delete
                     $(".pullup-item-post-delete").off('click').on('click',function(e){
@@ -2267,7 +2279,7 @@ var controller = {
                         if (yes === false){
                             return;
                         }
-                        api.get('/post_delete/' + targetPid + '/', function(){
+                        api.get('/post_delete/' + pid + '/', function(){
                             targetPost.remove();
                             location.reload(true);
                         });
@@ -2275,7 +2287,7 @@ var controller = {
 
                     // post edit
                     $(".pullup-item-post-edit").off('click').on('click',function(e){
-                      api.get('/post_edit/' + targetPid + '/', function(data){
+                      api.get('/post_edit/' + pid + '/', function(data){
                         console.log(data);
                       });
                     });
@@ -2284,7 +2296,7 @@ var controller = {
 
             // post report
             } else {
-                pullupMenu('pullup_post_report?pid=' + targetPid, function(){
+                pullupMenu('pullup_post_report?pid=' + pid, function(){
                     console.log('hold');
                 });
             }
@@ -2304,11 +2316,11 @@ var controller = {
     var overlapHandler = function(){
       // Overlap : Comment
       $(".overlap-button-comment").off('click').on('click',function(){
+        var pid = $(this).data("pid");
 
         $("#template-view").css({"overflow":"hidden"});
         $("body").css({"overflow":"hidden"});
 
-        var pid = $(this).data("pid");
         $("#posting-overlap-view").append('<div id="header" class="row">' +
                                             '<div class="header-left overlap-close button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
                                               '<i class="ion-android-close"></i>' +
@@ -2341,132 +2353,136 @@ var controller = {
             $("#template-view").css({"overflow":""});
             $("body").css({"overflow":"inherit"});
           });
-
-          // Post API: Comment - Default
-          $("#footer-textarea-submit").off('click').on('click',function(){
-              var data = {
-                    content : $("#footer-textarea").val(),
-                    content_type : $('[name="content_type"]').val(),
-                    content_id : $('[name="content_id"]').val()
-              };
-
-              api.post("/comment/write/",data,function(res){
-                  $('.posting-item-comment').append(res.html);
-                  $('#footer-textarea').val("");
-                  
-                  var heightSum = 0;
-                  $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
-                  $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
-
-                  var comment_count = $('#posting-item-' + pid).find('.comment .count');
-                  comment_count.text(parseInt(comment_count.text()) + 1);
-              });
-          });
-
-          // Comment Edit Button
-          $(".comment-edit-button").off('click').on('click',function(){
-            var cid = $(this).closest(".posting-comment").data("cid");
-
-            $(".posting-comment").removeClass("selected");
-            $("#posting-comment-" + cid).addClass("selected");
-
-            // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
-            $(function(){
-              $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
-              $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
-
-              $("#footer-textarea").on('keydown keyup', function () {
-                $(this).height(1).height( $(this).prop('scrollHeight') );
-                $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
-              });
-
-              setTimeout(function(){
-                $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - $("#footer-textarea").height() );
-              }, 500);
-
-              // Post API: Comment
+          
+          var commentEventHandler = function(){
+              // Post API: Comment - Default
               $("#footer-textarea-submit").off('click').on('click',function(){
+                  var data = {
+                        content : $("#footer-textarea").val(),
+                        content_type : $('[name="content_type"]').val(),
+                        content_id : $('[name="content_id"]').val()
+                  };
 
-                var data = {
-                  cid : cid,
-                  content : $("#footer-textarea").val(),
-                  content_type : $('[name="content_type"]').val(),
-                  content_id : $('[name="content_id"]').val()
-                };
-                // url for edit needed
-                api.post("/comment/write/",data,function(){
-                  location.reload(true);
+                  api.post("/comment/write/",data,function(res){
+                      if (res['ok']) {
+                          $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
+                          $('#footer-textarea').val("");
+                          commentEventHandler();
+
+                          var heightSum = 0;
+                          $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
+                          $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
+
+                          var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                          comment_count.text(parseInt(comment_count.text()) + 1);
+                      }
+                  });
+              });
+
+              // Comment Edit Button
+              $(".comment-edit-button").off('click').on('click',function(){
+                var cid = $(this).closest(".posting-comment").data("cid");
+
+                $(".posting-comment").removeClass("selected");
+                $("#posting-comment-" + cid).addClass("selected");
+
+                // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
+                $(function(){
+                  $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
+                  $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
+
+                  $("#footer-textarea").on('keydown keyup', function () {
+                    $(this).height(1).height( $(this).prop('scrollHeight') );
+                    $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
+                  });
+
+                  setTimeout(function(){
+                    $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - $("#footer-textarea").height() );
+                  }, 500);
+
+                  // Post API: Comment
+                  $("#footer-textarea-submit").off('click').on('click',function(){
+
+                    var data = {
+                      cid : cid,
+                      content : $("#footer-textarea").val(),
+                      content_type : $('[name="content_type"]').val(),
+                      content_id : $('[name="content_id"]').val()
+                    };
+                    // url for edit needed
+                    api.post("/comment/write/",data,function(){
+                      location.reload(true);
+                    });
+
+                  });
+
                 });
 
               });
-
-            });
-
-          });
-          // Comment Delete Button
-          $('.comment-delete-button').off('click').on('click',function(){
-              $this = $(this);
-              var yes = confirm("정말 삭제하시겠습니까?");
-              if (yes === false){
-                  return;
-              }
-              var cid = $this.closest(".posting-comment").data('cid');
-              if($this.data('reply') == 'no') {
-                  var comment = $this.closest(".posting-comment-wrap");
-                  var url = "/comment/delete/";
-              } else {
-                  var comment = $this.closest(".posting-comment");
-                  var url = "/comment/replycomment_delete/";
-              }
-
-              // var comment_count = $("");
-              api.get(url + cid + '/', function(res){
-                  console.log(res['msg']);
-                  if(res['ok']){
-                      comment.hide();
-                      var comment_count = $('#posting-item-' + pid).find('.comment .count');
-                      comment_count.text(parseInt(comment_count.text()) - 1);
+              // Comment Delete Button
+              $('.comment-delete-button').off('click').on('click',function(){
+                  $this = $(this);
+                  var yes = confirm("정말 삭제하시겠습니까?");
+                  if (yes === false){
+                      return;
                   }
+                  var cid = $this.closest(".posting-comment").data('cid');
+                  if($this.data('reply') == 'no') {
+                      var comment = $this.closest(".posting-comment-wrap");
+                      var url = "/comment/delete/";
+                  } else {
+                      var comment = $this.closest(".posting-comment");
+                      var url = "/comment/replycomment_delete/";
+                  }
+
+                  // var comment_count = $("");
+                  api.get(url + cid + '/', function(res){
+                      console.log(res['msg']);
+                      if(res['ok']){
+                          comment.hide();
+                          var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                          comment_count.text(parseInt(comment_count.text()) - 1);
+                      }
+                  });
               });
-          });
 
-          // Comment Recomment Button
-          $(".recomment-button").off('click').on('click',function(){
-            var cid = $(this).closest(".posting-comment").data("cid");
+              // Comment Recomment Button
+              $(".recomment-button").off('click').on('click',function(){
+                var cid = $(this).closest(".posting-comment").data("cid");
 
-            $(".posting-comment").removeClass("selected");
-            $("#posting-comment-" + cid).addClass("selected");
+                $(".posting-comment").removeClass("selected");
+                $("#posting-comment-" + cid).addClass("selected");
 
-            // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
-            $(function() {
-              $("#footer-textarea").focus();
-              $("#footer-textarea").attr("placeholder", "답글 달기...");
+                // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
+                $(function() {
+                  $("#footer-textarea").focus();
+                  $("#footer-textarea").attr("placeholder", "답글 달기...");
 
-              $("#footer-textarea").on('keydown keyup', function () {
-                $(this).height(1).height( $(this).prop('scrollHeight') );
-              });
+                  $("#footer-textarea").on('keydown keyup', function () {
+                    $(this).height(1).height( $(this).prop('scrollHeight') );
+                  });
 
-              setTimeout(function(){
-                $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
-              }, 500);
+                  setTimeout(function(){
+                    $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
+                  }, 500);
 
-              // Post API: Comment
-              $("#footer-textarea-submit").off('click').on('click',function(){
-                var data = {
-                  content : $("#footer-textarea").val(),
-                  comment_id : cid,
-                };
+                  // Post API: Comment
+                  $("#footer-textarea-submit").off('click').on('click',function(){
+                    var data = {
+                      content : $("#footer-textarea").val(),
+                      comment_id : cid,
+                    };
 
-                api.post("/comment/replycomment_write/" + cid + '/', data,function(){
-                  location.reload(true);
+                    api.post("/comment/replycomment_write/" + cid + '/', data,function(){
+                      console.log('yes');
+                    });
+
+                  });
+
                 });
-
               });
-
-            });
-
-          });
-
+            }
+            commentEventHandler();
         });
 
       });
@@ -2562,40 +2578,38 @@ var controller = {
         el: '.swiper-pagination',
       },
     });
-    
-        $(".button-misc").off('click').on('click',function(){
-        var targetPid = $(this).data("pid");
-        var targetPost = $(this).closest("#posting-item-" + targetPid);
+    var pid = $('.button-misc').data("pid");
 
-        // post edit, delete
-        if ($(this).data("right") == "yes") {
-            pullupMenu('pullup_post_edit?pid=' + targetPid, function(){
+    $(".button-misc").off('click').on('click',function(){
 
-                // post delete
-                $(".pullup-item-post-delete").off('click').on('click',function(e){
-                    e.preventDefault();
-                    var yes = confirm("정말 삭제하시겠습니까?");
-                    if (yes === false){
-                        return;
-                    }
-                    api.get('/post_delete/' + targetPid + '/', function(){
-                        targetPost.remove();
-                        location.reload(true);
-                    });
+    // post edit, delete
+    if ($(this).data("right") == "yes") {
+        pullupMenu('pullup_post_edit?pid=' + pid, function(){
+
+            // post delete
+            $(".pullup-item-post-delete").off('click').on('click',function(e){
+                e.preventDefault();
+                var yes = confirm("정말 삭제하시겠습니까?");
+                if (yes === false){
+                    return;
+                }
+                api.get('/post_delete/' + pid + '/', function(){
+                    history.back();
                 });
-
-                // post edit
-                $(".pullup-item-post-edit").off('click').on('click',function(e){
-                  api.get('/post_edit/' + targetPid + '/', function(data){
-                    console.log(data);
-                  });
-                });
-
             });
+
+            // post edit
+            $(".pullup-item-post-edit").off('click').on('click',function(e){
+              api.get('/post_edit/' + pid + '/', function(data){
+                console.log(data);
+              });
+            });
+
+        });
 
         // post report
         } else {
-            pullupMenu('pullup_post_report?pid=' + targetPid, function(){
+            pullupMenu('pullup_post_report?pid=' + pid, function(){
                 console.log('hold');
             });
         }
@@ -2634,6 +2648,48 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
+      
+    // Overlap : Like
+    $(".overlap-button-like").off('click').on('click',function(){
+        $("#template-view").css({"overflow":"hidden"});
+        $("body").css({"overflow":"hidden"});
+
+        var pid = $(this).data("pid");
+        $("#posting-overlap-view").append('<div id="header" class="row">' +
+                                            '<div class="header-left overlap-close button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                              '<i class="ion-android-close"></i>' +
+                                            '</div>' +
+                                            '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                              '<span>좋아요</span>' +
+                                            '</div>' +
+                                          '</div>');
+        $("#posting-overlap-view").css({"display":"block"});
+        $("#posting-overlap-view").addClass("activated");
+        anime({
+            targets: "#posting-overlap-view",
+            translateX: '-100%',
+            duration: 300,
+            easing: 'easeInOutQuart'
+        });
+        renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
+
+          // Event Handler
+          $(".overlap-close").off('click').on('click',function(){
+            anime({
+              targets: "#posting-overlap-view",
+              translateX: '100%',
+              duration: 10
+            });
+            $("#posting-overlap-view").html("");
+            $("#posting-overlap-view").css({"display":"none"});
+            $("#posting-overlap-view").removeClass("activated");
+            $("#template-view").css({"overflow":""});
+            $("body").css({"overflow":"inherit"});
+          });
+
+        });
+
+    });
 
     // Post API: Like
     $(".button-like").off('click').on('click', button_like);
@@ -2648,16 +2704,17 @@ var controller = {
       };
 
       api.post("/comment/write/",data,function(res){
-        $('.posting-item-comment').append(res.html);
-        $('#footer-textarea').val("");
+          if (res['ok']) {
+              $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
+              $('#footer-textarea').val("");
 
-        var heightSum = 0;
-        $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
-        $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
+              var heightSum = $('.board-contents').height();
+              $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
 
-        $('.comment .count').text(parseInt($('.comment .count').text()) + 1);
+              var comment_count = $('#posting-item-' + pid).find('.comment .count');
+              comment_count.text(parseInt(comment_count.text()) + 1);
+          }
       });
-
     });
 
     // Comment Edit Button
@@ -2759,8 +2816,11 @@ var controller = {
         api.get(url + cid + '/', function(res){
             console.log(res['msg']);
             if(res['ok']){
+                location.reload(true);
+                /*
                 comment.hide();
                 $('.comment .count').text(parseInt($('.comment .count').text()) - 1);
+                */
             }
         });
     });
@@ -2942,6 +3002,13 @@ var controller = {
           }
         });
       }
+    });
+      
+    // Gathering Edit Button Handler
+    $("#header-gathering-edit-button").off("click").on("click",function(){
+      var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+      var gid = gdata.gid;
+      initiator("/write/gathering/edit?gid=" + gid, true);
     });
 
     return;
