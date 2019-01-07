@@ -27,17 +27,43 @@ var signupVariable = {
 //============================================================
 // Popup
 //------------------------------------------------------------
-function popup( message, time, callback ){
-  var timebomb   = time     || 60000;
-  var callbackFn = callback || function(){return true;};
+function popup( message, callback ){
 
-  $("#popup-client").html(message).css({"display":"block"}).animate({ marginTop : "45px"} , 500);
-  callbackFn();
+  if(typeof callback == "function"){
 
-  setTimeout(function(){
-    $("#popup-client").animate({ marginTop : "-90px"} , 1000);
-  }, timebomb);
+    var elm = '<div id="popup-message">' +
+                '<span>' + message + '</span>' +
+                '<div class="button-wrapper"><div class="confirm button">확인</div><div class="cancel button">취소</div></div>' +
+              '</div>';
+
+    $("body").append(elm);
+
+    $("#popup-message .confirm").off("click").on("click",function(){
+      callback();
+      $("#popup-message").remove();
+    });
+    $("#popup-message .cancel").off("click").on("click",function(){
+      $("#popup-message").remove();
+    });
+
+  }else{
+
+    var timebomb   = callback     || 5000;
+
+    var elm = '<div id="popup-message">' +
+                '<span>' + message + '</span>' +
+              '</div>';
+
+    $("body").append(elm);
+
+    setTimeout(function(){ 
+      $("#popup-message").remove();
+    }, timebomb);
+
+  }
+
 }
+
 
 
 //============================================================
@@ -305,7 +331,7 @@ var viewConfig = {
   },
   "/logout": {
     "controller": "loginCtrl",
-    "template": serverParentURL + "/account/logout/",
+    "template": serverParentURL + "/account/logout",
     "footerHide": true
   },  
   "/login" : {
@@ -463,6 +489,18 @@ var viewConfig = {
     "header"      : "./header/gathering.like.html",
     "footerHide"  : true
   },
+  "/report/gathering" : {
+    "controller"  : "voidCtrl",
+    "template"    : serverParentURL + "/support/report/gathering",
+    "header"      : "./header/report.html",
+    "footerHide"  : true
+  },
+  "/report/post" : {
+    "controller"  : "voidCtrl",
+    "template"    : serverParentURL + "/support/report/post",
+    "header"      : "./header/report.html",
+    "footerHide"  : true
+  }
 }
 
 if (server_toggle){
@@ -514,7 +552,7 @@ var api = {
       return successFn(res);
     })
     .catch(function(){
-      var elm = '<div id="popup-message">' +
+      var elm = '<div id="popup/-message">' +
                   '<span>API 연결 오류</span>' +
                 '</div>';
       $("body").append(elm);
@@ -882,8 +920,7 @@ var controller = {
                             if(response['ok']){
                               window.location.replace('./index.html');
                             } else {
-                              alert('아이디 혹은 비밀번호가 일치하지 않습니다.');
-                              window.location.reload(true);
+                              popup('아이디 혹은 비밀번호가 일치하지 않습니다.');
                             }
                         },
             error     : function( request, status, error ) {}
@@ -1062,6 +1099,54 @@ var controller = {
         $(".signup-confirm-form-wrapper").css({"display":"none"}) 
       });
 
+    });
+      
+    // Verify Upload
+    $(".verify-upload-button").off("click").on("click",function(){
+        $(".upload-img").click();
+    });
+      
+    $('.upload-img').change(function(){
+        var input = this;
+        var url = $(this).val();
+        var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+               $('.test-image').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(input.files[0]);
+    });
+
+    $("#form-verify").submit(function(event){
+        
+        event.preventDefault();
+        var url = $(this).attr("action");
+        var data = new FormData(this);
+
+        api.postMulti(url, data, function(response){
+                if (response['ok']){
+
+                } else {
+                    console.log("fail");
+                }
+        });
+        
+    });
+      
+    // Signup Logout
+    
+    $(".signup-footer-logout").off("click").on("click",function(){
+        $.ajax({
+                  method    : "GET",
+                  url       : serverParentURL + "/account/logout",
+                  success   : function( response ) {
+                               initiator("/login", false);
+                            },
+                  error     : function( request, status, error ) {
+
+                            }
+        });
     });
 
     return;
@@ -1482,7 +1567,7 @@ var controller = {
            initiator(cordovaLocation, false);
         } else {
             console.log("fail");
-            alert('필수 항목들에 내용을 채워주세요.');
+            popup('필수 항목들에 내용을 채워주세요.');
             // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
         }
     });
@@ -1667,11 +1752,27 @@ var controller = {
         /* When length of tag is exceeded maximum length */
         maxLengthExceed : function(){
           console.log("Maximum tag length exceeded");
+          var elm = '<div id="popup-message">' +
+                      '<span>태그 길이는 최대 20자까지만 가능합니다.</span>' +
+                    '</div>';
+          $("body").append(elm);
+
+          setTimeout(function(){
+            $("#popup-message").remove();
+          }, 5000);
         },
 
         /* When count of tags is exceeded maximum number */
         maxNumberExceed : function(){
           console.log("Maximum tag number exceeded");
+          var elm = '<div id="popup-message">' +
+                      '<span>태그는 최대 5개까지만 쓸 수 있습니다.</span>' +
+                    '</div>';
+          $("body").append(elm);
+
+          setTimeout(function(){
+            $("#popup-message").remove();
+          }, 5000);
         }
       }
     }
@@ -1799,7 +1900,7 @@ var controller = {
                initiator(cordovaLocation, false);
             } else {
                 console.log("fail");
-                alert('필수 항목들에 내용을 채워주세요.');
+                popup('필수 항목들에 내용을 채워주세요.');
                 // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
             }
         });
@@ -1894,11 +1995,18 @@ var controller = {
 
             $(this).css({"display":"block"});
 
-            if(interestArray.length != 0){
-              var personInterestArray = $(this).find(".interest").data("interestarray");
+            if(interestArray.length > 0){
+
+              var personInterestArray = JSON.parse(JSON.stringify($(this).find(".interest").data("interestarray")));
+
+              var personInterestArrayPure = [];
+              $.each(personInterestArray, function(index, value){
+                personInterestArrayPure.push(value.split(":")[0]);
+              });
+
               var andChecker = true;
               $.each(interestArray,function(index, value){
-                if(personInterestArray.indexOf(value) == -1){
+                if(personInterestArrayPure.indexOf(value) == -1){
                   andChecker = false;
                 }
               });
@@ -1911,8 +2019,8 @@ var controller = {
             }
 
           });
-          $("#people-filtering").addClass("filtered").find("span").text("필터됨 (" + filteredCount + ")");
-
+          $("#people-filtering").addClass("filtered").find("span").text("필터됨");
+          $('#filter-count').text(filteredCount);
         });
 
       });
@@ -2004,7 +2112,7 @@ var controller = {
       pullupMenu('pullup_profile_report?uid=' + targetUid,function(){
 
         $(".profile-report-block").off('click').on('click',function(){
-          api.post("/api/v1/post/user/block",{uid:targetUid},function(){
+          api.post("/account/ban/",{id:targetUid, action:"ban"},function(){
 
             var elm = '<div id="popup-message">' +
                         '<span>해당 유저를 차단했습니다.<br>앞으로 내가 만든 게더링은 해당 유저에게 보이지 않습니다.</span>' +
@@ -2088,29 +2196,68 @@ var controller = {
     $("#profile-edit-input-interest-fake").off('click').on('click',function(){
       pullupMenu("pullup_edit_interest",function(){
         var interestArray = JSON.parse($("#profile-edit-input-interest").val() || null);
+        var interestArrayPure = [];
+        var interestValue = "";
+
+        $.each(interestArray, function(indx,val){
+          interestArrayPure.push(val.split(":")[0]);
+        });
+
         $(".pullup-interest-content").find(".interest").each(function(indx,val){
-          if(interestArray.indexOf($(this).data("interest")) > -1){
+          if(interestArrayPure.indexOf($(this).data("interest")) > -1){
             $(this).addClass("selected");
           }
         });
 
         $(".pullup-interest-content").find(".interest").off('click').on('click',function(){
           if($(this).hasClass("selected")){
+
             $(this).removeClass("selected");
-            var interestValue = $(this).data("interest");
-            interestArray.splice(interestArray.indexOf(interestValue), 1);
-          }
-          else{
+            interestValue = $(this).data("interest");
+            var deletingIndex = interestArrayPure.indexOf(interestValue);
+            interestArray.splice(deletingIndex, 1);
+            interestArrayPure.splice(deletingIndex, 1);
+
+            $(".pullup-interest-detail").css({"display":"none"});
+
+          }else{
+
             $(this).addClass("selected");
-            var interestValue = $(this).data("interest");
+            interestValue = $(this).data("interest");
             interestArray.push(interestValue);
+            interestArrayPure.push(interestValue);
+
+            $(".pullup-interest-detail").css({"display":"block"});
+            $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요");
+
           }
+
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
           $("#profile-edit-input-interest-fake").html("");
           $.each(interestArray,function(indx,val){
             $("#profile-edit-input-interest-fake").prepend("<span>" + val + "</span>");
           });
+
         });
+
+        $("#pullup-interest-detail-submit").off('click').on('click',function(){
+
+          var detail = $("#pullup-interest-detail-input").val();
+          if(detail == ""){
+            return;
+          }
+          
+          interestArray[interestArrayPure.indexOf(interestValue)] = interestValue + ":" + detail;
+          $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
+          $("#profile-edit-input-interest-fake").html("");
+          $.each(interestArray,function(indx,val){
+            $("#profile-edit-input-interest-fake").prepend("<span>" + val + "</span>");
+          });
+            
+          $("#pullup-interest-detail-input").val("").css({"display":"none"});
+
+        });
+          
       }); // pullupMenu
     });
 
@@ -2248,13 +2395,7 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
-    
-    var swiper = new Swiper('.swiper-container', {
-      pagination: {
-        el: '.swiper-pagination',
-      },
-    });
-            
+                
     var miscHandler = function(){
         // More button click event handler
         $(".content-more-button").off('click').on('click',function(){
@@ -2262,6 +2403,12 @@ var controller = {
           postContentElm.find(".content-showing").css({"display":"none"});
           postContentElm.find(".content-original").css({"display":"block"});
           $(this).remove();
+        });
+        
+        var swiper = new Swiper('.swiper-container', {
+          pagination: {
+            el: '.swiper-pagination',
+          },
         });
 
         $(".button-misc").off('click').on('click',function(){
@@ -2275,13 +2422,11 @@ var controller = {
                     // post delete
                     $(".pullup-item-post-delete").off('click').on('click',function(e){
                         e.preventDefault();
-                        var yes = confirm("정말 삭제하시겠습니까?");
-                        if (yes === false){
-                            return;
-                        }
-                        api.get('/post_delete/' + pid + '/', function(){
-                            targetPost.remove();
-                            location.reload(true);
+                        popup("정말 삭제하시겠습니까?", function(){
+                            api.get('/post_delete/' + pid + '/', function(){
+                                targetPost.remove();
+                                location.reload(true);
+                            }); 
                         });
                     });
 
@@ -2297,7 +2442,12 @@ var controller = {
             // post report
             } else {
                 pullupMenu('pullup_post_report?pid=' + pid, function(){
-                    console.log('hold');
+                    $(".pullup-item.post-report").off("click").on("click",function(){
+                         initiator("/report/post?pid=" + pid, true);
+                         $("#pullup").css({"display":"none"});
+                         $("#template-view").css({"overflow":""});
+                         $("body").css({"overflow":""});
+                    });
                 });
             }
         });
@@ -2357,26 +2507,38 @@ var controller = {
           var commentEventHandler = function(){
               // Post API: Comment - Default
               $("#footer-textarea-submit").off('click').on('click',function(){
-                  var data = {
-                        content : $("#footer-textarea").val(),
-                        content_type : $('[name="content_type"]').val(),
-                        content_id : $('[name="content_id"]').val()
-                  };
+                  if ($("#footer-textarea").val()) {
+                      var data = {
+                            content : $("#footer-textarea").val(),
+                            content_type : $('[name="content_type"]').val(),
+                            content_id : $('[name="content_id"]').val()
+                      };
 
-                  api.post("/comment/write/",data,function(res){
-                      if (res['ok']) {
-                          $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
-                          $('#footer-textarea').val("");
-                          commentEventHandler();
+                      api.post("/comment/write/",data,function(res){
+                          if (res['ok']) {
+                              $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
+                              $('#footer-textarea').val("");
+                              commentEventHandler();
 
-                          var heightSum = 0;
-                          $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
-                          $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
+                              var heightSum = 0;
+                              $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
+                              $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
 
-                          var comment_count = $('#posting-item-' + pid).find('.comment .count');
-                          comment_count.text(parseInt(comment_count.text()) + 1);
-                      }
-                  });
+                              var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                              comment_count.text(parseInt(comment_count.text()) + 1);
+                          }
+                      });
+                  } else {
+                      var elm = '<div id="popup-message">' +
+                                  '<span>내용을 입력해주세요.</span>' +
+                                '</div>';
+
+                      $("body").append(elm);
+
+                      setTimeout(function(){
+                        $("#popup-message").remove();
+                      }, 5000);
+                  }
               });
 
               // Comment Edit Button
@@ -2421,29 +2583,45 @@ var controller = {
               });
               // Comment Delete Button
               $('.comment-delete-button').off('click').on('click',function(){
-                  $this = $(this);
-                  var yes = confirm("정말 삭제하시겠습니까?");
-                  if (yes === false){
-                      return;
-                  }
-                  var cid = $this.closest(".posting-comment").data('cid');
-                  if($this.data('reply') == 'no') {
-                      var comment = $this.closest(".posting-comment-wrap");
-                      var url = "/comment/delete/";
-                  } else {
-                      var comment = $this.closest(".posting-comment");
-                      var url = "/comment/replycomment_delete/";
-                  }
+                  $this = $(this);                  
 
-                  // var comment_count = $("");
-                  api.get(url + cid + '/', function(res){
-                      console.log(res['msg']);
-                      if(res['ok']){
-                          comment.hide();
-                          var comment_count = $('#posting-item-' + pid).find('.comment .count');
-                          comment_count.text(parseInt(comment_count.text()) - 1);
+                  popup("정말 삭제하시겠습니까?", function(){
+                      if($this.data('reply') == 'no') {
+                          var cid = $this.closest(".posting-comment").data('cid');
+
+                          api.get("/comment/delete/" + cid + '/', function(res){
+                              console.log(res['msg']);
+                              if(res['ok']){
+
+                                  var count_delete = 0;
+                                  var comment = $this.closest('.posting-comment-wrap');
+                                  comment.find('.posting-comment').each(function(){
+                                      if ( $(this).css("display") != "none" ) {
+                                          count_delete += 1;
+                                      }
+                                  });
+                                  var count_current = $('#posting-item-' + pid).find('.comment .count');
+                                  count_current.text(parseInt(count_current.text()) - count_delete);
+
+                                  comment.hide();                                      
+                              }
+                          });
+
+                      } else {
+                          var rid = $this.closest(".posting-comment").data('rid')
+                          api.get("/comment/replycomment_delete/" + rid + '/', function(res){
+                              console.log(res['msg']);
+                              if(res['ok']){
+                                  var comment = $this.closest('.posting-comment');
+                                  var count_current = $('#posting-item-' + pid).find('.comment .count');
+                                  count_current.text(parseInt(count_current.text()) - 1);
+                                  comment.hide();
+                              }
+                          });
+
                       }
                   });
+
               });
 
               // Comment Recomment Button
@@ -2468,14 +2646,38 @@ var controller = {
 
                   // Post API: Comment
                   $("#footer-textarea-submit").off('click').on('click',function(){
-                    var data = {
-                      content : $("#footer-textarea").val(),
-                      comment_id : cid,
-                    };
+                      if ( $("#footer-textarea").val() ) {
+                        var data = {
+                          content : $("#footer-textarea").val(),
+                          comment_id : cid,
+                        };
 
-                    api.post("/comment/replycomment_write/" + cid + '/', data,function(){
-                      console.log('yes');
-                    });
+                        api.post("/comment/replycomment_write/" + cid + '/', data,function(res){
+                          if (res['ok']) {
+                              $('#posting-comment-' + cid).closest('.posting-comment-wrap').append($(res.html));
+                              $('#footer-textarea').val("");
+                              $('#posting-comment-' + cid).removeClass("selected");
+                              $("#footer-textarea").attr("placeholder", "댓글 달기...");
+                              commentEventHandler();
+
+                              var heightSum = $('.board-contents').height();
+                              $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
+
+                              var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                              comment_count.text(parseInt(comment_count.text()) + 1);
+                          }
+                        });
+                    } else {
+                      var elm = '<div id="popup-message">' +
+                                  '<span>내용을 입력해주세요.</span>' +
+                                '</div>';
+
+                      $("body").append(elm);
+
+                      setTimeout(function(){
+                        $("#popup-message").remove();
+                      }, 5000);
+                    }
 
                   });
 
@@ -2589,12 +2791,11 @@ var controller = {
             // post delete
             $(".pullup-item-post-delete").off('click').on('click',function(e){
                 e.preventDefault();
-                var yes = confirm("정말 삭제하시겠습니까?");
-                if (yes === false){
-                    return;
-                }
-                api.get('/post_delete/' + pid + '/', function(){
-                    history.back();
+                
+                popup("정말 삭제하시겠습니까?", function(){
+                    api.get('/post_delete/' + pid + '/', function(){
+                        history.back();
+                    });
                 });
             });
 
@@ -2610,12 +2811,16 @@ var controller = {
         // post report
         } else {
             pullupMenu('pullup_post_report?pid=' + pid, function(){
-                console.log('hold');
+                    $(".pullup-item.post-report").off("click").on("click",function(){
+                         initiator("/report/post?pid=" + pid, true);
+                         $("#pullup").css({"display":"none"});
+                         $("#template-view").css({"overflow":""});
+                         $("body").css({"overflow":""});
+                    });
             });
         }
     });
   
-    
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
 
@@ -2695,138 +2900,185 @@ var controller = {
     $(".button-like").off('click').on('click', button_like);
 
     // Post API: Comment - Default
-    $("#footer-textarea-submit").off('click').on('click',function(){
+    var commentEventHandler = function() {
+        // comment
+        $("#footer-textarea-submit").off('click').on('click',function(){
+          if ( $("#footer-textarea").val() ) {
+              var data = {
+                content : $("#footer-textarea").val(),
+                content_type : $('[name="content_type"]').val(),
+                content_id : $('[name="content_id"]').val()
+              };
+              api.post("/comment/write/",data,function(res){
+                  if (res['ok']) {
+                      $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
+                      $('#footer-textarea').val("");
+                      commentEventHandler();
 
-      var data = {
-        content : $("#footer-textarea").val(),
-        content_type : $('[name="content_type"]').val(),
-        content_id : $('[name="content_id"]').val()
-      };
+                      var heightSum = $('.board-contents').height();
+                      $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
 
-      api.post("/comment/write/",data,function(res){
-          if (res['ok']) {
-              $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
-              $('#footer-textarea').val("");
+                      var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                      comment_count.text(parseInt(comment_count.text()) + 1);
+                  }
+              });
+          } else {
+              var elm = '<div id="popup-message">' +
+                          '<span>내용을 입력해주세요.</span>' +
+                        '</div>';
 
-              var heightSum = $('.board-contents').height();
-              $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
+              $("body").append(elm);
 
-              var comment_count = $('#posting-item-' + pid).find('.comment .count');
-              comment_count.text(parseInt(comment_count.text()) + 1);
+              setTimeout(function(){
+                $("#popup-message").remove();
+              }, 5000);
           }
-      });
-    });
 
-    // Comment Edit Button
-    $(".comment-edit-button").off('click').on('click',function(){
-      var cid = $(this).closest(".posting-comment").data("cid");
-
-      $(".posting-comment").removeClass("selected");
-      $("#posting-comment-" + cid).addClass("selected");
-
-      // renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
-      $(function() {
-        $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
-        $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
-
-        $("#footer-textarea").on('keydown keyup', function () {
-          $(this).height(1).height( $(this).prop('scrollHeight') );
-          $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
         });
 
-        setTimeout(function(){
-          $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - $("#footer-textarea").height() );
-        }, 500);
+        // Comment Edit Button
+        $(".comment-edit-button").off('click').on('click',function(){
+          var cid = $(this).closest(".posting-comment").data("cid");
 
-        // Post API: Comment
-        $("#footer-textarea-submit").off('click').on('click',function(){
+          $(".posting-comment").removeClass("selected");
+          $("#posting-comment-" + cid).addClass("selected");
 
-            var data = {
-              parentCid : cid,
-              content : $("#footer-textarea").val(),
-              content_type : $('[name="content_type"]').val(),
-              content_id : $('[name="content_id"]').val()
-            };
-            // url for edit needed
-            api.post("/comment/write/",data,function(){
-              location.reload(true);
+          // renderTemplate(serverParentURL + "/footer-input/comment.edit?cid=" + cid,"#footer-input",function(){
+          $(function() {
+            $("#footer-textarea").focus().height(1).height( $("#footer-textarea").prop('scrollHeight') );
+            $("#posting-item-comment").css({"padding-bottom":$("#footer-textarea").prop('scrollHeight') - 26});
+
+            $("#footer-textarea").on('keydown keyup', function () {
+              $(this).height(1).height( $(this).prop('scrollHeight') );
+              $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
             });
 
-        });
+            setTimeout(function(){
+              $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - $("#footer-textarea").height() );
+            }, 500);
 
-      });
+            // Post API: Comment
+            $("#footer-textarea-submit").off('click').on('click',function(){
 
-    });
+                var data = {
+                  parentCid : cid,
+                  content : $("#footer-textarea").val(),
+                  content_type : $('[name="content_type"]').val(),
+                  content_id : $('[name="content_id"]').val()
+                };
+                // url for edit needed
+                api.post("/comment/write/",data,function(){
+                  location.reload(true);
+                });
 
-
-    // Comment Recomment Button
-    $(".recomment-button").off('click').on('click',function(){
-      var cid = $(this).closest(".posting-comment").data("cid");
-
-      $(".posting-comment").removeClass("selected");
-      $("#posting-comment-" + cid).addClass("selected");
-
-      // renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
-      $(function() {
-        $("#footer-textarea").focus();
-        $("#footer-textarea").attr("placeholder", "답글 달기...");
-
-        $("#footer-textarea").on('keydown keyup', function () {
-          $(this).height(1).height( $(this).prop('scrollHeight') );
-        });
-
-        setTimeout(function(){
-          $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
-        }, 500);
-
-        // Post API: Comment
-        $("#footer-textarea-submit").off('click').on('click',function(){
-            var data = {
-              content : $("#footer-textarea").val(),
-              comment_id : cid
-            };
-
-            api.post("/comment/replycomment_write/" + cid + '/', data,function(){
-              location.reload(true);
             });
 
+          });
+
         });
 
-      });
 
-    });
+        // Comment Recomment Button
+        $(".recomment-button").off('click').on('click',function(){
+          var cid = $(this).closest(".posting-comment").data("cid");
 
-    // Comment Delete Button
-    $('.comment-delete-button').off('click').on('click',function(){
-        var yes = confirm("정말 삭제하시겠습니까?");
-        if (yes === false){
-            return;
-        }
+          $(".posting-comment").removeClass("selected");
+          $("#posting-comment-" + cid).addClass("selected");
 
-        var cid = $(this).closest(".posting-comment").data('cid');
-        if($(this).data('reply') == 'no') {
-            var comment = $(this).closest(".posting-comment-wrap");
-            var url = "/comment/delete/";
-        } else {
-            var comment = $(this).closest(".posting-comment");
-            var url = "/comment/replycomment_delete/";
-        }
-        // var comment_count = $("");
+          // renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
+          $(function() {
+            $("#footer-textarea").focus();
+            $("#footer-textarea").attr("placeholder", "답글 달기...");
 
-        api.get(url + cid + '/', function(res){
-            console.log(res['msg']);
-            if(res['ok']){
-                location.reload(true);
-                /*
-                comment.hide();
-                $('.comment .count').text(parseInt($('.comment .count').text()) - 1);
-                */
-            }
+            $("#footer-textarea").on('keydown keyup', function () {
+              $(this).height(1).height( $(this).prop('scrollHeight') );
+            });
+
+            setTimeout(function(){
+              $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
+            }, 500);
+
+            // Post API: Comment
+            $("#footer-textarea-submit").off('click').on('click',function(){
+                if ( $("#footer-textarea").val() ) {
+                    var data = {
+                      content : $("#footer-textarea").val(),
+                      comment_id : cid
+                    };
+
+                    api.post("/comment/replycomment_write/" + cid + '/', data,function(res){
+                      if (res['ok']) {
+                          $('#posting-comment-' + cid).closest('.posting-comment-wrap').append($(res.html));
+                          $('#footer-textarea').val("");
+                          $('#posting-comment-' + cid).removeClass("selected");
+                          $("#footer-textarea").attr("placeholder", "댓글 달기...");
+                          commentEventHandler();
+
+                          var heightSum = $('.board-contents').height();
+                          $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
+
+                          var comment_count = $('#posting-item-' + pid).find('.comment .count');
+                          comment_count.text(parseInt(comment_count.text()) + 1);
+                      }
+                    });
+              } else {
+                  var elm = '<div id="popup-message">' +
+                              '<span>내용을 입력해주세요.</span>' +
+                            '</div>';
+
+                  $("body").append(elm);
+
+                  setTimeout(function(){
+                    $("#popup-message").remove();
+                  }, 5000);
+              }                
+            });
+          });
         });
-    });
 
+        // Comment Delete Button
+        $('.comment-delete-button').off('click').on('click',function(){
+            $this = $(this);                  
 
+            popup("정말 삭제하시겠습니까?", function(){
+                if($this.data('reply') == 'no') {
+                    var cid = $this.closest(".posting-comment").data('cid');
 
+                    api.get("/comment/delete/" + cid + '/', function(res){
+                        console.log(res['msg']);
+                        if(res['ok']){
+                            var count_delete = 0;
+                            var comment = $this.closest('.posting-comment-wrap');
+                            comment.find('.posting-comment').each(function(){
+                                if ( $(this).css("display") != "none" ) {
+                                    count_delete += 1;
+                                }
+                            });
+                            var count_current = $('#posting-item-' + pid).find('.comment .count');
+                            count_current.text(parseInt(count_current.text()) - count_delete);
+
+                            comment.hide();                                      
+                        }
+                    });
+
+                } else {
+                    var rid = $this.closest(".posting-comment").data('rid')
+                    api.get("/comment/replycomment_delete/" + rid + '/', function(res){
+                        console.log(res['msg']);
+                        if(res['ok']){
+                            var comment = $this.closest('.posting-comment');
+                            var count_current = $('#posting-item-' + pid).find('.comment .count');
+                            count_current.text(parseInt(count_current.text()) - 1);
+                            comment.hide();
+                        }
+                    });
+
+                }
+            });
+        });
+    }
+    commentEventHandler();
+       
     return;
   },
 
@@ -2921,12 +3173,12 @@ var controller = {
       
     // gathering-member alert
     $('#gathering-stats-pre').off('click').on('click', function() {
-       alert("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.") 
+       popup("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.") 
     });
 
     $('#gathering-stats-nor').off('click').on('click', function(e){
       if ( $('#gathering-like-button').data('action') == "on" && $('#gathering-participate-button').data('action') == "on" ){
-          alert("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요.");
+          popup("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요.");
       } else {
           initiator($('#gathering-stats-nor').data('link'), true);
       }
@@ -2935,7 +3187,7 @@ var controller = {
     /* block the access when not joining user enters into the chat when gathering finished */
     $('.button-participate-end').off('click').on('click', function(){
         if ($(this).data('action') == 'on') {
-            alert('게더링에 참가하신 분들만 지난 채팅을 볼 수 있습니다.');
+            popup('게더링에 참가하신 분들만 지난 채팅을 볼 수 있습니다.');
         }
     });
 
@@ -2953,28 +3205,27 @@ var controller = {
       var hdinput = $("#hiddenInput_gatheringdata");
 
       if (button.hasClass("joined")) { // Already Liked
-        var yes = confirm("정말 참여 취소하시겠습니까?");
-        if (yes === false){ return; }
-        
-        // cancel the joining
-        api.post(url, data, function (res) {
-          if(res['ok']) {
-            var next_action = "on";
-            button.data("action", next_action);
-            button.removeClass("joined");
-            button.html("<span>참여하기</span>")
+        popup("정말 참여를 취소하시겠습니까?",function(){
+            // cancel the joining
+            api.post(url, data, function (res) {
+              if(res['ok']) {
+                var next_action = "on";
+                button.data("action", next_action);
+                button.removeClass("joined");
+                button.html("<span>참여하기</span>")
 
-            // normal인 경우
-            var count_nor = parseInt($(".gathering-stats-participate").text());
-            $(".gathering-stats-participate").text(count_nor - 1);
+                // normal인 경우
+                var count_nor = parseInt($(".gathering-stats-participate").text());
+                $(".gathering-stats-participate").text(count_nor - 1);
 
-            // pre-stage인 경우
-            var count_pre = parseInt($(".tobevalid-count").text());
-            $(".tobevalid-count").text(count_pre + 1);            
-            
-            initiator("/gathering_list", true);
-          }
-        });
+                // pre-stage인 경우
+                var count_pre = parseInt($(".tobevalid-count").text());
+                $(".tobevalid-count").text(count_pre + 1);            
+
+                initiator("/gathering_list", true);
+              }
+            });
+        });   
 
       // joining
       } else {
@@ -3004,11 +3255,26 @@ var controller = {
       }
     });
       
-    // Gathering Edit Button Handler
-    $("#header-gathering-edit-button").off("click").on("click",function(){
+    // Gathering More Button Handler
+    $("#header-gathering-more-button").off("click").on("click",function(){
       var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
       var gid = gdata.gid;
-      initiator("/write/gathering/edit?gid=" + gid, true);
+      pullupMenu("pullup_gathering_edit?gid=" + gid, function(){
+          $(".pullup-item.gathering-edit").off("click").on("click",function(){
+             initiator("/write/gathering/edit?gid=" + gid, true);
+             $("#pullup").css({"display":"none"});
+             $("#template-view").css({"overflow":""});
+             $("body").css({"overflow":""});
+          });
+          $(".pullup-item.gathering-report").off("click").on("click",function(){
+             
+             initiator("/report/gathering?gid=" + gid, true);
+             $("#pullup").css({"display":"none"});
+             $("#template-view").css({"overflow":""});
+             $("body").css({"overflow":""});
+
+          });
+      });
     });
 
     return;

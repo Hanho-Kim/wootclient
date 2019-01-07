@@ -32,6 +32,50 @@ var serverParentURL = "http://derek-kim.com:8000";
 var last_updated_time = null; // global variable
 var globalGid = ""; // global variable
 
+
+
+//============================================================
+// Popup
+//------------------------------------------------------------
+function popup( message, callback ){
+
+  if(typeof callback == "function"){
+
+    var elm = '<div id="popup-message">' +
+                '<span>' + message + '</span>' +
+                '<div class="button-wrapper"><div class="confirm button">확인</div><div class="cancel button">취소</div></div>' +
+              '</div>';
+
+    $("body").append(elm);
+
+    $("#popup-message .confirm").off("click").on("click",function(){
+      callback();
+      $("#popup-message").remove();
+    });
+    $("#popup-message .cancel").off("click").on("click",function(){
+      $("#popup-message").remove();
+    });
+
+  }else{
+
+    var timebomb   = callback     || 5000;
+
+    var elm = '<div id="popup-message">' +
+                '<span>' + message + '</span>' +
+              '</div>';
+
+    $("body").append(elm);
+
+    setTimeout(function(){ 
+      $("#popup-message").remove();
+    }, timebomb);
+
+  }
+
+}
+
+
+
 function last_chat_update() {
 
    var now = Date.now();
@@ -287,7 +331,7 @@ $('#chat-room-button-like').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.substr(link.length - 2);  
 
-  document.location.replace("/index.html#/gathering_detail?gid=" + gid);
+  document.location.href = "/index.html#/gathering_detail?gid=" + gid;
 });
 
 $('#chat-room-button-cancel').off('click').on('click', function(){
@@ -296,15 +340,16 @@ $('#chat-room-button-cancel').off('click').on('click', function(){
   var action = $(this).data('action');
   var data = {'gid': gid, 'action': action};
   var url = "/gathering_join/";
-
-  var yes = confirm('정말 참여 취소하시겠습니까?');
-  if (yes === false){ return; }
-
-  api.post(url, data, function (res) {
-   if(res['ok']) {
-     document.location.replace("/index.html#/gathering_detail?gid=" + gid);
-   }
+  
+  popup("정말 참여를 취소하시겠습니까?", function(){
+      api.post(url, data, function (res) {
+       if(res['ok']) {
+         document.location.replace("/index.html#/gathering_detail?gid=" + gid);
+       }
+      });  
   });
+
+
 });
 
 function infiniteScroll() {

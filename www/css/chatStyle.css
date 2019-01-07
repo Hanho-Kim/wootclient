@@ -38,7 +38,7 @@ input,textarea{
 #popup-message{
   position:fixed;
   top:50%;
-  margin-top:-20px;
+  margin-top:-50px;
   z-index:9999;
   text-align:center;
   width:80%;
@@ -51,6 +51,25 @@ input,textarea{
 #popup-message span{
   line-height:1.4em;
   color:white;
+}
+
+#popup-message .button-wrapper{
+  position:relative;
+  display:block;
+  margin-top:20px;
+}
+#popup-message .button-wrapper .button{
+  display:inline-block;
+  width:25%;
+  color:rgb(230,230,230);
+  border:2px solid rgb(100,100,100);
+  padding:10px;
+  border-radius:5px;
+  font-weight:400;
+  font-size:13px;
+}
+#popup-message .button-wrapper .button:last-child{
+  margin-left:5%;
 }
 
 /* Header */
