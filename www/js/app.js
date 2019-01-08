@@ -545,7 +545,9 @@ var api = {
               xhrFields : {withCredentials: true},
               success   : function( response ) {
                           res = response;},
-              error     : function( request, status, error ) {}
+              error     : function( request, status, error ) {
+                          console.error(error);
+                        }
     });
 
     promise.then(function(){
@@ -578,7 +580,9 @@ var api = {
               success   : function( response ) {
                           res = response;
                         },
-              error     : function( request, status, error ) {}
+              error     : function( request, status, error ) {
+                          console.error(error);
+                        }
     });
 
     promise.then(function(){
@@ -598,6 +602,7 @@ var api = {
   postMulti : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
+      console.log(url);
     var promise = $.ajax({
               method    : "POST",
               data      : data,
@@ -614,7 +619,9 @@ var api = {
               success   : function( response ) {
                           res = response;
                         },
-              error     : function( request, status, error ) {}
+              error     : function( request, status, error ) {
+                          console.error(error);
+                        }
     });
 
     promise.then(function(){
@@ -1106,31 +1113,90 @@ var controller = {
         $(".upload-img").click();
     });
       
-    $('.upload-img').change(function(){
-        var input = this;
-        var url = $(this).val();
-        var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
-        var reader = new FileReader();
+    // Image Upload
+    function imageProcessor(dataURL, fileType, inputOrder) {
+      var image = new Image();
+      var srcOrientation = 1;
+      image.src = dataURL;
 
-        reader.onload = function (e) {
-               $('.test-image').attr('src', e.target.result);
-        }
-        reader.readAsDataURL(input.files[0]);
-    });
+      image.onload = function () {
+        EXIF.getData(image, function() {
+          srcOrientation = EXIF.getTag(this, "Orientation");
+          var newWidth = image.width;
+          var newHeight = image.height;
+
+          var canvas = document.createElement('canvas');
+
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+
+          var context = canvas.getContext('2d');
+
+            // set proper canvas dimensions before transform & export
+            if (4 < srcOrientation && srcOrientation < 9) {
+              canvas.width = newHeight;
+              canvas.height = newWidth;
+            } else {
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+            }
+
+            switch (srcOrientation) {
+              case 2: context.transform(-1, 0, 0, 1, newWidth, 0); break;
+              case 3: context.transform(-1, 0, 0, -1, newWidth, newHeight ); break;
+              case 4: context.transform(1, 0, 0, -1, 0, newHeight ); break;
+              case 5: context.transform(0, 1, 1, 0, 0, 0); break;
+              case 6: context.transform(0, 1, -1, 0, newHeight , 0); break;
+              case 7: context.transform(0, -1, -1, 0, newHeight , newWidth); break;
+              case 8: context.transform(0, -1, 1, 0, 0, newWidth); break;
+              default: break;
+            }
+
+          context.drawImage(image, 0, 0);
+          dataURL   = canvas.toDataURL(fileType);
+            
+          $('.test-image').attr('src', dataURL);
+
+        });
+      };
+
+      image.onerror = function () {
+        console.log('Image Processor Error');
+      };
+
+    }
+
+    if(window.File && window.FileList && window.FileReader){
+      var $filesInput = $("input.upload-img");
+      $filesInput.on("change", function(event){
+          var inputOrder = event.target.getAttribute('data-inputOrder');
+          var file = event.target.files[0];
+          var picReader = new FileReader();
+
+          picReader.onloadend = function(){
+              imageProcessor(picReader.result, file.type, inputOrder);
+          };
+
+          picReader.readAsDataURL(file);
+
+      });
+    }
 
     $("#form-verify").submit(function(event){
         
         event.preventDefault();
+        
         var url = $(this).attr("action");
         var data = new FormData(this);
 
         api.postMulti(url, data, function(response){
                 if (response['ok']){
-
+                    initiator("/signup", true);
                 } else {
                     console.log("fail");
                 }
         });
+
         
     });
       
@@ -1436,6 +1502,14 @@ var controller = {
     $("#write-gathering-input-agelimit-fake").off('click').on('click',function(){
       pullupMenu("pullup_agelimit",function(){
 
+        var myage = $("#myage").val() || 30;
+        for(var i = 0; i<4; i++){
+            var agedown = parseInt(myage) - i;
+            var ageup = parseInt(myage) + i;
+            $(".roller-min ul").append('<li class="button" data-age="' + agedown + '">' + agedown + '</li>');
+            $(".roller-max ul").append('<li class="button" data-age="' + ageup + '">' + ageup + '</li>');
+        }
+                                       
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
           $("#pullup-agelimit-input-min-fake .roller").css({"display":"block"});
@@ -1559,20 +1633,23 @@ var controller = {
     })
 
     // Gathering Submit
-    var writeGatheringHandler = makeAjaxSubmitHandler(function(response){
-        if (response['ok']){
-           console.log("gotcha!");
-           var gid = response['gid'].toString();
-           var cordovaLocation = '/gathering_detail?gid=' + gid
-           initiator(cordovaLocation, false);
-        } else {
-            console.log("fail");
-            popup('필수 항목들에 내용을 채워주세요.');
-            // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-        }
-    });
+    $('form.gathering_write').off('submit').on('submit', function(event){
+        event.preventDefault();
+        var url = $(this).attr('action');
+        api.post(url, $(this).serialize(), function(res){
+            if (res['ok']){
+               console.log("gotcha!");
+               var gid = res['gid'].toString();
+               initiator('/gathering_detail?gid=' + gid, false);
+            } else {
+                console.log("fail");
+                popup('필수 항목들에 내용을 채워주세요.');
+                // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+            }        
+        });
 
-    $('form.gathering_write').off('submit').on('submit', writeGatheringHandler);
+    
+    });
 
 //     $('#write-gathering-submit').click(function() {
 //         var url = $(this).parents("form").attr("action");
@@ -1709,6 +1786,19 @@ var controller = {
           let str = $(this).text().replace(/\s/g,"").replace("#","");
           woottag.createTag(str);
         });
+          
+        // Already Exist Tag (for posting_edit)
+
+        if($("#woot-tag-wrapper").find("input[type='hidden']").val()){
+          var alreadyTags = $("#woot-tag-wrapper").find("input[type='hidden']").val();
+          woottagArray = alreadyTags.split(" ");
+          $.each(woottagArray.slice().reverse(),function(index, value){
+              var reverseIndex = parseInt(woottagArray.length -1 - index);
+              $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
+          });
+        }
+
+          
       },
 
       createTag : function(str){
@@ -2186,8 +2276,8 @@ var controller = {
 
     // Profile Avatar Change
     $("#profile-avatar-change-button").off('click').on('click',function(){
-      api.get("/api/v1/get/avatarChange",function(response){
-        $("#profile-avatar").css({"background-image":"url(" +response.image + ")"});
+      api.get("/account/change_profile_image",function(response){
+        $("#profile-avatar").css({"background-image":"url(" +response.profile_image_url + ")"});
         $("#profile-edit-input-avatar").val(response.avatarID);
       });
     });
@@ -2254,8 +2344,9 @@ var controller = {
             $("#profile-edit-input-interest-fake").prepend("<span>" + val + "</span>");
           });
             
-          $("#pullup-interest-detail-input").val("").css({"display":"none"});
-
+          $("#pullup-interest-detail-input").val("");
+          $(".pullup-interest-detail").css({"display":"none"});
+            
         });
           
       }); // pullupMenu
@@ -2432,9 +2523,10 @@ var controller = {
 
                     // post edit
                     $(".pullup-item-post-edit").off('click').on('click',function(e){
-                      api.get('/post_edit/' + pid + '/', function(data){
-                        console.log(data);
-                      });
+                        initiator("/write/posting/edit?pid=" + pid, true);
+                        $("#pullup").css({"display":"none"});
+                        $("#template-view").css({"overflow":""});
+                        $("body").css({"overflow":""});
                     });
 
                 });
@@ -2801,9 +2893,10 @@ var controller = {
 
             // post edit
             $(".pullup-item-post-edit").off('click').on('click',function(e){
-              api.get('/post_edit/' + pid + '/', function(data){
-                console.log(data);
-              });
+                        initiator("/write/posting/edit?pid=" + pid, true);
+                        $("#pullup").css({"display":"none"});
+                        $("#template-view").css({"overflow":""});
+                        $("body").css({"overflow":""});
             });
 
         });
@@ -3259,22 +3352,41 @@ var controller = {
     $("#header-gathering-more-button").off("click").on("click",function(){
       var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
       var gid = gdata.gid;
-      pullupMenu("pullup_gathering_edit?gid=" + gid, function(){
-          $(".pullup-item.gathering-edit").off("click").on("click",function(){
-             initiator("/write/gathering/edit?gid=" + gid, true);
-             $("#pullup").css({"display":"none"});
-             $("#template-view").css({"overflow":""});
-             $("body").css({"overflow":""});
-          });
-          $(".pullup-item.gathering-report").off("click").on("click",function(){
-             
-             initiator("/report/gathering?gid=" + gid, true);
-             $("#pullup").css({"display":"none"});
-             $("#template-view").css({"overflow":""});
-             $("body").css({"overflow":""});
+      if(gdata.is_my == "true"){
+          pullupMenu("pullup_gathering_edit?gid=" + gid, function(){
+              $(".pullup-item.gathering-edit").off("click").on("click",function(){
+                 initiator("/write/gathering/edit?gid=" + gid, true);
+                 $("#pullup").css({"display":"none"});
+                 $("#template-view").css({"overflow":""});
+                 $("body").css({"overflow":""});
+              });
+              $(".pullup-item.gathering-delete").off("click").on("click",function(){
 
-          });
-      });
+                    popup("해당 게더링을 정말 삭제하시겠습니까?",function(){
+                         api.post("/gathering_delete/" + gid + "/", null, function(){
+                             initiator("/gathering_list", false);
+                             $("#pullup").css({"display":"none"});
+                             $("#template-view").css({"overflow":""});
+                             $("body").css({"overflow":""});
+                         });
+                    });
+                  
+              });
+          });   
+      }else{
+          pullupMenu("pullup_gathering_report?gid=" + gid, function(){
+              
+              $(".pullup-item.gathering-report").off("click").on("click",function(){
+
+                 initiator("/report/gathering?gid=" + gid, true);
+                 $("#pullup").css({"display":"none"});
+                 $("#template-view").css({"overflow":""});
+                 $("body").css({"overflow":""});
+
+              });
+              
+          });         
+      }
     });
 
     return;
