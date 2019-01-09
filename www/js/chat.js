@@ -330,26 +330,13 @@ var api = {
 $('#chat-room-button-like').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.substr(link.length - 2);  
-
   document.location.href = "/index.html#/gathering_detail?gid=" + gid;
 });
 
 $('#chat-room-button-cancel').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.substr(link.length - 2);
-  var action = $(this).data('action');
-  var data = {'gid': gid, 'action': action};
-  var url = "/gathering_join/";
-  
-  popup("정말 참여를 취소하시겠습니까?", function(){
-      api.post(url, data, function (res) {
-       if(res['ok']) {
-         document.location.replace("/index.html#/gathering_detail?gid=" + gid);
-       }
-      });  
-  });
-
-
+  document.location.replace("/index.html#/gathering_detail?gid=" + gid);
 });
 
 function infiniteScroll() {

@@ -9,12 +9,14 @@ var serverParentURL = "http://derek-kim.com:8000";
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
 
+/*
 var info = $("<div>[DEBUG]" + serverParentURL + "<br>is new: " + server_toggle + "</div>")
             .css({ position: 'fixed', right: '50px', top: '80px', 'font-size': '10px'});
 if (serverParentURL != "http://derek-kim.com:8000") {
   info.css({color: 'red', 'font-size': '20px'});
 }
 $('body').append(info)
+*/
 
 
 var signupVariable = {
@@ -471,7 +473,8 @@ var viewConfig = {
   "/account/edit" : {
     "controller"  : "profileEditCtrl",
     "template"    : serverParentURL + "/people/edit",
-    "header"      : "./header/people.profile.edit.html"
+    "header"      : "./header/people.profile.edit.html",
+    "footerHide"  : true    
   },
   "/account/change_password" : {
     "controller"  : "passwordEditCtrl",
@@ -490,13 +493,13 @@ var viewConfig = {
     "footerHide"  : true
   },
   "/report/gathering" : {
-    "controller"  : "voidCtrl",
+    "controller"  : "reportCtrl",
     "template"    : serverParentURL + "/support/report/gathering",
     "header"      : "./header/report.html",
     "footerHide"  : true
   },
   "/report/post" : {
-    "controller"  : "voidCtrl",
+    "controller"  : "reportCtrl",
     "template"    : serverParentURL + "/support/report/post",
     "header"      : "./header/report.html",
     "footerHide"  : true
@@ -894,6 +897,19 @@ var controller = {
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
+
+    var notidata = JSON.parse($("#hiddenInput_notidata").val() || null);
+    var numNewNoti = notidata.num_noti;
+    if (numNewNoti > 0) {
+      $('.header-right-index-item.notification').append('<span class="header-item-noti">' + numNewNoti + '</span>');
+    }
+
+    $('.header-right-index-item.notification').off('click').on('click', function(){
+      api.get("/action/read_all/", function(){
+        initator("/notification", true);
+      });  
+    })
+
     // Post API: Like
     $(".button-like").off('click').on('click', button_like);
     return;
@@ -1372,130 +1388,132 @@ var controller = {
 
     // Gathering Time
     $("#write-gathering-input-time-fake").off('click').on('click',function(){
-      pullupMenu("pullup_calendar",function(){
+      if ( $(this).data("edit") == "no" ) {
+          pullupMenu("pullup_calendar",function(){
 
-        // Date Select
-        function dateSelect(){
-          $("#calendar-input-date").val(this.lastSelectedDay);
-        }
+            // Date Select
+            function dateSelect(){
+              $("#calendar-input-date").val(this.lastSelectedDay);
+            }
 
-        // Days after 14 days
-        var days14 = new Date(Date.now() + 12096e5);;
-        var dd     = days14.getDate();
-        var mm     = days14.getMonth()+1;
-        var yyyy   = days14.getFullYear();
+            // Days after 14 days
+            var days14 = new Date(Date.now() + 12096e5);;
+            var dd     = days14.getDate();
+            var mm     = days14.getMonth()+1;
+            var yyyy   = days14.getFullYear();
 
-        if(dd<10){
+            if(dd<10){
 
-            dd = '0' + dd;
+                dd = '0' + dd;
 
-        }
-        if(mm<10){
+            }
+            if(mm<10){
 
-            mm = '0' + mm;
+                mm = '0' + mm;
 
-        }
+            }
 
-        var myCalendar = new HelloWeek({
-              selector: '.calendar',
-              lang: 'en',
-              langFolder: './lib/hello-week-master/dist/langs/',
-              format: false,
-              weekShort: true,
-              monthShort: true,
-              multiplePick: false,
-              defaultDate: false,
-              todayHighlight: false,
-              disablePastDays: true,
-              disabledDaysOfWeek: false,
-              disableDates: false,
-              weekStart: 0,
-              daysHighlight: false,
-              range: false,
-              minDate: false,
-              maxDate: yyyy + "-" + mm + "-" + dd,
-              onSelect: dateSelect
-        });
+            var myCalendar = new HelloWeek({
+                  selector: '.calendar',
+                  lang: 'en',
+                  langFolder: './lib/hello-week-master/dist/langs/',
+                  format: false,
+                  weekShort: true,
+                  monthShort: true,
+                  multiplePick: false,
+                  defaultDate: false,
+                  todayHighlight: false,
+                  disablePastDays: true,
+                  disabledDaysOfWeek: false,
+                  disableDates: false,
+                  weekStart: 0,
+                  daysHighlight: false,
+                  range: false,
+                  minDate: false,
+                  maxDate: yyyy + "-" + mm + "-" + dd,
+                  onSelect: dateSelect
+            });
 
-        // AM-PM Toggle
-        $(".am-pm.button").off('click').on('click',function(){
-          if($("#calendar-input-am-pm").val() == "am"){
-            $(this).find(".toggle").text("오후");
-            $("#calendar-input-am-pm").val("pm")
-          }else{
-            $(this).find(".toggle").text("오전");
-            $("#calendar-input-am-pm").val("am")
-          }
-        });
+            // AM-PM Toggle
+            $(".am-pm.button").off('click').on('click',function(){
+              if($("#calendar-input-am-pm").val() == "am"){
+                $(this).find(".toggle").text("오후");
+                $("#calendar-input-am-pm").val("pm")
+              }else{
+                $(this).find(".toggle").text("오전");
+                $("#calendar-input-am-pm").val("am")
+              }
+            });
 
-        // Hour Minute Restriction
-        $("#calendar-input-hour").change(function(){
-          var hour = $(this).val();
-          if(hour >= 12){
-            hour = 0;
-          }else if(hour < 0){
-            hour = 0;
-          }
+            // Hour Minute Restriction
+            $("#calendar-input-hour").change(function(){
+              var hour = $(this).val();
+              if(hour >= 12){
+                hour = 0;
+              }else if(hour < 0){
+                hour = 0;
+              }
 
-          if(hour >= 0 && hour < 10){
-            $(this).val("0" + parseInt(hour));
-          }else{
-            $(this).val(parseInt(hour));
-          }
-        });
+              if(hour >= 0 && hour < 10){
+                $(this).val("0" + parseInt(hour));
+              }else{
+                $(this).val(parseInt(hour));
+              }
+            });
 
-        $("#calendar-input-minute").change(function(){
+            $("#calendar-input-minute").change(function(){
 
-          var minute = $(this).val();
-          if(minute >= 60){
-            minute = 59;
-          }else if(minute < 0){
-            minute = 0;
-          }
+              var minute = $(this).val();
+              if(minute >= 60){
+                minute = 59;
+              }else if(minute < 0){
+                minute = 0;
+              }
 
-          if(minute >= 0 && minute < 10){
-            $(this).val("0" + parseInt(minute));
-          }else{
-            $(this).val(parseInt(minute));
-          }
+              if(minute >= 0 && minute < 10){
+                $(this).val("0" + parseInt(minute));
+              }else{
+                $(this).val(parseInt(minute));
+              }
 
-        });
+            });
 
-        // Submit Click Event Handler
-        $(".calendar-submit").off('click').on('click',function(){
+            // Submit Click Event Handler
+            $(".calendar-submit").off('click').on('click',function(){
 
-          var date        = $("#calendar-input-date").val();
-          var ampm        = $("#calendar-input-am-pm").val();
-          var hour        = $("#calendar-input-hour").val();
-          var minute      = $("#calendar-input-minute").val();
-          var timestamp   = "";
+              var date        = $("#calendar-input-date").val();
+              var ampm        = $("#calendar-input-am-pm").val();
+              var hour        = $("#calendar-input-hour").val();
+              var minute      = $("#calendar-input-minute").val();
+              var timestamp   = "";
 
-          if(ampm == "am"){
-            timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
-          }else{
-            timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
-          }
+              if(ampm == "am"){
+                timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
+              }else{
+                timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
+              }
 
-          var ServerDate = new Date(timestamp*1000);
-          $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
-          $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
+              var ServerDate = new Date(timestamp*1000);
+              $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
+              $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
 
-          $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
+              $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
 
-          $("#pullup").css({"display":"none"});
-          $("#template-view").css({"overflow":""});
-          $("body").css({"overflow":"inherit"});
+              $("#pullup").css({"display":"none"});
+              $("#template-view").css({"overflow":""});
+              $("body").css({"overflow":"inherit"});
 
-          anime({
-            targets: '#write-gathering-input-time-fake',
-            opacity:0.3,
-            duration: 300,
-            easing: 'linear',
-            direction: 'alternate'
+              anime({
+                targets: '#write-gathering-input-time-fake',
+                opacity:0.3,
+                duration: 300,
+                easing: 'linear',
+                direction: 'alternate'
+              });
+
+            })
           });
-
-        })
-      });
+      }
     });
 
 
@@ -1503,11 +1521,19 @@ var controller = {
       pullupMenu("pullup_agelimit",function(){
 
         var myage = $("#myage").val() || 30;
-        for(var i = 0; i<4; i++){
-            var agedown = parseInt(myage) - i;
-            var ageup = parseInt(myage) + i;
+        var i = 2;
+        var j = 2;
+        var agedown = parseInt(myage) - i;
+        var ageup = parseInt(myage) + j;
+        while(agedown >= 20){
             $(".roller-min ul").append('<li class="button" data-age="' + agedown + '">' + agedown + '</li>');
+            i += 1;
+            agedown = parseInt(myage) - i;
+        }
+        while(ageup <= 40){
             $(".roller-max ul").append('<li class="button" data-age="' + ageup + '">' + ageup + '</li>');
+            j += 1;
+            ageup = parseInt(myage) + j;
         }
                                        
         // Age Limit Event Handler
@@ -1568,59 +1594,61 @@ var controller = {
     });
 
     $("#write-gathering-input-prestage").off('click').on('click',function(){
-      pullupMenu("pullup_prestage",function(){
+      if ( $(this).data("edit") == "no" ) {
+          pullupMenu("pullup_prestage",function(){
 
-        // Prestage Event Handler
-        $("#pullup-prestage-input-duration input").off('click').on('click',function(){
-          $("#pullup-prestage-input-duration .roller").css({"display":"block"});
+            // Prestage Event Handler
+            $("#pullup-prestage-input-duration input").off('click').on('click',function(){
+              $("#pullup-prestage-input-duration .roller").css({"display":"block"});
 
-          $("#pullup-prestage-input-duration li").off('click').on('click',function(){
-            $("#pullup-prestage-input-duration input").val($(this).data("duration"));
-            $("#pullup-prestage-input-duration .roller").css({"display":"none"});
+              $("#pullup-prestage-input-duration li").off('click').on('click',function(){
+                $("#pullup-prestage-input-duration input").val($(this).data("duration"));
+                $("#pullup-prestage-input-duration .roller").css({"display":"none"});
+              });
+            });
+
+            $("#pullup-prestage-input-min-people input").off('click').on('click',function(){
+              $("#pullup-prestage-input-min-people .roller").css({"display":"block"});
+
+              $("#pullup-prestage-input-min-people li").off('click').on('click',function(){
+                $("#pullup-prestage-input-min-people input").val($(this).data("people"));
+                $("#pullup-prestage-input-min-people .roller").css({"display":"none"});
+              });
+            });
+
+            // Prestage Submit
+            $("#pullup-prestage-submit").off('click').on('click',function(){
+              var duration = $("#pullup-prestage-input-duration input").val();
+              var minpeople = $("#pullup-prestage-input-min-people input").val();
+
+              if(!duration && !minpeople){
+                $("#pullup .background").click();
+                $("#write-gathering-input-prestage").val("");
+                $("#write-gathering-input-prestage-duration").val("");
+                $("#write-gathering-input-prestage-minpeople").val("");
+              }else if(duration && minpeople){
+                $("#pullup .background").click();
+                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
+                $("#write-gathering-input-prestage-duration").val(duration);
+                $("#write-gathering-input-prestage-minpeople").val(minpeople);
+              }else{
+
+                var elm = '<div id="popup-message">' +
+                            '<span>모든 값을 정확히 입력해주세요</span>' +
+                          '</div>';
+
+                $("body").append(elm);
+
+                setTimeout(function(){
+                  $("#popup-message").remove();
+                }, 5000);
+
+              }
+
+            });
+
           });
-        });
-
-        $("#pullup-prestage-input-min-people input").off('click').on('click',function(){
-          $("#pullup-prestage-input-min-people .roller").css({"display":"block"});
-
-          $("#pullup-prestage-input-min-people li").off('click').on('click',function(){
-            $("#pullup-prestage-input-min-people input").val($(this).data("people"));
-            $("#pullup-prestage-input-min-people .roller").css({"display":"none"});
-          });
-        });
-
-        // Prestage Submit
-        $("#pullup-prestage-submit").off('click').on('click',function(){
-          var duration = $("#pullup-prestage-input-duration input").val();
-          var minpeople = $("#pullup-prestage-input-min-people input").val();
-
-          if(!duration && !minpeople){
-            $("#pullup .background").click();
-            $("#write-gathering-input-prestage").val("");
-            $("#write-gathering-input-prestage-duration").val("");
-            $("#write-gathering-input-prestage-minpeople").val("");
-          }else if(duration && minpeople){
-            $("#pullup .background").click();
-            $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
-            $("#write-gathering-input-prestage-duration").val(duration);
-            $("#write-gathering-input-prestage-minpeople").val(minpeople);
-          }else{
-
-            var elm = '<div id="popup-message">' +
-                        '<span>모든 값을 정확히 입력해주세요</span>' +
-                      '</div>';
-
-            $("body").append(elm);
-
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 5000);
-
-          }
-
-        });
-
-      });
+      }
     });
 
     // Gathering Max People Num
@@ -1632,6 +1660,14 @@ var controller = {
       }
     })
 
+    // Gathering edit
+    if ( $('#write-gathering-input-time-fake').data("edit") == "yes" ) {
+        $('#write-gathering-input-time-fake').css("opacity", "0.4");
+    }
+    if ( $('#write-gathering-input-prestage').data("edit") == "yes" ) {
+        $('#write-gathering-input-prestage').css("opacity", "0.4");
+    }
+      
     // Gathering Submit
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
@@ -2267,12 +2303,6 @@ var controller = {
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
     });
-    $("textarea").focus(function(){
-      $("#footer").css({"display":"none"});
-    });
-    $("textarea").blur(function(){
-      $("#footer").css({"display":"block"});
-    });
 
     // Profile Avatar Change
     $("#profile-avatar-change-button").off('click').on('click',function(){
@@ -2318,8 +2348,8 @@ var controller = {
             interestArrayPure.push(interestValue);
 
             $(".pullup-interest-detail").css({"display":"block"});
-            $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요");
-
+            $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요").focus();
+            
           }
 
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
@@ -3529,6 +3559,32 @@ var controller = {
   },
 
 
+  /* Report Ctrl */
+  reportCtrl : function(){
+    $(".report-category-item").off("click").on("click",function(){
+        $(".report-category-item").removeClass("selected");
+        $(this).addClass("selected");
+        var reportCode = $(this).data("code");
+        $("#report-code").val(reportCode);
+    });
+
+    $('form.report').off('submit').on('submit', function(event){
+        event.preventDefault();
+        var url = $(this).attr('action');
+        api.post(url, $(this).serialize(), function(res){
+            if (res['ok']){
+                popup('신고해주셔서 감사합니다.');
+                initiator("/index",false);
+            } else {
+                popup(res.msg);
+            }        
+        });
+
+    
+    });
+    return;
+  },
+    
   /* Void Ctrl */
   voidCtrl : function(){
     return;
