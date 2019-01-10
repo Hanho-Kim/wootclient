@@ -9,15 +9,6 @@ var serverParentURL = "http://derek-kim.com:8000";
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
 
-/*
-var info = $("<div>[DEBUG]" + serverParentURL + "<br>is new: " + server_toggle + "</div>")
-            .css({ position: 'fixed', right: '50px', top: '80px', 'font-size': '10px'});
-if (serverParentURL != "http://derek-kim.com:8000") {
-  info.css({color: 'red', 'font-size': '20px'});
-}
-$('body').append(info)
-*/
-
 
 var signupVariable = {
       address : "",
@@ -890,34 +881,24 @@ var controller = {
         el: '.swiper-pagination',
       },
     });
-    // Header Notification Highlight
-    if(pathParams.headerHighlight > 0){
-      $(".header-right-index-item.notification").append('<span class="header-item-noti">' + pathParams.headerHighlight + '</span>');
-    }
+      
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
 
+    // Header Notification Highlight
     var notidata = JSON.parse($("#hiddenInput_notidata").val() || null);
     var numNewNoti = notidata.num_noti;
     if (numNewNoti > 0) {
       $('.header-right-index-item.notification').append('<span class="header-item-noti">' + numNewNoti + '</span>');
     }
 
-    $('.header-right-index-item.notification').off('click').on('click', function(){
-      api.get("/action/read_all/", function(){
-        initator("/notification", true);
-      });  
-    })
-
-    // Post API: Like
-    $(".button-like").off('click').on('click', button_like);
     return;
   },
 
   /* Notification Ctrl */
   notificationCtrl : function(){
-    // api.get("/api/v1/get/highlightHeaderDelete");
+    api.get("/action/read_all/", function(){});
     return;
   },
 
@@ -1784,7 +1765,7 @@ var controller = {
     });
     */
 
-/* Write Posting */
+    /* Write Posting */
 
     var woottagArray = []; // Post this array to server-side
     var woottagMaxLength;
@@ -1910,10 +1891,22 @@ var controller = {
         $(".board-select").off('click').on('click',function(){
           $("#pullup .background").click();
           var code = $(this).data("code");
-
+    
           $("#write-posting-input-topic-fake").val($(this).find("span").text());
           $("#write-posting-input-topic").val(code);
-
+          
+          api.get("/get_recommended_tags/" + code + "/",function(res){
+              var recommendTagArray = res;
+              $("#woot-tag-recommendation").find("ul").html("");
+              $.each(recommendTagArray, function(index,value){
+                  $("#woot-tag-recommendation").find("ul").append("<li class='woot-tag'>#" + value + "</li>");
+              });
+              // Click-add Event Handler
+              $("#woot-tag-recommendation").find(".woot-tag").click(function(){
+                let str = $(this).text().replace(/\s/g,"").replace("#","");
+                woottag.createTag(str);
+              });
+          });
           anime({
             targets: '#write-posting-input-topic-fake',
             opacity:0.3,
@@ -2093,6 +2086,17 @@ var controller = {
   accountMoreCtrl : function(){
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
+      
+    // Interest
+    $(".interest-array").each(function(){
+        if($(this).val()){
+            var interestArray = JSON.parse($(this).val());
+            var appendHtml = $(this).parent();
+            $.each(interestArray, function(index,value){
+                appendHtml.append("<span>" + value + "</span>");
+            });
+        }
+    });
 
     $("#people-filtering").off('click').on('click',function(){
 
@@ -2161,6 +2165,17 @@ var controller = {
   profileCtrl : function(){
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
+      
+    // Interest
+    $(".interest-array").each(function(){
+        if($(this).val()){
+            var interestArray = JSON.parse($(this).val());
+            var appendHtml = $(this).parent();
+            $.each(interestArray, function(index,value){
+                appendHtml.append("<span>" + value + "</span>");
+            });
+        }
+    });
 
     var swiper = new Swiper('.swiper-container', {
       pagination: {
@@ -2313,9 +2328,15 @@ var controller = {
     });
 
     // Profile Interest Edit
+    if($("#profile-edit-input-interest").val()){
+        var alreadyInterest = JSON.parse($("#profile-edit-input-interest").val() || "[]");
+        $.each(alreadyInterest,function(index,value){
+           $("#profile-edit-input-interest-fake").append("<span>"+value+"</span>");
+        });
+    }
     $("#profile-edit-input-interest-fake").off('click').on('click',function(){
       pullupMenu("pullup_edit_interest",function(){
-        var interestArray = JSON.parse($("#profile-edit-input-interest").val() || null);
+        var interestArray = JSON.parse($("#profile-edit-input-interest").val() || "[]");
         var interestArrayPure = [];
         var interestValue = "";
 
@@ -2341,15 +2362,19 @@ var controller = {
             $(".pullup-interest-detail").css({"display":"none"});
 
           }else{
-
-            $(this).addClass("selected");
-            interestValue = $(this).data("interest");
-            interestArray.push(interestValue);
-            interestArrayPure.push(interestValue);
-
-            $(".pullup-interest-detail").css({"display":"block"});
-            $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요").focus();
             
+            if(interestArray.length > 4){
+                popup("관심사는 최대 5개까지만 선택가능합니다.");
+            }else{
+                $(this).addClass("selected");
+                interestValue = $(this).data("interest");
+                interestArray.push(interestValue);
+                interestArrayPure.push(interestValue);
+
+                $(".pullup-interest-detail").css({"display":"block"});
+                $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요").focus();
+            }
+
           }
 
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
@@ -2378,7 +2403,12 @@ var controller = {
           $(".pullup-interest-detail").css({"display":"none"});
             
         });
-          
+        
+        // close button
+        $('.close-interest').off('click').on('click', function(){
+            $("#pullup .background").trigger('click');
+        });
+
       }); // pullupMenu
     });
 
@@ -2413,22 +2443,16 @@ var controller = {
         }, 5000);
         return;
       }
-
-      var serializedData = $("#profile-edit-form").serialize();
-      $.ajax({
-            url       : serverParentURL + "/api/v1/post/profile",
-            type      : 'POST',
-            data      : serializedData,
-            // xhrFields : { withCredentials: true },
-            success   : function( response ) {
-                        var res = response;
-                        if(res.redirect){
-                          initiator(res.redirect);
-                          history.pushState(null, null, document.location.pathname + '#' + res.redirect);
-                        }
-                      },
-            error     : function( request, status, error ) {}
+    
+      var data = $("#profile-edit-form").serialize();
+      var url = $("#profile-edit-form").attr('action');
+      var udata = JSON.parse($("#hiddenInput_userdata").val());
+      
+      api.post(url,data,function(){
+          popup('프로필 수정이 완료되었습니다.');
+          initiator("/account/profile?uid=" + udata.uid,false);
       });
+
     });
     return;
   },
@@ -3573,7 +3597,7 @@ var controller = {
         var url = $(this).attr('action');
         api.post(url, $(this).serialize(), function(res){
             if (res['ok']){
-                popup('신고해주셔서 감사합니다.');
+                popup('신고가 정상적으로 접수되었습니다.');
                 initiator("/index",false);
             } else {
                 popup(res.msg);
@@ -3663,6 +3687,11 @@ $(document).ready(function(){
         }
     });
 
+    FCMPlugin.getToken(function(token){
+        alert(token);
+        console.log(token);
+    });
+      
     // Cordova-plugin-screen-orientation : Orientation Lock
     screen.orientation.lock('portrait');
 
