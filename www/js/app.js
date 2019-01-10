@@ -1672,7 +1672,7 @@ var controller = {
             if (res['ok']){
                console.log("gotcha!");
                var gid = res['gid'].toString();
-               initiator('/gathering_detail?gid=' + gid, false);
+               initiator('/gathering_detail?gid=' + gid, true);
             } else {
                 console.log("fail");
                 popup('필수 항목들에 내용을 채워주세요.');

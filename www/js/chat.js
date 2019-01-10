@@ -270,9 +270,10 @@ function refreshRoomInfo(url) {
         $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
         $.each(fields.users_joining,function(index,value){
+            var participants_uid = value[0];
             var participants_username = value[1];
             var participants_avatar = value[2];
-            $(".participants-item-wrapper").append('<div class="participants-item"><div class="avatar"></div><div class="username">' + participants_username + '</div></div>');
+            $(".participants-item-wrapper").append('<a href="./index.html#/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar"></div><div class="username">' + participants_username + '</div></div></a>');
         });
 
         if(!chatConfig.is_chatting_on){
@@ -330,13 +331,13 @@ var api = {
 $('#chat-room-button-like').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.substr(link.length - 2);  
-  document.location.href = "/index.html#/gathering_detail?gid=" + gid;
+  document.location.href = "./index.html#/gathering_detail?gid=" + gid;
 });
 
 $('#chat-room-button-cancel').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.substr(link.length - 2);
-  document.location.replace("/index.html#/gathering_detail?gid=" + gid);
+  document.location.href = "./index.html#/gathering_detail?gid=" + gid;
 });
 
 function infiniteScroll() {
