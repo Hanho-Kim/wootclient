@@ -1068,6 +1068,21 @@ var controller = {
         $("#signup-4-wrapper").css({"display":"block"});
       });
       
+        var infoSubmitHandler = makeAjaxSubmitHandler(function(response){
+            if (response['ok']){
+                // go to next stage
+                var cordovaPath = '/signup'
+                initiator(cordovaPath);  // no pushState   
+            } else {
+                // TODO: show errors to the user
+                console.log(response['user_form_errors']);
+                console.log(response['profile_form_errors'])
+            }
+        });
+        $("#signup-3-form").on('submit', infoSubmitHandler);
+        $(".signup-footer-item-forward").click(function(){
+            $("#signup-3-form").submit();
+        });
       
     var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
     $("#model-house-item-wrapper").html("");
