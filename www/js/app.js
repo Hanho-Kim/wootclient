@@ -538,7 +538,8 @@ var api = {
               dataType  : "json",
               xhrFields : {withCredentials: true},
               success   : function( response ) {
-                          res = response;},
+                          res = response;
+                        },
               error     : function( request, status, error ) {
                           console.error(error);
                         }
@@ -548,7 +549,7 @@ var api = {
       return successFn(res);
     })
     .catch(function(){
-      var elm = '<div id="popup/-message">' +
+      var elm = '<div id="popup-message">' +
                   '<span>API 연결 오류</span>' +
                 '</div>';
       $("body").append(elm);
@@ -899,8 +900,41 @@ var controller = {
   /* Notification Ctrl */
   notificationCtrl : function(){
     api.get("/action/read_all/", function(){});
+      
+    $('.notification-item').each(function (index) {
+        $(this).off('click').on('click', function() {            
+            actionUrl = $(this).data('url');
+
+            api.get(actionUrl, function(res) {
+                if(res['ok']) {
+                    var urlSplit = res.url.split("/");
+                    var urlType = urlSplit[1];
+                    var id = urlType.indexOf("account") >= 0 ? urlSplit[3] : urlSplit[2];  
+
+                    // post -> post_detail
+                    if ( urlType.indexOf("post") >= 0 ) {
+                        initiator("/post_detail?pid=" + id, true);
+                    }
+                    // gathering (need to fix the condition of if statement through 'chatting_on')
+                    else if ( urlType.indexOf("gathering") >= 0 ) {                                     
+                        if ( res.target.fields.users_joining.length >= res.target.fields.min_num_people ) {
+                            window.location.href = "./chat.html?gid=" + id;
+                        } else {
+                            initiator("/gathering_detail?gid=" + id, true);
+                        }
+                    } 
+                    // woot -> profile
+                    else if ( urlType.indexOf("account") >= 0 ) {
+                        initiator("/account/profile?uid=" + id, true);
+                    }
+
+                }
+            });
+        });
+    });
     return;
   },
+  
 
   /* Login Ctrl */
   loginCtrl : function(){
@@ -1561,7 +1595,7 @@ var controller = {
             $("#write-gathering-input-agelimit-fake").val("");
             $("#write-gathering-input-agelimit").val("");
 
-            $("#write-gathering-input-agelimit-has").val(0);
+            $("#write-gathering-input-agelimit-has").val(false);
 
           }else if(minage && maxage){
             $("#pullup .background").click();
@@ -1569,7 +1603,7 @@ var controller = {
 
             $("#write-gathering-input-agelimit-min").val(minage);
             $("#write-gathering-input-agelimit-max").val(maxage);
-            $("#write-gathering-input-agelimit-has").val(1);
+            $("#write-gathering-input-agelimit-has").val(true);
           }else{
 
             var elm = '<div id="popup-message">' +
@@ -1650,9 +1684,9 @@ var controller = {
     // Gathering Max People Num
     $("#write-gathering-input-maxpeople").off('change').on('change',function(){
       if($(this).val() == ""){
-        $("#write-gathering-input-maxpeople-has").val(0);
+        $("#write-gathering-input-maxpeople-has").val(false);
       }else{
-        $("#write-gathering-input-maxpeople-has").val(1);
+        $("#write-gathering-input-maxpeople-has").val(true);
       }
     })
 
@@ -2112,69 +2146,80 @@ var controller = {
             });
         }
     });
-
     $("#people-filtering").off('click').on('click',function(){
+      if ( $(this).hasClass('filtered') ) {
+        // cancel filter
+        var num_area_people = parseInt( $(this).data('num_area_people') );
+        $('#filter-count').text(num_area_people);
 
-      pullupMenu('pullup_more_filtering',function(){
+        $($(this)).removeClass("filtered").find("span").text("관심사 필터");
 
-        var interestArray = [];
-        $(".pullup-interest-content .interest").off('click').on('click',function(){
-
-          var interest = $(this).data("interest");
-
-          if(interestArray.indexOf(interest) > -1){
-            interestArray.splice(interestArray.indexOf(interest), 1);
-          }else{
-            interestArray.push(interest);
-          }
-
-          $(this).toggleClass("selected");
-
+        $(".people-section-all .people-item").each(function(index,value){
+            $(this).css( {"display":"block"} );
         });
 
-        $("#submit-filtering").off('click').on('click',function(){
+      } else {
+          // add filter
+          pullupMenu('pullup_more_filtering',function(){
+            var interestArray = [];
+            $(".pullup-interest-content .interest").off('click').on('click',function(){
 
-          $("#pullup .background").click();
-          var filteredCount = 0;
-          $(".people-section-all .people-item").each(function(index,value){
+              var interest = $(this).data("interest");
 
-            $(this).css({"display":"block"});
-
-            if(interestArray.length > 0){
-
-              var personInterestArray = JSON.parse(JSON.stringify($(this).find(".interest").data("interestarray")));
-
-              var personInterestArrayPure = [];
-              $.each(personInterestArray, function(index, value){
-                personInterestArrayPure.push(value.split(":")[0]);
-              });
-
-              var andChecker = true;
-              $.each(interestArray,function(index, value){
-                if(personInterestArrayPure.indexOf(value) == -1){
-                  andChecker = false;
-                }
-              });
-
-              if(!andChecker){
-                $(this).css({"display":"none"});
+              if(interestArray.indexOf(interest) > -1){
+                interestArray.splice(interestArray.indexOf(interest), 1);
               }else{
-                filteredCount += 1;
+                interestArray.push(interest);
               }
-            }
 
+              $(this).toggleClass("selected");
+
+            });
+
+            $("#submit-filtering").off('click').on('click',function(){
+                $("#pullup .background").click();
+                var filteredCount = 0;
+                $(".people-section-all .people-item").each(function(index,value){
+
+                $(this).css({"display":"block"});
+
+                if(interestArray.length > 0){
+
+                  var personInterestArray = JSON.parse(JSON.stringify($(this).find(".interest").data("interestarray")));
+
+                  var personInterestArrayPure = [];
+                  $.each(personInterestArray, function(index, value){
+                    personInterestArrayPure.push(value.split(":")[0]);
+                  });
+
+                  var andChecker = true;
+                  $.each(interestArray,function(index, value){
+                    if(personInterestArrayPure.indexOf(value) == -1){
+                      andChecker = false;
+                    }
+                  });
+
+                  if(!andChecker){
+                    $(this).css({"display":"none"});
+                  }else{
+                    filteredCount += 1;
+                  }
+                }
+
+              });
+              $("#people-filtering").addClass("filtered").find("span").text("필터 취소");
+              $('#filter-count').text(filteredCount);
+
+            });
           });
-          $("#people-filtering").addClass("filtered").find("span").text("필터됨");
-          $('#filter-count').text(filteredCount);
-        });
-
-      });
-
+      }
+      
     });
+
 
     return;
   },
-
+  
 
   /* Profile Ctrl */
   profileCtrl : function(){
@@ -2341,7 +2386,25 @@ var controller = {
         $("#profile-edit-input-avatar").val(response.avatarID);
       });
     });
+      
+    /*
+    // Profile Edit Guide
+    $('input[name="nick"]').focus(function(){
+        $(".profile-edit-guide-nick").css({"display":"block"});
+    });
+    $('input[name="nick"]').blur(function(){
+        $(".profile-edit-guide-nick").css({"display":"none"});
+    });
 
+    $('input[name="nick"]').focus(function(){
+        $(".profile-edit-guide-intro").css({"display":"block"});
+    });
+    $('input[name="nick"]').blur(function(){
+        $(".profile-edit-guide-intro").css({"display":"none"});
+    });
+    
+    */
+      
     // Profile Interest Edit
     if($("#profile-edit-input-interest").val()){
         var alreadyInterest = JSON.parse($("#profile-edit-input-interest").val() || "[]");
@@ -2435,6 +2498,7 @@ var controller = {
       }
     });
 
+    /* message will be added later
     $("#profile-edit-input-message-fake").change(function(){
       if($(this).is(":checked")){
         $("#profile-edit-input-message").val(true);
@@ -2442,7 +2506,8 @@ var controller = {
         $("#profile-edit-input-message").val(false);
       }
     });
-
+    
+    */
 
     $("#profile-edit-submit").off('click').on('click',function(){
       if($("#profile-edit-input-avatar").val()      == "" ||
@@ -2463,9 +2528,13 @@ var controller = {
       var url = $("#profile-edit-form").attr('action');
       var udata = JSON.parse($("#hiddenInput_userdata").val());
       
-      api.post(url,data,function(){
-          popup('프로필 수정이 완료되었습니다.');
-          initiator("/account/profile?uid=" + udata.uid,false);
+      api.post(url,data,function(res){
+          if(res['ok']) {
+              popup('프로필 수정이 완료되었습니다.');
+              initiator("/account/edit", false);
+          } else {
+              popup('프로필 변경이 실패했습니다.');
+          }
       });
 
     });

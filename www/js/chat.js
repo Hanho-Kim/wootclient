@@ -265,7 +265,6 @@ function refreshRoomInfo(url) {
         $(".chat-title").text(fields.title);
         $(".chat-date").text(fields.datetime_kor);
         $(".chat-place").text(fields.address);
-        $(".chat-description").html("").append($.parseHTML(fields.content));
         
         $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
@@ -330,14 +329,25 @@ var api = {
 
 $('#chat-room-button-like').off('click').on('click', function(){
   var link = $(location).attr('href');
-  var gid = link.substr(link.length - 2);  
+  var gid = link.split("=")[1];  
   document.location.href = "./index.html#/gathering_detail?gid=" + gid;
 });
 
 $('#chat-room-button-cancel').off('click').on('click', function(){
   var link = $(location).attr('href');
-  var gid = link.substr(link.length - 2);
-  document.location.href = "./index.html#/gathering_detail?gid=" + gid;
+  var gid = link.split("=")[1];  
+  /*
+  var action = $(this).data("action");
+  var data = {'gid': gid, 'action': action};
+  var button = $(this);
+
+  api.post("/gathering_join/", data, function (res) {
+      if(res['ok']) {
+          document.location.href = "./index.html#/gathering_detail?gid=" + gid;    
+      }
+  });
+  */
+  document.location.href = "./index.html#/gathering_detail?gid=" + gid;    
 });
 
 function infiniteScroll() {
