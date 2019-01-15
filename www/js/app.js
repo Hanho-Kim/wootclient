@@ -1102,21 +1102,21 @@ var controller = {
         $("#signup-4-wrapper").css({"display":"block"});
       });
       
-        var infoSubmitHandler = makeAjaxSubmitHandler(function(response){
-            if (response['ok']){
-                // go to next stage
-                var cordovaPath = '/signup'
-                initiator(cordovaPath);  // no pushState   
-            } else {
-                // TODO: show errors to the user
-                console.log(response['user_form_errors']);
-                console.log(response['profile_form_errors'])
-            }
-        });
-        $("#signup-3-form").on('submit', infoSubmitHandler);
-        $(".signup-footer-item-forward").click(function(){
-            $("#signup-3-form").submit();
-        });
+      var infoSubmitHandler = makeAjaxSubmitHandler(function(response){
+          if (response['ok']){
+              // go to next stage
+              var cordovaPath = '/signup'
+              initiator(cordovaPath, false);  // no pushState   
+          } else {
+              // TODO: show errors to the user
+              console.log(response['user_form_errors']);
+              console.log(response['profile_form_errors'])
+          }
+      });
+      $("#signup-3-form").on('submit', infoSubmitHandler);
+      $(".signup-footer-item-forward").off('click').on('click', function(){
+          $("#signup-3-form").submit();
+      });
       
     var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
     $("#model-house-item-wrapper").html("");
@@ -2287,13 +2287,14 @@ var controller = {
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
       var $this = $(this);
-      var targetUid = $(this).data("uid");
-      var action = $(this).data("action");
+      var targetUid = $this.data("uid");
+      var action = $this.data("action");
       if($(this).hasClass("liked")){
         api.post("/account/woot/",{id:targetUid, action:action},function(res){
           if(res['ok']){
             $this.removeClass("liked");
             $this.data("action", "woot");
+            console.log("unwoot!")
           }
         });
 
@@ -2302,6 +2303,7 @@ var controller = {
           if(res['ok']){
             $this.addClass("liked");
             $this.data('action', 'unwoot');
+            console.log("woot!")
           }
         });
       }
@@ -2386,24 +2388,28 @@ var controller = {
         $("#profile-edit-input-avatar").val(response.avatarID);
       });
     });
-      
-    /*
+    
     // Profile Edit Guide
-    $('input[name="nick"]').focus(function(){
-        $(".profile-edit-guide-nick").css({"display":"block"});
-    });
-    $('input[name="nick"]').blur(function(){
-        $(".profile-edit-guide-nick").css({"display":"none"});
-    });
+    $("#profile-edit-guide-nick").css({"display":"none"});
+    $("#profile-edit-guide-intro").css({"display":"none"});
+    $("#profile-edit-guide-interest").css({"display":"none"});
 
     $('input[name="nick"]').focus(function(){
-        $(".profile-edit-guide-intro").css({"display":"block"});
+        $("#profile-edit-guide-nick").css({"display":"block"});
     });
     $('input[name="nick"]').blur(function(){
-        $(".profile-edit-guide-intro").css({"display":"none"});
+        $("#profile-edit-guide-nick").css({"display":"none"});
     });
+
+    $('textarea[name="intro"]').focus(function(){
+        $("#profile-edit-guide-intro").css({"display":"block"});
+    });
+    $('textarea[name="intro"]').blur(function(){
+        $("#profile-edit-guide-intro").css({"display":"none"});
+        $("#profile-edit-guide-interest").css({"display":"block"});        
+    });
+
     
-    */
       
     // Profile Interest Edit
     if($("#profile-edit-input-interest").val()){
