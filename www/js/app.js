@@ -146,7 +146,6 @@ function pullupMenu(menu,successFn){
     targets: '#pullup .pullup-inner',
     translateY: '-100%',
     duration: 500,
-    delay:500,
     easing: 'easeInOutQuart'
   });
   $("#pullup .pullup-inner").css({"display":"block"}).html('<span class="loading-spinner"></span>');
