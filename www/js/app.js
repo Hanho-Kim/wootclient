@@ -495,6 +495,12 @@ var viewConfig = {
     "template"    : serverParentURL + "/support/report/post",
     "header"      : "./header/report.html",
     "footerHide"  : true
+  },
+  "/report/profile" : {
+    "controller"  : "reportCtrl",
+    "template"    : serverParentURL + "/support/report/profile",
+    "header"      : "./header/report.html",
+    "footerHide"  : true
   }
 }
 
@@ -1109,9 +1115,18 @@ var controller = {
               var cordovaPath = '/signup'
               initiator(cordovaPath, false);  // no pushState   
           } else {
-              // TODO: show errors to the user
-              console.log(response['user_form_errors']);
-              console.log(response['profile_form_errors'])
+            var elm = '<div id="popup-message">' +
+                        '<span>모든 정보를 정확하게 입력해주세요.</span>' +
+                      '</div>';
+
+            $("body").append(elm);
+
+            setTimeout(function(){
+              $("#popup-message").remove();
+            }, 5000);
+
+            console.log(response['user_form_errors']);
+            console.log(response['profile_form_errors'])
           }
       });
       $("#signup-3-form").on('submit', infoSubmitHandler);
@@ -2365,42 +2380,10 @@ var controller = {
         });
 
         $(".profile-report-report").off('click').on('click',function(){
-          pullupMenu('pullup_profile_report_reason?uid=' + targetUid,function(){
-            $(".pullup-item-report-reason").off('click').on('click',function(){
-              var reason = $(this).data("reason");
-              api.post("/api/v1/post/user/report",{uid:targetUid, reason:reason},function(){
-
-                var elm = '<div id="popup-message">' +
-                            '<span>해당 유저를 차단하고 신고했습니다.<br>앞으로 내가 만든 게더링은 해당 유저에게 보이지 않습니다.</span>' +
-                          '</div>';
-
-                $("body").append(elm);
-
-                setTimeout(function(){
-                  $("#popup-message").remove();
-                }, 10000);
-
-              });
-
-              $("#pullup .background").click();
-
-            });
-          });
-        });
-
-        $(".profile-report-unblock").off('click').on('click',function(){
-          api.post("/api/v1/post/user/unblock",{uid:targetUid},function(){
-            var elm = '<div id="popup-message">' +
-                        '<span>해당 유저 차단을 해제했습니다.</span>' +
-                      '</div>';
-            $("body").append(elm);
-
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 5000);
-
-          });
-          $("#pullup .background").click();
+           initiator("/report/profile?uid=" + targetUid, true);
+           $("#pullup").css({"display":"none"});
+           $("#template-view").css({"overflow":""});
+           $("body").css({"overflow":""});
         });
 
       });
