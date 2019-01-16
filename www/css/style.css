@@ -613,11 +613,11 @@ input,textarea{
 }
 
 .login-button-wrapper{
-  position:absolute;
+  position:relative;
   display:block;
   text-align:center;
   padding:0px 40px;
-  bottom:40px;
+  margin-top:40px;
   z-index:99;
 }
 .login-button-wrapper .login-button{

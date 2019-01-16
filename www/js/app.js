@@ -146,6 +146,7 @@ function pullupMenu(menu,successFn){
     targets: '#pullup .pullup-inner',
     translateY: '-100%',
     duration: 500,
+    delay:500,
     easing: 'easeInOutQuart'
   });
   $("#pullup .pullup-inner").css({"display":"block"}).html('<span class="loading-spinner"></span>');
@@ -2404,7 +2405,51 @@ var controller = {
         $("#profile-edit-input-avatar").val(response.avatarID);
       });
     });
-    
+
+    /* updating image change to new version
+      $("#template-view").css({"overflow":"hidden"});
+      $("body").css({"overflow":"hidden"});
+
+      $("#profile-avatar-overlap-view").append(
+                                        '<div id="header" class="row">' +
+                                          '<div class="header-left history-back button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                          '</div>' +
+                                          '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                            '<span>썸네일 선택</span>' +
+                                          '</div>' +
+                                          '<div class="header-right button col-lg-4 col-md-4 col-sm-4 col-xs-4" id="profile-edit-avatar-select">' +
+                                            '<span style="color:#45aaf2;font-weight:600;">저장</span>' +
+                                          '</div>' +
+                                        '</div>');
+
+      $("#profile-avatar-overlap-view").css({"display":"block"});
+      $("#profile-avatar-overlap-view").addClass("activated");
+      anime({
+          targets: "#profile-avatar-overlap-view",
+          translateX: '-100%',
+          duration: 300,
+          easing: 'easeInOutQuart'
+      });
+
+      renderTemplate(serverParentURL + 'misc/edit_avatar', "#profile-avatar-overlap-view", function(){
+
+        // Close Event Handler
+        $("#profile-edit-avatar-select").off('click').on('click',function(){
+          anime({
+            targets: "#profile-avatar-overlap-view",
+            translateX: '100%',
+            duration: 10
+          });
+          $("#profile-avatar-overlap-view").html("");
+          $("#profile-avatar-overlap-view").removeClass("activated");
+          $("#profile-avatar-overlap-view").css({"display":"none"});
+          $("#template-view").css({"overflow":""});
+          $("body").css({"overflow":"inherit"});
+        });
+      });
+    });      
+    */
+                  
     // Profile Edit Guide
     $("#profile-edit-guide-nick").css({"display":"none"});
     $("#profile-edit-guide-intro").css({"display":"none"});
