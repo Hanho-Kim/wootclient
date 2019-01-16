@@ -470,7 +470,8 @@ var viewConfig = {
   "/account/change_password" : {
     "controller"  : "passwordEditCtrl",
     "template"    : serverParentURL + "/people/edit.password",
-    "header"      : "./header/people.profile.edit.password.html"
+    "header"      : "./header/people.profile.edit.password.html",
+    "footerHide"  : true
   },
   "/debug" : {
     "controller"  : "debugCtrl",
@@ -2311,24 +2312,56 @@ var controller = {
 
     // Profile Buttons Report
     $(".profile-button-report").off('click').on('click',function(){
+      var button = $(this);
       var targetUid = $(this).data("uid");
+      var action = $(this).data("action");
+      var data = {id:targetUid, action:action};
       pullupMenu('pullup_profile_report?uid=' + targetUid,function(){
-
+        if ( button.hasClass("banned") ) {
+            $(".profile-report-block").text("해당 이웃 차단 해제");    
+            $(".profile-report-report").text("해당 이웃 신고 하기");    
+        }
+        
         $(".profile-report-block").off('click').on('click',function(){
-          api.post("/account/ban/",{id:targetUid, action:"ban"},function(){
+          if ( button.hasClass("banned") ) {
+              var next_action = "ban";
+              button.data("action", next_action);
+              button.removeClass("banned");
+              api.post("/account/ban/", data, function(){
 
-            var elm = '<div id="popup-message">' +
-                        '<span>해당 유저를 차단했습니다.<br>앞으로 내가 만든 게더링은 해당 유저에게 보이지 않습니다.</span>' +
-                      '</div>';
+                var elm = '<div id="popup-message">' +
+                            '<span>해당 유저를 차단 해제했습니다.<br>앞으로 서로의 게더링, 게시물을 볼 수 있습니다.</span>' +
+                          '</div>';
 
-            $("body").append(elm);
+                $("body").append(elm);
 
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 10000);
+                setTimeout(function(){
+                  $("#popup-message").remove();
+                }, 10000);
 
-          });
-          $("#pullup .background").click();
+              });
+              $("#pullup .background").click();
+              
+          } else {
+              var next_action = "unban";
+              button.data("action", next_action);
+              button.addClass("banned");
+              api.post("/account/ban/", data, function(){
+
+                var elm = '<div id="popup-message">' +
+                            '<span>해당 유저를 차단했습니다.<br>앞으로 서로의 게더링, 게시물은 보이지 않습니다.</span>' +
+                          '</div>';
+
+                $("body").append(elm);
+
+                setTimeout(function(){
+                  $("#popup-message").remove();
+                }, 10000);
+
+              });
+              $("#pullup .background").click();
+              
+          }
         });
 
         $(".profile-report-report").off('click').on('click',function(){
