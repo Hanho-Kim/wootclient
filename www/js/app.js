@@ -2471,7 +2471,6 @@ var controller = {
     });
 
     
-      
     // Profile Interest Edit
     if($("#profile-edit-input-interest").val()){
         var alreadyInterest = JSON.parse($("#profile-edit-input-interest").val() || "[]");
@@ -2598,7 +2597,7 @@ var controller = {
       api.post(url,data,function(res){
           if(res['ok']) {
               popup('프로필 수정이 완료되었습니다.');
-              initiator("/account/edit", false);
+              initiator("/account/profile?uid=" + udata.uid, false);
           } else {
               popup('프로필 변경이 실패했습니다.');
           }

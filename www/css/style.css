@@ -611,13 +611,32 @@ input,textarea{
   border:none;
   border-radius:5px;
 }
-
-.login-button-wrapper{
+.login-button-wrapper-first{
   position:relative;
   display:block;
   text-align:center;
   padding:0px 40px;
   margin-top:40px;
+  z-index:99;    
+}
+.login-button-wrapper-first .login-button{
+  position:relative;
+  display:block;
+  width:100%;
+  padding:16px;
+  text-align:center;
+  background-color:#45aaf2;;
+  color:white;
+  font-weight:600;
+  font-size:12px;
+  border-radius:5px;
+}
+.login-button-wrapper{
+  position:absolute;
+  display:block;
+  text-align:center;
+  padding:0px 40px;
+  bottom:40px;
   z-index:99;
 }
 .login-button-wrapper .login-button{
