@@ -4,7 +4,6 @@ var mobile    = false;
 
 // No slash at the end of the url
 var serverParentURL = "http://derek-kim.com:8000";
-// var serverParentURL = "http://127.0.0.1:8000";
 
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
@@ -26,6 +25,7 @@ function displayCalendar(element, next, maxDate){
  var counter = 1;
 
  var dateNow = new Date();
+
 
  if(next){
   var month = dateNow.getMonth() + 1;
@@ -55,7 +55,7 @@ function displayCalendar(element, next, maxDate){
  var dayPerMonth  = ["31", ""+FebNumberOfDays+"","31","30","31","30","31","31","30","31","30","31"];
  
  // days in previous month and next one , and day of week.
- var nextDate = new Date(nextMonth +' 1 ,'+year);
+ var nextDate = new Date(year + "/" + nextMonth +'/1');
  var weekdays= nextDate.getDay();
  var weekdays2 = weekdays;
  var numOfDays = dayPerMonth[month];
@@ -77,7 +77,7 @@ function displayCalendar(element, next, maxDate){
         htmlContent += "</tr><tr>";
     }
 
-    var counterDate = new Date(year + "-" + (month +1) + "-" + counter);
+    var counterDate = new Date(year + "/" + (month +1) + "/" + counter);
     var timeDiff = Math.abs(counterDate.getTime() - dateNow.getTime());
     var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
 
@@ -96,9 +96,9 @@ function displayCalendar(element, next, maxDate){
  // building the calendar html body.
  var calendarBody = "";
  if(next){
-  calendarBody = "<table class='calendar'> <tr class='monthNow'><th id='prev-month-button'>◀</th><th colspan='5'>"+ year + "년 " + monthNames[month] +"</th><th></th></tr>";
+  calendarBody = "<table class='calendar'> <tr class='monthNow'><th id='prev-month-button'><</th><th colspan='5'>"+ year + "년 " + monthNames[month] +"</th><th></th></tr>";
  }else{
-  calendarBody = "<table class='calendar'> <tr class='monthNow'><th></th><th colspan='5'>"+ year + "년 " + monthNames[month] +"</th><th id='next-month-button'>▶</th></tr>";
+  calendarBody = "<table class='calendar'> <tr class='monthNow'><th></th><th colspan='5'>"+ year + "년 " + monthNames[month] +"</th><th id='next-month-button'>></th></tr>";
  }
  calendarBody +="<tr class='dayNames'>  <td>일</td>  <td>월</td> <td>화</td>"+
  "<td>수</td> <td>목</td> <td>금</td> <td>토</td> </tr>";
@@ -1192,8 +1192,11 @@ var controller = {
         });
       });
 
-      $("#signup-3-form-address").val(signupVariable["address"]);
-      $("#signup-3-form-postcode").val(signupVariable["postcode"]);
+      if($("#signup-3-form-devicetoken") && typeof FCMPlugin != 'undefined'){
+          FCMPlugin.getToken(function(token){
+              $("#signup-3-form-devicetoken").val(token);
+          });      
+      }
       
       // Radio
       $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
@@ -2663,18 +2666,31 @@ var controller = {
     
       var data = $("#profile-edit-form").serialize();
       var url = $("#profile-edit-form").attr('action');
-      var udata = JSON.parse($("#hiddenInput_userdata").val());
+      var udata = JSON.parse($("#hiddenInput_userdata").val());      
+      var editdata = JSON.parse($("#hiddenInput_editdata").val());
       
       api.post(url,data,function(res){
           if(res['ok']) {
-              popup('프로필 수정이 완료되었습니다.');
-              initiator("/account/profile?uid=" + udata.uid, false);
+              if (editdata.initial == "yes") {
+                  popup("프로필이 생성되었습니다. 우트에 오신걸 환영해요 :)");
+                  initiator("/index", false);
+              } else {
+                  popup("프로필이 수정되었습니다.");
+                  initiator("/account/profile?uid=" + udata.uid, false);
+              }
           } else {
-              popup('프로필 변경이 실패했습니다.');
+              popup('모든 내용들을 충실히 작성해주세요.');
           }
       });
 
     });
+    
+    if(typeof FCMPlugin != 'undefined'){
+        FCMPlugin.getToken(function(token){
+           $("#profile-edit-input-devicetoken").val(token);
+        });      
+    }
+      
     return;
   },
 
@@ -3867,31 +3883,6 @@ $(document).ready(function(){
   initiator();
 
   //============================================================
-  // Update Check
-  //------------------------------------------------------------
-  if (server_toggle){
-    var update_url = serverParentURL + "/common/update?currentVersion=" + currentVersion;
-  } else {
-    var update_url = serverParentURL + "/update?currentVersion=" + currentVersion;
-  }
-  $.ajax({
-          method    : "GET",
-          url: update_url,
-          xhrFields: {withCredentials: true},
-          success   : function( response ) {
-
-                      if(response.length > 0){
-                        $("#update-alert").html("");
-                        $("#update-alert").append($.parseHTML(response));
-                        $("#update-alert").css({"display":"block"});
-                      }
-
-                    },
-          error     : function( request, status, error ) {}
-  });
-
-
-  //============================================================
   // Cordova Plugin
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
@@ -3907,11 +3898,6 @@ $(document).ready(function(){
           //Notification was received in foreground. Maybe the user needs to be notified.
         }
     });
-
-    FCMPlugin.getToken(function(token){
-        alert(token);
-        console.log(token);
-    });
       
     // Cordova-plugin-screen-orientation : Orientation Lock
     screen.orientation.lock('portrait');
@@ -3919,24 +3905,47 @@ $(document).ready(function(){
     // Cordova-plugin-cache-clear : Cache Clear
     window.CacheClear(function(){}, function(){});
 
+    // Update Checker
+    if(!getCookie("updateNotCheck")){
+      $.ajax({
+              method    : "GET",
+              url       : serverParentURL + "/common/updateHTML?currentVersion=" + currentVersion + "&platform=" + device.platform,
+              xhrFields : {withCredentials: true},
+              success   : function( response ) {
+
+                          if(response){
+                            $("#update-alert").html("");
+                            $("#update-alert").append($.parseHTML(response));
+                            $("#update-alert").css({"display":"block"});
+                          }
+
+                        },
+              error     : function( request, status, error ) {
+
+              }
+      });
+    }
+
+    // Android Back Button Overwrite
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+    document.addEventListener("backbutton", function (e){
+        e.preventDefault();
+        if (exitApp) {
+          clearInterval(intval)
+          (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
+        }else {
+          if($("#posting-overlap-view").hasClass("activated")){
+            $(".overlap-close").click();
+          }else if($("#chat-room-image").hasClass("activated")){
+            $(".chat-room-image-close").click();
+          }else{
+            exitApp = true
+            navigator.app.backHistory();
+          }
+        }
+    }, false);
   });
 
-  // Android Back Button Overwrite
-  var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
-  document.addEventListener("backbutton", function (e){
-      e.preventDefault();
-      if (exitApp) {
-        clearInterval(intval)
-        (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-      }else {
-        if($("#posting-overlap-view").hasClass("activated")){
-          $(".overlap-close").click();
-        }else{
-          exitApp = true
-          navigator.app.backHistory();
-        }
-      }
-  }, false);
 });
 
 window.addEventListener('popstate', function(event) {

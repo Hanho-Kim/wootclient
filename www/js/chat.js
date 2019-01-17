@@ -706,11 +706,11 @@ function displayMessage(key, username, uid, text, avatarUrl,
                 $("#chat-room-image").css({
                     "display": "block",
                     "background-image": "url('" + image.src + "')"
-                });
+                }).addClass("activated");
                 $("#chat-room-image .chat-room-image-close").off('click').on('click', function () {
                     $("#chat-room-image").css({
                         "display": "none"
-                    });
+                    }).removeClass("activated");
                 });
             });
         }
@@ -786,3 +786,29 @@ chatInit();
 $("textarea").on('keydown keyup', function () {
     $(this).height(1).height($(this).prop('scrollHeight'));
 });
+
+//============================================================
+// Cordova Settings
+//------------------------------------------------------------
+
+//============================================================
+// Cordova Settings
+//------------------------------------------------------------
+// Android Back Button Overwrite
+var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+document.addEventListener("backbutton", function (e){
+
+    e.preventDefault();
+    alert('back!');
+    if (exitApp) {
+      clearInterval(intval)
+      (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
+    }else {
+      if($("#chat-room-image").hasClass("activated")){
+        $(".chat-room-image-close").click();
+      }else{
+        exitApp = true
+        navigator.app.backHistory();
+      }
+    }
+}, false);
