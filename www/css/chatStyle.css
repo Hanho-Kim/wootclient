@@ -329,7 +329,6 @@ input,textarea{
   border-radius:40px;
   top:0px;
   left:15px;
-  background-color:rgb(230,230,230);
   background-size:cover;
   background-position:center;
 }
@@ -448,12 +447,14 @@ input,textarea{
   background-color:white;
   border-left:1px solid rgb(170,170,170);
   overflow-y:scroll;
+  -webkit-overflow-scrolling: touch;
   display:none;
 }
 #chat-room-overlap-scroll{
   position: relative;
   height: 93%;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 #chat-room-overlap-background{
   position:fixed;
@@ -545,7 +546,6 @@ input,textarea{
   position:absolute;
   top:10px;
   left:12px;
-  background-color:rgb(220,220,220);
   border-radius:50%;
   width:40px;
   height:40px;
@@ -587,7 +587,6 @@ input,textarea{
   position:absolute;
   top:10px;
   left:12px;
-  background-color:rgb(220,220,220);
   border-radius:50%;
   width:40px;
   height:40px;
