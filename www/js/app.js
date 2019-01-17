@@ -16,6 +16,106 @@ var signupVariable = {
 };
 
 /* Global Functions */
+//============================================================
+// Calendar
+//------------------------------------------------------------
+function displayCalendar(element, next, maxDate){
+ 
+ var htmlContent ="";
+ var FebNumberOfDays ="";
+ var counter = 1;
+
+ var dateNow = new Date();
+
+ if(next){
+  var month = dateNow.getMonth() + 1;
+ }else{
+  var month = dateNow.getMonth();
+ }
+
+ var nextMonth = month+1; //+1; //Used to match up the current month with the correct start date.
+ var prevMonth = month -1;
+ var day  = dateNow.getDate();
+ var year = dateNow.getFullYear();
+ 
+ 
+ // Feburary exception case
+ if (month == 1){
+    if ( (year%100!=0) && (year%4==0) || (year%400==0)){
+      FebNumberOfDays = 29;
+    }else{
+      FebNumberOfDays = 28;
+    }
+ }
+ 
+ 
+ // names of months and week days.
+ var monthNames   = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+ var dayNames     = ["일","월","화","수","목","금", "토"];
+ var dayPerMonth  = ["31", ""+FebNumberOfDays+"","31","30","31","30","31","31","30","31","30","31"];
+ 
+ // days in previous month and next one , and day of week.
+ var nextDate = new Date(nextMonth +' 1 ,'+year);
+ var weekdays= nextDate.getDay();
+ var weekdays2 = weekdays;
+ var numOfDays = dayPerMonth[month];
+     
+ // this leave a white space for days of pervious month.
+ while (weekdays>0){
+    htmlContent += "<td class='monthPre'></td>";
+ 
+ // used in next loop.
+     weekdays--;
+ }
+ 
+ // loop to build the calander body.
+ while (counter <= numOfDays){
+ 
+     // When to start new line.
+    if (weekdays2 > 6){
+        weekdays2 = 0;
+        htmlContent += "</tr><tr>";
+    }
+
+    var counterDate = new Date(year + "-" + (month +1) + "-" + counter);
+    var timeDiff = Math.abs(counterDate.getTime() - dateNow.getTime());
+    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+
+    if (counter < day && !next){
+        htmlContent +="<td class='calendar-day calendar-disable'>"+counter+"</td>";
+    }else if(diffDays < 15){
+        htmlContent +="<td class='calendar-day' onclick='$(\"#calendar-input-date\").val(" + (counterDate.getTime()/1000) + ");$(\".calendar-day\").removeClass(\"selected\");$(this).addClass(\"selected\");'>"+counter+"</td>";
+    }else{
+        htmlContent +="<td class='calendar-day calendar-disable'>"+counter+"</td>";
+    }
+    
+    weekdays2++;
+    counter++;
+ }
+ 
+ // building the calendar html body.
+ var calendarBody = "";
+ if(next){
+  calendarBody = "<table class='calendar'> <tr class='monthNow'><th id='prev-month-button'>◀</th><th colspan='5'>"+ year + "년 " + monthNames[month] +"</th><th></th></tr>";
+ }else{
+  calendarBody = "<table class='calendar'> <tr class='monthNow'><th></th><th colspan='5'>"+ year + "년 " + monthNames[month] +"</th><th id='next-month-button'>▶</th></tr>";
+ }
+ calendarBody +="<tr class='dayNames'>  <td>일</td>  <td>월</td> <td>화</td>"+
+ "<td>수</td> <td>목</td> <td>금</td> <td>토</td> </tr>";
+ calendarBody += "<tr>";
+ calendarBody += htmlContent;
+ calendarBody += "</tr></table>";
+ calendarBody += "<input type='hidden' id='calendar-input-date' />";
+ // set the content of div .
+ $(element).html(calendarBody);
+ $("#next-month-button").off("click").on("click",function(){
+   displayCalendar("#calendar",true);
+ });
+ $("#prev-month-button").off("click").on("click",function(){
+   displayCalendar("#calendar",false);
+ });
+ 
+}
 
 //============================================================
 // Popup
@@ -371,7 +471,8 @@ var viewConfig = {
   "/notification" : {
     "controller"  : "notificationCtrl",
     "template"    : serverParentURL + "/notification/notification",
-    "header"      : "./header/notification.html"
+    "header"      : "./header/notification.html",
+    "footerHide"  : true
   },
   "/write" : {
         "controller"  : "writeCtrl",
@@ -1436,49 +1537,7 @@ var controller = {
     $("#write-gathering-input-time-fake").off('click').on('click',function(){
       if ( $(this).data("edit") == "no" ) {
           pullupMenu("pullup_calendar",function(){
-
-            // Date Select
-            function dateSelect(){
-              $("#calendar-input-date").val(this.lastSelectedDay);
-            }
-
-            // Days after 14 days
-            var days14 = new Date(Date.now() + 12096e5);;
-            var dd     = days14.getDate();
-            var mm     = days14.getMonth()+1;
-            var yyyy   = days14.getFullYear();
-
-            if(dd<10){
-
-                dd = '0' + dd;
-
-            }
-            if(mm<10){
-
-                mm = '0' + mm;
-
-            }
-
-            var myCalendar = new HelloWeek({
-                  selector: '.calendar',
-                  lang: 'en',
-                  langFolder: './lib/hello-week-master/dist/langs/',
-                  format: false,
-                  weekShort: true,
-                  monthShort: true,
-                  multiplePick: false,
-                  defaultDate: false,
-                  todayHighlight: false,
-                  disablePastDays: true,
-                  disabledDaysOfWeek: false,
-                  disableDates: false,
-                  weekStart: 0,
-                  daysHighlight: false,
-                  range: false,
-                  minDate: false,
-                  maxDate: yyyy + "-" + mm + "-" + dd,
-                  onSelect: dateSelect
-            });
+            displayCalendar("#calendar",false);
 
             // AM-PM Toggle
             $(".am-pm.button").off('click').on('click',function(){
@@ -1532,6 +1591,19 @@ var controller = {
               var hour        = $("#calendar-input-hour").val();
               var minute      = $("#calendar-input-minute").val();
               var timestamp   = "";
+
+              if(!date || !hour || !minute){
+                var elm = '<div id="popup-message">' +
+                            '<span>모든 값을 정확히 입력해주세요</span>' +
+                          '</div>';
+
+                $("body").append(elm);
+
+                setTimeout(function(){ 
+                  $("#popup-message").remove();
+                }, 5000);
+                return;
+              }
 
               if(ampm == "am"){
                 timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);

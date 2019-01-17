@@ -271,14 +271,17 @@ function refreshRoomInfo(url) {
         $.each(fields.users_joining,function(index,value){
             var participants_uid = value[0];
             var participants_username = value[1];
-            var participants_avatar = value[2];
-            $(".participants-item-wrapper").append('<a href="./index.html#/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar"></div><div class="username">' + participants_username + '</div></div></a>');
+            var participants_avatar = "'http://derek-kim.com:8000/static/asset/images/profile_images/" + value[2] + ".png'";
+            console.log(participants_avatar);
+            $(".participants-item-wrapper").append('<a href="./index.html#/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></a>');
         });
 
         if(!chatConfig.is_chatting_on){
           $(".footer-textarea-wrapper").css({"display":"none"});
           $(".footer-textarea-wrapper-readonly").css({"display":"block"});
           $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
+            
+          $("#chat-room-button-wrapper").css({"display":"none"});
         }
 
         /* 
