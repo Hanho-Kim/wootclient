@@ -1464,6 +1464,8 @@ var controller = {
 
     /* Write Gathering */
 
+    $('.write-section-item-gathering-sticker .write-gathering-sticker:first-child').addClass('selected');
+
     // Sticker Change
     $(".write-gathering-sticker").off('click').on('click',function(){
       var stickerID = $(this).data("code");
