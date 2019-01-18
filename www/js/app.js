@@ -1653,7 +1653,7 @@ var controller = {
             i += 1;
             agedown = parseInt(myage) - i;
         }
-        while(ageup <= 40){
+        while(ageup <= 99){
             $(".roller-max ul").append('<li class="button" data-age="' + ageup + '">' + ageup + '</li>');
             j += 1;
             ageup = parseInt(myage) + j;
@@ -2469,6 +2469,12 @@ var controller = {
   }, // profileCtrl
 
   profileEditCtrl : function(){
+    var udata = JSON.parse($("#hiddenInput_userdata").val());      
+    var editdata = JSON.parse($("#hiddenInput_editdata").val());
+    if (editdata.initial == "yes") {
+        $('.header-left').css({"opacity":"0"});
+    }
+    
     $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
@@ -2668,8 +2674,6 @@ var controller = {
     
       var data = $("#profile-edit-form").serialize();
       var url = $("#profile-edit-form").attr('action');
-      var udata = JSON.parse($("#hiddenInput_userdata").val());      
-      var editdata = JSON.parse($("#hiddenInput_editdata").val());
       
       api.post(url,data,function(res){
           if(res['ok']) {
@@ -2758,7 +2762,8 @@ var controller = {
                                 return;                                
                             }
                             if (res['ok']) {
-                                initiator("/account/edit", true);
+                                popup("비밀번호가 정상적으로 변경되었습니다.")
+                                initiator("/account/edit", false);
                             }
                         },
             error     : function( request, status, error ) {}
