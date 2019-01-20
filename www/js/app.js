@@ -4,6 +4,7 @@ var mobile    = false;
 
 // No slash at the end of the url
 var serverParentURL = "http://derek-kim.com:8000";
+// var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
 
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
