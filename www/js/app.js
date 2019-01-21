@@ -3,7 +3,8 @@ var currentVersion = "1.0.0";
 var mobile    = false;
 
 // No slash at the end of the url
-var serverParentURL = "http://hellowoot.co.kr";
+var serverParentURL = "http://derek-kim.com:8000"
+// var serverParentURL = "http://hellowoot.co.kr";
 // var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
 
 // Alternate between new and old servers
@@ -1015,6 +1016,7 @@ var controller = {
             actionUrl = $(this).data('url');
 
             api.get(actionUrl, function(res) {
+                console.log(res);
                 if(res['ok']) {
                     var urlSplit = res.url.split("/");
                     var urlType = urlSplit[1];
@@ -2338,15 +2340,16 @@ var controller = {
     });
 
     if($("#profile-section-history").length){
-      $(".badge-discover-contents").show();
-      $(".posting-wrapper").hide();
+      // $(".badge-discover-contents").show();
+      $(".posting-wrapper").show();
       $(".people-contents").hide();
     }
 
     // History Tab
     $(".profile-section-statistics-tab").off('click').on('click',function(){
       var tab = $(this).data("tab");
-
+      
+      /*
       if(tab == "badge"){
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
@@ -2354,13 +2357,13 @@ var controller = {
         $(".badge-discover-contents").show();
         $(".posting-wrapper").hide();
         $(".people-contents").hide();
-
+      
         // renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
-
-      } else if(tab == "posting"){
+      */
+      if(tab == "posting"){
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
-        $(".badge-discover-contents").hide();
+        // $(".badge-discover-contents").hide();
         $(".posting-wrapper").show();
         $(".people-contents").hide();
 
@@ -2369,7 +2372,7 @@ var controller = {
       } else if(tab == "woot"){
         $(".profile-section-statistics-tab").removeClass("selected");
         $(this).addClass("selected");
-        $(".badge-discover-contents").hide();
+        // $(".badge-discover-contents").hide();
         $(".posting-wrapper").hide();
         $(".people-contents").show();
 
@@ -2456,9 +2459,8 @@ var controller = {
               
           }
         });
-
         $(".profile-report-report").off('click').on('click',function(){
-           initiator("/report/profile?uid=" + targetUid, true);
+           initiator("/report/post?pid=1", true);
            $("#pullup").css({"display":"none"});
            $("#template-view").css({"overflow":""});
            $("body").css({"overflow":""});
