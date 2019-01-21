@@ -1467,8 +1467,6 @@ var controller = {
 
     /* Write Gathering */
 
-    $('.write-section-item-gathering-sticker .write-gathering-sticker:first-child').addClass('selected');
-
     // Sticker Change
     $(".write-gathering-sticker").off('click').on('click',function(){
       var stickerID = $(this).data("code");
@@ -2460,7 +2458,7 @@ var controller = {
           }
         });
         $(".profile-report-report").off('click').on('click',function(){
-           initiator("/report/post?pid=1", true);
+           initiator("/report/post?pid=65", true);
            $("#pullup").css({"display":"none"});
            $("#template-view").css({"overflow":""});
            $("body").css({"overflow":""});
