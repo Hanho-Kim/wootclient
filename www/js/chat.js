@@ -25,7 +25,7 @@ var lastChatDataTimeInfiniteScroll = "";
 var infiniteScrollKey;
 var infiniteScrollEnd = false;
 
-var serverParentURL = "http://derek-kim.com:8000";
+var serverParentURL = "http://www.hellowoot.co.kr";
 // var serverParentURL = "http://127.0.0.1:8000";
 
 
@@ -138,6 +138,7 @@ function chatInit() {
         loadMessages();
         infiniteScroll();
     });
+
     refreshRoomInfo(apiPathInfo + "?gid=" + gid);
 
     $("#header").addClass("with-subheader");
@@ -219,7 +220,9 @@ function setChatConfig(url, customSuccess) {
         method      : "GET",
         url         : url,
         xhrFields   : { withCredentials: true },
-        success     : function (response) { return response; },
+        success     : function (response) { 
+            return response; 
+        },
         error       : function (request, status, error) {
             var elm = 
                 '<div id="popup-message">' +
@@ -271,7 +274,7 @@ function refreshRoomInfo(url) {
         $.each(fields.users_joining,function(index,value){
             var participants_uid = value[0];
             var participants_username = value[1];
-            var participants_avatar = "'http://derek-kim.com:8000/static/asset/images/profile_images/" + value[2] + ".png'";
+            var participants_avatar = "'http://www.hellowoot.co.kr/static/asset/images/profile_images/" + value[2] + ".png'";
             $(".participants-item-wrapper").append('<a href="./index.html#/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></a>');
         });
 

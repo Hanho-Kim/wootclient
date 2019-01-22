@@ -3,7 +3,7 @@ var currentVersion = "1.0.0";
 var mobile    = false;
 
 // No slash at the end of the url
-var serverParentURL = "http://hellowoot.co.kr"
+var serverParentURL = "http://www.hellowoot.co.kr"
 // var serverParentURL = "http://hellowoot.co.kr";
 // var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
 
@@ -1009,6 +1009,8 @@ var controller = {
 
   /* Notification Ctrl */
   notificationCtrl : function(){
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+
     api.get("/action/read_all/", function(){});
       
     $('.notification-item').each(function (index) {
@@ -1028,7 +1030,7 @@ var controller = {
                     }
                     // gathering (need to fix the condition of if statement through 'chatting_on')
                     else if ( urlType.indexOf("gathering") >= 0 ) {                                     
-                        if ( res.target.fields.users_joining.length >= res.target.fields.min_num_people ) {
+                        if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(userdata.uid) ) {
                             window.location.href = "./chat.html?gid=" + id;
                         } else {
                             initiator("/gathering_detail?gid=" + id, true);
