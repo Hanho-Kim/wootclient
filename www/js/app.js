@@ -1030,7 +1030,7 @@ var controller = {
                     }
                     // gathering (need to fix the condition of if statement through 'chatting_on')
                     else if ( urlType.indexOf("gathering") >= 0 ) {                                     
-                        if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(userdata.uid) ) {
+                        if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
                             window.location.href = "./chat.html?gid=" + id;
                         } else {
                             initiator("/gathering_detail?gid=" + id, true);
