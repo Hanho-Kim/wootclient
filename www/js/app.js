@@ -434,14 +434,19 @@ var viewConfig = {
     "template"    : serverParentURL + "/login/login",
     "footerHide"  : true
   },
+  "/login/find_username" : {
+    "controller"  : "loginCtrl",
+    "template"    : serverParentURL + "/account/find_username",
+    "footerHide"  : true
+  },  
+  "/login/reset_password" : {
+    "controller"  : "loginCtrl",
+    "template"    : serverParentURL + "/account/reset_password",
+    "footerHide"  : true
+  },  
   "/login/intro" : {
     "controller"  : "loginCtrl",
     "template"    : serverParentURL + "/login/intro",
-    "footerHide"  : true
-  },
-  "/login/signup" : {
-    "controller"  : "signupCtrl",
-    "template"    : serverParentURL + "/login/signup",
     "footerHide"  : true
   },
   "/signup": {
@@ -1077,6 +1082,27 @@ var controller = {
             error     : function( request, status, error ) {}
       });
     });
+
+    $('#account-find-input-submit-username').off('click').on('click', function(e){
+        e.preventDefault();
+        api.post("/account/find_username/", $(this).closest('form').serialize(), function(res) {
+            if (res['ok']){
+                popup("가입하신 이메일은" + res.username + "입니다." );
+                initiator("/login", true);
+            } else {
+                popup("해당 핸드폰 번호로 가입한 아이디는 존재하지 않습니다.");
+            }
+        });
+    });
+
+    $('#account-find-input-submit-password').off('click').on('click', function(e){
+        e.preventDefault();
+        api.post("/account/reset_password/", $(this).closest('form').serialize(), function(res) {
+            popup("이메일을 확인해주세요. 가입한 이메일이 맞은 경우에만 비밀번호 초기화 설정 메일이 전송됩니다.")
+        });
+    });
+
+    
     return;
   },
 
@@ -2765,7 +2791,7 @@ var controller = {
                                 return;                                
                             }
                             if (res['ok']) {
-                                popup("비밀번호가 정상적으로 변경되었습니다.")
+                                popup("비밀번호가 정상적으로 변경되었습니다.");
                                 initiator("/account/edit", false);
                             }
                         },
