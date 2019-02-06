@@ -1239,31 +1239,44 @@ var controller = {
         $(container).find("input").val(radioValue);
 
       });
+      
+      $('.radio-container .checkmark').off('click').on('click', function(){
+          var checkbox = $(this).siblings('input[type="checkbox"]');
+          if ( checkbox.val() == "off" ) {
+              checkbox.val("on");
+          } else {
+              checkbox.val("off");
+          }
+      });
+
 
       $(".signup-footer-item-forward-4").off('click').on('click',function(){
         $("#signup-4-wrapper").css({"display":"block"});
       });
       
-      var infoSubmitHandler = makeAjaxSubmitHandler(function(response){
-          if (response['ok']){
-              // go to next stage
-              var cordovaPath = '/signup'
-              initiator(cordovaPath, false);  // no pushState   
+      var infoSubmitHandler = function(e){
+          e.preventDefault();
+          $this = $(this);
+          
+          console.log($this);
+          
+          var url = $this.attr("action");
+
+          if ( $('input[name="privacy1"]').val() == "on" && $('input[name="privacy2"]').val() == "on" ){
+              api.post(url, $this.serialize(), function(response){
+                  if ( response['ok'] ){                       
+                      initiator('/signup', false);  // no pushState   
+                  } else {
+                      popup("모든 정보를 정확하게 입력해 주세요.");
+                      console.log(response['user_form_errors']);
+                      console.log(response['profile_form_errors'])
+                  }                  
+              });
           } else {
-            var elm = '<div id="popup-message">' +
-                        '<span>모든 정보를 정확하게 입력해주세요.</span>' +
-                      '</div>';
-
-            $("body").append(elm);
-
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 5000);
-
-            console.log(response['user_form_errors']);
-            console.log(response['profile_form_errors'])
+              popup("필수 약관들에 동의해주세요.");
           }
-      });
+      }
+
       $("#signup-3-form").on('submit', infoSubmitHandler);
       $(".signup-footer-item-forward").off('click').on('click', function(){
           $("#signup-3-form").submit();
@@ -3334,9 +3347,8 @@ var controller = {
                       $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
                       $('#footer-textarea').val("");
                       commentEventHandler();
-
-                      var heightSum = $('.board-contents').height();
-                      $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
+                      
+                      $("#template-view").animate({ scrollTop: $('.board-contents').height() }, 400);
 
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
                       comment_count.text(parseInt(comment_count.text()) + 1);
@@ -3414,9 +3426,7 @@ var controller = {
               $(this).height(1).height( $(this).prop('scrollHeight') );
             });
 
-            setTimeout(function(){
-              $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
-            }, 500);
+            $("#template-view").animate({ scrollTop: $("#posting-comment-" + cid).offset().top }, 400);
 
             // Post API: Comment
             $("#footer-textarea-submit").off('click').on('click',function(){

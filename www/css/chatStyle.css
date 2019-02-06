@@ -140,6 +140,9 @@ input,textarea{
   font-weight:600;
   font-size:15px;
   letter-spacing:1.5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #header.with-subheader{
@@ -331,6 +334,7 @@ input,textarea{
   left:15px;
   background-size:cover;
   background-position:center;
+  border: 1.6px solid lightgrey;
 }
 .chat-item .message{
   position:relative;

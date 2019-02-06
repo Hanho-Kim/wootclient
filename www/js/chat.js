@@ -268,6 +268,9 @@ function refreshRoomInfo(url) {
         $(".chat-title").text(fields.title);
         $(".chat-date").text(fields.datetime_kor);
         $(".chat-place").text(fields.address);
+        if ( $(".chat-place").text().length > 17 ) {
+            $(".chat-place").text( $(".chat-place").text().slice(0, 12) + "…" )
+        }
         
         $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
