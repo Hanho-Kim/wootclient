@@ -563,11 +563,14 @@ input,textarea{
   display:block;
   width:100vw;
   height:100vh;
+  background-size: cover;
+  background-position: center;
 }
 .login-contents .cover{
   width:80vw;
   margin-left:10vw;
   margin-top:50px;
+  margin-bottom: 128px;
   height:200px;
   background-size:cover;
   background-position:center;
@@ -616,7 +619,7 @@ input,textarea{
   display:block;
   text-align:center;
   padding:0px 40px;
-  margin-top:40px;
+  margin-top:8px;
   z-index:99;    
 }
 .login-button-wrapper-first .login-button{

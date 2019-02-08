@@ -1037,6 +1037,8 @@ var controller = {
                     else if ( urlType.indexOf("gathering") >= 0 ) {                                     
                         if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
                             window.location.href = "./chat.html?gid=" + id;
+                        } else if ( res.target.fields.is_removed == true ) {
+                            popup('사라진 게더링이라서 접근이 불가능합니다.');
                         } else {
                             initiator("/gathering_detail?gid=" + id, true);
                         }
@@ -2430,6 +2432,8 @@ var controller = {
           if(res['ok']){
             $this.removeClass("liked");
             $this.data("action", "woot");
+            $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
+
             console.log("unwoot!")
           }
         });
@@ -2439,6 +2443,8 @@ var controller = {
           if(res['ok']){
             $this.addClass("liked");
             $this.data('action', 'unwoot');
+            $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
+
             console.log("woot!")
           }
         });
@@ -2462,18 +2468,10 @@ var controller = {
               var next_action = "ban";
               button.data("action", next_action);
               button.removeClass("banned");
+              button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_off.png')");
+
               api.post("/account/ban/", data, function(){
-
-                var elm = '<div id="popup-message">' +
-                            '<span>해당 유저를 차단 해제했습니다.<br>앞으로 서로의 게더링, 게시물을 볼 수 있습니다.</span>' +
-                          '</div>';
-
-                $("body").append(elm);
-
-                setTimeout(function(){
-                  $("#popup-message").remove();
-                }, 10000);
-
+                  popup("해당 유저를 차단 해제했습니다.\n앞으로 서로의 게더링, 게시물을 볼 수 있습니다.")
               });
               $("#pullup .background").click();
               
@@ -2481,7 +2479,10 @@ var controller = {
               var next_action = "unban";
               button.data("action", next_action);
               button.addClass("banned");
+              button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_off.png')");
+
               api.post("/account/ban/", data, function(){
+                  popup("해당 유저를 차단했습니다.\n앞으로 서로의 게더링, 게시물은 보이지 않습니다.")
 
                 var elm = '<div id="popup-message">' +
                             '<span>해당 유저를 차단했습니다.<br>앞으로 서로의 게더링, 게시물은 보이지 않습니다.</span>' +
