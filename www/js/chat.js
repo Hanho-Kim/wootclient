@@ -430,6 +430,7 @@ function trimDate(date) {
 
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
+    $("#chat-room-loading").css({"display":"none"});
     var callback = function (snap) {
         if (!infiniteScrollKey) {
             infiniteScrollKey = snap.key;

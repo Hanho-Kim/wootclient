@@ -4,8 +4,9 @@ var mobile    = false;
 
 // No slash at the end of the url
 var serverParentURL = "http://www.hellowoot.co.kr"
-// var serverParentURL = "http://hellowoot.co.kr";
+// var serverParentURL = "http://derek-kim.com:8000";
 // var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
+
 
 // Alternate between new and old servers
 var server_toggle = true;  // If toggle on, new server
@@ -312,6 +313,7 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
           method    : "GET",
           url       : templateUrl,
           xhrFields : {withCredentials: true},
+          credentials: 'include',
           success   : function( response ) {
 
                       $(targetElm).html("");
@@ -877,7 +879,8 @@ function initiator(newPath, pushState){
       initAjax = $.ajax({
               method    : "GET",
               url       : viewConfig[value]["template"] + idSlash + pathParams,
-              // xhrFields : {withCredentials: true},
+              xhrFields : {withCredentials: true},
+              credentials: 'include',
               success   : function( response ) {
                           $("#template-view").html("");
                           $("#template-view").append($.parseHTML(response, null, true));
@@ -953,11 +956,11 @@ function button_like() {
         var next_action = "on";
         button.data("action", next_action);
         button.removeClass("liked");
-
+        button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_off.png')");
+        
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
-          button.html("<span class='ion-ios-heart-outline'></span>");
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count - 1);
@@ -973,11 +976,11 @@ function button_like() {
         var next_action = "off";
         button.data("action", next_action)
         button.addClass("liked");
+        button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_on.png')");
 
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
-          button.html("<span class='ion-ios-heart'></span>");
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
@@ -1073,7 +1076,11 @@ var controller = {
             url       : serverParentURL + "/account/login/",
             type      : 'POST',
             data      : $("#login-form").serialize(),
-            // xhrFields : { withCredentials: true },
+            headers   : {
+                      'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            credentials: 'include',
+            xhrFields : { withCredentials: true },
             success   : function( response ) {
                             if(response['ok']){
                               window.location.replace('./index.html');
@@ -2790,7 +2797,10 @@ var controller = {
             url       : serverParentURL + "/account/change_password/",
             type      : 'POST',
             data      : serializedData,
-            // xhrFields : { withCredentials: true },
+              headers   : {
+                      'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              xhrFields : { withCredentials: true },
             success   : function( response ) {
                             var res = response;
                             if (res.errors) {
@@ -3179,7 +3189,7 @@ var controller = {
             $.ajax({
                     method    : "GET",
                     url       : serverParentURL + "/post_list/" + boarddata.topic_code + "?page=" + infiniteScrollPage,
-                    // xhrFields: {withCredentials: true},
+                    xhrFields: {withCredentials: true},
                     success   : function( response ) {
 
                                 if(response){
@@ -3958,6 +3968,7 @@ $(document).ready(function(){
               method    : "GET",
               url       : serverParentURL + "/common/updateHTML?currentVersion=" + currentVersion + "&platform=" + device.platform,
               xhrFields : {withCredentials: true},
+              credentials: 'include',
               success   : function( response ) {
 
                           if(response){
