@@ -611,7 +611,7 @@ var viewConfig = {
     "template"    : serverParentURL + "/support/report/profile",
     "header"      : "./header/report.html",
     "footerHide"  : true
-  }
+  }    
 }
 
 if (server_toggle){
@@ -680,6 +680,7 @@ var api = {
   post : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
+    var errorStatus;
     var promise = $.ajax({
               method    : "POST",
               data      : data,
@@ -693,6 +694,7 @@ var api = {
                           res = response;
                         },
               error     : function( request, status, error ) {
+                          errorStatus = request.status;
                           console.error(error);
                         }
     });
@@ -701,13 +703,24 @@ var api = {
       return successFn(res);
     })
     .catch(function(){
-      var elm = '<div id="popup-message">' +
-                  '<span>API 연결 오류</span>' +
-                '</div>';
-      $("body").append(elm);
-      setTimeout(function(){
-        $("#popup-message").remove();
-      }, 5000);
+      if(errorStatus == 403){
+        var elm = '<div id="popup-message">' +
+                    '<span>연결 오류.<br>앱을 완전히 껐다 다시 켜주세요.</span>' +
+                  '</div>';
+        $("body").append(elm);
+        setTimeout(function(){
+          $("#popup-message").remove();
+        }, 5000);
+      }else{
+        var elm = '<div id="popup-message">' +
+                    '<span>API 연결 오류</span>' +
+                  '</div>';
+        $("body").append(elm);
+        setTimeout(function(){
+          $("#popup-message").remove();
+        }, 5000);        
+      }
+
     });
   },
     
@@ -1088,7 +1101,9 @@ var controller = {
                               popup('아이디 혹은 비밀번호가 일치하지 않습니다.');
                             }
                         },
-            error     : function( request, status, error ) {}
+            error     : function( request, status, error ) {
+              popup('로그인하는데 오류가 발생했습니다.<br>앱을 완전히 껐다 다시 켜주세요.');
+            }
       });
     });
 

@@ -393,7 +393,8 @@ function signIn() {
     //firebase.auth().signInAnonymously();
     firebase.auth().signInWithEmailAndPassword(
         chatConfig.firebase.authEmail,
-        chatConfig.firebase.authKey);
+        chatConfig.firebase.authKey
+    );
 }
 
 function signOut() {
@@ -430,7 +431,9 @@ function trimDate(date) {
 
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
-    $("#chat-room-loading").css({"display":"none"});
+    setTimeout(function () {
+            $("#chat-room-loading").css({"display":"none"});
+        }, 3000);
     var callback = function (snap) {
         if (!infiniteScrollKey) {
             infiniteScrollKey = snap.key;
