@@ -606,12 +606,12 @@ var viewConfig = {
     "header"      : "./header/report.html",
     "footerHide"  : true
   },
-  "/report/profile" : {
+  "/support/suggest" : {
     "controller"  : "reportCtrl",
-    "template"    : serverParentURL + "/support/report/profile",
-    "header"      : "./header/report.html",
+    "template"    : serverParentURL + "/support/suggest",
+    "header"      : "./header/suggest.html",
     "footerHide"  : true
-  }    
+  }
 }
 
 if (server_toggle){
@@ -831,9 +831,20 @@ function initiator(newPath, pushState){
   }
 
   var pathParent  = pathname.split("/")[1];
+
   // Footer Processing
-  $("#footer").find(".footer-item").removeClass("selected");
-  $("#footer").find(".footer-item-" + pathParent).addClass("selected");
+  $.each($(".footer-item"), function(){
+    var iconUrl = $(this).css("background-image");
+    
+    if ( $(this).attr("class").indexOf("footer-item-" + pathParent) > 0 ) {
+      iconUrl = iconUrl.split("-")[0] + "-on.png";
+    } else {
+      iconUrl = iconUrl.split("-")[0] + "-off.png";
+    }
+      
+    $(this).css("background-image", iconUrl);      
+  });
+    
   if(viewConfig[pathname]["footerHide"]){
     $("#footer").css({"display":"none"});
   }else{
@@ -1121,11 +1132,22 @@ var controller = {
 
     $('#account-find-input-submit-password').off('click').on('click', function(e){
         e.preventDefault();
-        api.post("/account/reset_password/", $(this).closest('form').serialize(), function(res) {
-            popup("이메일을 확인해주세요. 가입한 이메일이 맞은 경우에만 비밀번호 초기화 설정 메일이 전송됩니다.")
+        $.ajax({
+              url       : serverParentURL + "/account/reset_password/",
+              type      : 'POST',
+              data      : $(this).closest('form').serialize(),
+              headers   : {
+                        'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              credentials: 'include',
+              xhrFields : { withCredentials: true },
+              success   : function( response ) {
+                            res = response
+                          },
+              error     : function( request, status, error ) {
+                          }
         });
     });
-
     
     return;
   },
@@ -1282,8 +1304,6 @@ var controller = {
           e.preventDefault();
           $this = $(this);
           
-          console.log($this);
-          
           var url = $this.attr("action");
 
           if ( $('input[name="privacy1"]').val() == "on" && $('input[name="privacy2"]').val() == "on" ){
@@ -1403,9 +1423,15 @@ var controller = {
     if(window.File && window.FileList && window.FileReader){
       var $filesInput = $("input.upload-img");
       $filesInput.on("change", function(event){
+          console.log(event);
+          console.log(event.target);
           var inputOrder = event.target.getAttribute('data-inputOrder');
           var file = event.target.files[0];
           var picReader = new FileReader();
+          
+          console.log(inputOrder);
+          console.log(file);
+          console.log(picReader);
 
           picReader.onloadend = function(){
               imageProcessor(picReader.result, file.type, inputOrder);
@@ -1424,11 +1450,11 @@ var controller = {
         var data = new FormData(this);
 
         api.postMulti(url, data, function(response){
-                if (response['ok']){
-                    initiator("/signup", true);
-                } else {
-                    console.log("fail");
-                }
+            if (response['ok']){
+                initiator("/signup", true);
+            } else {
+                console.log("fail");
+            }
         });
 
         
@@ -2215,25 +2241,30 @@ var controller = {
     }
 
     // Posting Submit
-    var writePostingHandler = function(e){
-        e.preventDefault();
-        var url = $(this).attr("action");
-        var data = new FormData(this);
+    $('form#write-posting-form').submit(function(event){
+      event.preventDefault();
 
-        api.postMulti(url, data, function(response){
-            if (response['ok']){
-               var pid = response['pid'].toString();
-               var cordovaLocation = '/post_detail?pid=' + pid
-               initiator(cordovaLocation, false);
-            } else {
-                console.log("fail");
-                popup('필수 항목들에 내용을 채워주세요.');
-                // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-            }
-        });
-    }
+      $('form#write-posting-form input[name="img"]').each(function(){
+        if($(this).val() == ""){
+          $(this).remove();
+        }
+      });
 
-    $('form#write-posting-form').off('submit').on('submit', writePostingHandler);
+      var url = $(this).attr("action");
+      var data = new FormData(this);
+
+      api.postMulti(url, data, function(response){
+          if (response['ok']){
+             var pid = response['pid'].toString();
+             var cordovaLocation = '/post_detail?pid=' + pid
+             initiator(cordovaLocation, false);
+          } else {
+              console.log("fail");
+              popup('필수 항목들에 내용을 채워주세요.');
+              // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+          }
+      });
+    });
 
     /*
     $("#write-posting-submit").off('click').on('click',function(){
@@ -2536,8 +2567,11 @@ var controller = {
   profileEditCtrl : function(){
     var udata = JSON.parse($("#hiddenInput_userdata").val());      
     var editdata = JSON.parse($("#hiddenInput_editdata").val());
-    if (editdata.initial == "yes") {
+    if (editdata.initial == "yes" || editdata.dtoken == "" ) {
         $('.header-left').css({"opacity":"0"});
+    }
+    if ( editdata.dtoken == "" ) {
+        popup("간단한 소개와 관심사 3개 이상을 등록해주세요.");
     }
     
     $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );

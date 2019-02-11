@@ -458,7 +458,7 @@ input,textarea{
   display:block;
   position:fixed;
   bottom:0;
-  height:52px;
+  height:44px;
   line-height:1.5em;
   width:100%;
   background-color:rgb(253,253,253);
@@ -468,16 +468,22 @@ input,textarea{
 .footer-item-wrapper{
   position:relative;
   display:block;
+  height:inherit;
   padding:0px;
 }
 .footer-item{
   position:relative;
   float:left;
+  height:100%;
   width:20%;
   font-size:20px;
-  padding-top:9px;
+  padding:8px;
   text-align:center;
   color:rgb(200,200,200);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-origin: content-box;
 }
 .footer-item .footer-item-noti{
   position:absolute;
