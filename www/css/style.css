@@ -458,7 +458,7 @@ input,textarea{
   display:block;
   position:fixed;
   bottom:0;
-  height:44px;
+  height:48px;
   line-height:1.5em;
   width:100%;
   background-color:rgb(253,253,253);
@@ -564,81 +564,76 @@ input,textarea{
 
 /* Login */
 
-.login-contents{
-  position:relative;
-  display:block;
-  width:100vw;
-  height:100vh;
-  background-size: cover;
-  background-position: center;
+.login-contents {
+    position: relative;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    margin-top: 5vh;
 }
-.login-contents .cover{
-  width:80vw;
-  margin-left:10vw;
-  margin-top:50px;
-  margin-bottom: 128px;
-  height:200px;
-  background-size:cover;
-  background-position:center;
+.login-contents .cover {
+	width: 80vw;
+	margin-left: 10vw;
+	margin-top: 4vh;
+	margin-bottom: 14vh;
+	height: 30vh;
+	font-family: nanumsquareroundOTF;
+	font-size: 48px;
+	font-weight: 600;
+	color: #45aaf2;
+	text-align: center;
 }
-.login-contents .login-message{
-  padding:10px 30px;
-  margin-bottom:5px;
-  margin-top:10px;
+.login-contents .login-input {
+    position: relative;
+    display: block;
+    padding: 1vh 14vw;
 }
-.login-contents .login-message .title{
-  font-size:20px;
-  line-height:1.3em;
-  font-weight:600;
-  margin-top:20px;
-  text-align:center;
-}
-.login-contents .login-input{
-  position:relative;
-  display:block;
-  padding:5px 40px;
-}
-.login-contents .login-input input{
-  position:relative;
-  width:100%;
-  padding:10px 10px;
-  margin-top:10px;
-  line-height:1.5em;
-  font-size:13px;
-  outline:none;
-  border:none;
-  opacity:0.9;
-  border-bottom:1px solid rgb(210,210,210);
+.login-contents .login-input input {
+	position: relative;
+	width: 100%;
+	padding: 1.5vh 3vw;
+	margin-top: 1.5vh;
+	line-height: 1.5em;
+	font-size: 13px;
+	outline: none;
+	border: none;
+	opacity: 0.9;
+	border-bottom: 1px solid rgb(210,210,210);
+	box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+	border-radius: 5px;
 }
 .login-contents .login-input .button{
-  opacity:1;
-  background-color:rgb(210,210,210);
-  color:rgb(110,110,110);
-  font-weight:600;
-  font-size:12px;
-  padding:12px 0px;
-  border:none;
-  border-radius:5px;
+	opacity: 1;
+	background-color: rgb(210,210,210);
+	color: rgb(110,110,110);
+	font-weight: 600;
+	font-size: 12px;
+	padding: 1.5vh 3vw;
+	margin-top: 1.5vh;
+	border: none;
+	border-radius: 5px;
 }
-.login-button-wrapper-first{
-  position:relative;
-  display:block;
-  text-align:center;
-  padding:0px 40px;
-  margin-top:8px;
-  z-index:99;    
+.login-button-wrapper-first {
+    position: relative;
+    display: block;
+    text-align: center;
+    padding: 1vh 14vw;
+    z-index: 99;
 }
 .login-button-wrapper-first .login-button{
-  position:relative;
-  display:block;
-  width:100%;
-  padding:16px;
-  text-align:center;
-  background-color:#45aaf2;;
-  color:white;
-  font-weight:600;
-  font-size:12px;
-  border-radius:5px;
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 2vh 3vw;
+  text-align: center;
+  background-color: #45aaf2;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px 0 #45aaf2;
 }
 .login-button-wrapper{
   position:absolute;

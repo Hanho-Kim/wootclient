@@ -1,5 +1,6 @@
 /* Global Variables */
-var currentVersion = "1.0.0";
+var currentVersionIOS = "1.0.8";
+var currentVersionAnd = "1.0.1";
 var mobile    = false;
 
 // No slash at the end of the url
@@ -1064,7 +1065,7 @@ var controller = {
                     else if ( urlType.indexOf("gathering") >= 0 ) {                                     
                         if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
                             window.location.href = "./chat.html?gid=" + id;
-                        } else if ( res.target.fields.is_removed == true ) {
+                        } else if ( res.target.fields.is_removed == true || res.target.fields.is_accessible == false ) {
                             popup('사라진 게더링이라서 접근이 불가능합니다.');
                         } else {
                             initiator("/gathering_detail?gid=" + id, true);
@@ -1159,6 +1160,7 @@ var controller = {
       // redirection to login or signup
       $('#redirect-signup').trigger('click');
 
+      // 1. info.html
       $("#signup-item-input-email").focusout(function(){
           var data = { email: $("#signup-item-input-email").val() }
           api.post("/account/signup/validate_email/", data, function(response){
@@ -1224,8 +1226,12 @@ var controller = {
 
                         signupVariable["address"] = JSON.parse(JSON.stringify(data.addr));
                         signupVariable["postcode"] = JSON.parse(JSON.stringify(data.postcode));
-                        
+ 
+                        $("#signup-address-result ul").html("");
+                        $("#signup-address-result").hide();
+
                         // validate address and show signable blocks
+                        /* comment 
                         api.post("/account/signup/address/", data, function(response){
                             $("#signup-address-result").hide();
                             if (response['ok']){
@@ -1248,18 +1254,20 @@ var controller = {
                                 }, 5000);
 
                             }
+                            
                             // TODO: show signable blocks
-                            // $.each(res['blocks'], function(index, value){
-                            //   $("#signup-address-block-result ul").append('<li>' +
-                            //                                                 '<div class="block-title">' +
-                            //                                                   '<span>' + value.title + '</span>' +
-                            //                                                 '</div>' +
-                            //                                                 '<div class="block-subtitle">' +
-                            //                                                   '<span>' + value.subtitle + '</span>' +
-                            //                                                 '</div>' +
-                            //                                               '</li>');
-                            // });
+                            $.each(res['blocks'], function(index, value){
+                              $("#signup-address-block-result ul").append('<li>' +
+                                                                            '<div class="block-title">' +
+                                                                              '<span>' + value.title + '</span>' +
+                                                                            '</div>' +
+                                                                            '<div class="block-subtitle">' +
+                                                                              '<span>' + value.subtitle + '</span>' +
+                                                                            '</div>' +
+                                                                          '</li>');
+                            });
                         });
+                        */
                         // save address data
                         // globalScopeVariable["signup_address"] = currentAdd;
                     });
@@ -1269,9 +1277,9 @@ var controller = {
         });
       });
 
-      if($("#signup-3-form-devicetoken") && typeof FCMPlugin != 'undefined'){
+      if($("#signup-item-input-devicetoken") && typeof FCMPlugin != 'undefined'){
           FCMPlugin.getToken(function(token){
-              $("#signup-3-form-devicetoken").val(token);
+              $("#signup-item-input-devicetoken").val(token);
           });      
       }
       
@@ -1295,37 +1303,68 @@ var controller = {
           }
       });
 
-
-      $(".signup-footer-item-forward-4").off('click').on('click',function(){
-        $("#signup-4-wrapper").css({"display":"block"});
-      });
-      
       var infoSubmitHandler = function(e){
           e.preventDefault();
           $this = $(this);
           
           var url = $this.attr("action");
 
-          if ( $('input[name="privacy1"]').val() == "on" && $('input[name="privacy2"]').val() == "on" ){
-              api.post(url, $this.serialize(), function(response){
-                  if ( response['ok'] ){                       
-                      initiator('/signup', false);  // no pushState   
-                  } else {
-                      popup("모든 정보를 정확하게 입력해 주세요.");
-                      console.log(response['user_form_errors']);
-                      console.log(response['profile_form_errors'])
-                  }                  
-              });
+          if ( $('input[name="address"]').val() != "" && $('input[name="address_detail"]').val() != "" ){
+              if ( $('input[name="privacy1"]').val() == "on" && $('input[name="privacy2"]').val() == "on" ){
+                  api.post(url, $this.serialize(), function(response){
+                      if ( response['ok'] ){                       
+                          initiator('/signup', false);  // no pushState   
+                      } else {
+                          popup("모든 정보를 정확하게 입력해 주세요.");
+                          console.log(response['user_form_errors']);
+                          console.log(response['profile_form_errors']);
+                      }                  
+                  });
+              } else {
+                  popup("필수 약관들에 동의해주세요.");
+              }
           } else {
-              popup("필수 약관들에 동의해주세요.");
+              popup("주소를 정확히 입력해주세요.");
           }
       }
 
-      $("#signup-3-form").on('submit', infoSubmitHandler);
-      $(".signup-footer-item-forward").off('click').on('click', function(){
-          $("#signup-3-form").submit();
+      $("#signup-info-form").on('submit', infoSubmitHandler);
+      $(".signup-footer-item-forward-info").off('click').on('click', function(){
+          $("#signup-info-form").submit();
       });
-      
+
+      // 3. block_select.html
+      $(".signup-footer-item-forward-block").off('click').on('click', function(){
+		if ( $(this).data("status") == "on" ) {
+			api.post("/account/signup/block_select/", $("form").serialize(), function(response){
+				if (response['ok']){
+					initiator("/signup");  // no pushState
+				} else {
+					popup("회원가입 과정에 오류가 발생했습니다. contact@hellowoot.co.kr로 문의해주세요.")
+					console.log(response['errors']);
+                    console.log(response);
+				}
+			});
+		} else {
+			popup("문자 알람 신청 되었습니다. 커뮤니티가 열리면 문자로 알려드릴게요.");
+            $.ajax({
+                  method    : "GET",
+                  url       : serverParentURL + "/account/logout",
+                  success   : function( response ) {
+                               initiator("/login", false);
+                            },
+                  error     : function( request, status, error ) {
+
+                            }
+            });
+		}
+      });
+
+
+      $(".signup-footer-item-forward-4").off('click').on('click',function(){
+        $("#signup-4-wrapper").css({"display":"block"});
+      });
+            
     var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
     $("#model-house-item-wrapper").html("");
 
@@ -1443,9 +1482,13 @@ var controller = {
     }
 
     $("#form-verify").submit(function(event){
-        
         event.preventDefault();
         
+        if($("#form-verify input[name='img']").val() == ""){
+            popup("주소 이미지를 첨부해주세요.");
+            return;
+        }
+
         var url = $(this).attr("action");
         var data = new FormData(this);
 
@@ -2553,7 +2596,7 @@ var controller = {
           }
         });
         $(".profile-report-report").off('click').on('click',function(){
-           initiator("/report/post?pid=65", true);
+           initiator("/support/suggest", true);
            $("#pullup").css({"display":"none"});
            $("#template-view").css({"overflow":""});
            $("body").css({"overflow":""});
@@ -2562,8 +2605,9 @@ var controller = {
       });
     });
     return;
-  }, // profileCtrl
-
+  },
+  
+  // profileCtrl
   profileEditCtrl : function(){
     var udata = JSON.parse($("#hiddenInput_userdata").val());      
     var editdata = JSON.parse($("#hiddenInput_editdata").val());
@@ -3286,6 +3330,7 @@ var controller = {
                 
                 popup("정말 삭제하시겠습니까?", function(){
                     api.get('/post_delete/' + pid + '/', function(){
+                        $("#pullup .background").click();
                         history.back();
                     });
                 });
@@ -4015,7 +4060,7 @@ $(document).ready(function(){
     if(!getCookie("updateNotCheck")){
       $.ajax({
               method    : "GET",
-              url       : serverParentURL + "/common/updateHTML?currentVersion=" + currentVersion + "&platform=" + device.platform,
+              url       : serverParentURL + "/misc/updateHTML?currentVersionIOS=" + currentVersionIOS + "&currentVersionAnd=" + currentVersionAnd + "&platform=" + device.platform,
               xhrFields : {withCredentials: true},
               credentials: 'include',
               success   : function( response ) {
