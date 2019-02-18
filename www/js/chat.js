@@ -271,6 +271,7 @@ function refreshRoomInfo(url) {
         if ( $(".chat-place").text().length > 17 ) {
             $(".chat-place").text( $(".chat-place").text().slice(0, 12) + "…" )
         }
+        $('.chat-room-overlap-section-sticker').css({"background-image": "url(" + fields.sticker_fullurl + ")"});
         
         $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
