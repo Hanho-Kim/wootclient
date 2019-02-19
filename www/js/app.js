@@ -2629,13 +2629,57 @@ var controller = {
     });
 
     // Profile Avatar Change
+    /*
     $("#profile-avatar-change-button").off('click').on('click',function(){
       api.get("/account/change_profile_image",function(response){
+        console.log(response);
         $("#profile-avatar").css({"background-image":"url(" +response.profile_image_url + ")"});
         $("#profile-edit-input-avatar").val(response.avatarID);
       });
     });
+    */
+    $("#profile-avatar-change-button").off('click').on('click',function(){
+        pullupMenu("pullup_edit_avatar",function(){
+            $(".profile-avatar-wrapper").hide();
+            $(".profile-avatar-wrapper-1").show();
+                                    
+            $(".overlap-close").off('click').on('click',function(){
+                $("#profile-avatar-template").css({"display":"none"});
+                $("#pullup .background").trigger("click");
+            });
+            $("#profile-edit-avatar-submit").off('click').on('click',function(){
+                var imageUrl = $(".item-selected .avatar-item").css("background-image");
+                $("#profile-avatar").css({"background-image":imageUrl});
+                // selected된 것의 input val
+                $("#profile-avatar-template").css({"display":"none"});
+                $("#pullup .background").trigger("click");
+            });
+            
+            $(".profile-avatar-type-list").off('click').on('click',function(){
+                var tab = $(this).data("tab");
 
+                $(".profile-avatar-type-list").removeClass("type-selected");
+                $(this).addClass("type-selected");
+
+                $(".profile-avatar-wrapper").hide();
+                if (tab == 1) {
+                    $(".profile-avatar-wrapper-1").show();
+                } else if (tab == 2) {
+                    $(".profile-avatar-wrapper-2").show();                
+                } else if (tab == 3) {
+                    $(".profile-avatar-wrapper-3").show();
+                } else {
+                    $(".profile-avatar-wrapper-4").show();
+                }
+            });
+            $(".profile-avatar-wrapper-item").off("click").on("click", function(){
+                $(".profile-avatar-wrapper-item").removeClass("item-selected");
+                $(this).addClass("item-selected");
+                // input value 
+            });
+        });
+    });
+                        
     /* updating image change to new version
       $("#template-view").css({"overflow":"hidden"});
       $("body").css({"overflow":"hidden"});
