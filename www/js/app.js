@@ -3059,6 +3059,7 @@ var controller = {
 
         $("#template-view").css({"overflow":"hidden"});
         $("body").css({"overflow":"hidden"});
+        $("body").addClass("body-overlap-view");
 
         $("#posting-overlap-view").append('<div id="header" class="row">' +
                                             '<div class="header-left overlap-close button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
@@ -3091,6 +3092,7 @@ var controller = {
             $("#posting-overlap-view").css({"display":"none"});
             $("#template-view").css({"overflow":""});
             $("body").css({"overflow":"inherit"});
+            $("body").removeClass("body-overlap-view");
           });
           
           var commentEventHandler = function(){
@@ -3282,6 +3284,7 @@ var controller = {
       $(".overlap-button-like").off('click').on('click',function(){
         $("#template-view").css({"overflow":"hidden"});
         $("body").css({"overflow":"hidden"});
+        $("body").addClass("body-overlap-view");
 
         var pid = $(this).data("pid");
         $("#posting-overlap-view").append('<div id="header" class="row">' +
@@ -3314,6 +3317,7 @@ var controller = {
             $("#posting-overlap-view").removeClass("activated");
             $("#template-view").css({"overflow":""});
             $("body").css({"overflow":"inherit"});
+            $("body").removeClass("body-overlap-view");
           });
 
         });
@@ -4118,6 +4122,14 @@ $(document).ready(function(){
         }else{
           //Notification was received in foreground. Maybe the user needs to be notified.
         }
+    });
+
+    // Cordova iOS disable Keyboard Done button
+    Keyboard.hideFormAccessoryBar(true);
+    $(document).click(function(e){
+      if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){
+        Keyboard.hide();
+      }
     });
       
     // Cordova-plugin-screen-orientation : Orientation Lock

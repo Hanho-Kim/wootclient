@@ -690,7 +690,6 @@ function displayMessage(key, username, uid, text, avatarUrl,
     } else {
         div.querySelector('.username').textContent = username;
         div.querySelector('.avatar').style.backgroundImage = 'url(' + avatarUrl + ')';
-        div.querySelector('.avatar').style.backgroundColor = avatarColor;
         div.querySelector('.time').textContent = trimDate(time)[1];
         div.setAttribute('data-time', time);
 
@@ -804,6 +803,18 @@ $("textarea").on('keydown keyup', function () {
 //============================================================
 // Cordova Settings
 //------------------------------------------------------------
+document.addEventListener("deviceready",function(){
+
+    // Cordova iOS disable Keyboard Done button
+    Keyboard.hideFormAccessoryBar(true);
+    $(document).click(function(e){
+      if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){
+        Keyboard.hide();
+      }
+    });
+
+});
+
 // Android Back Button Overwrite
 var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
 document.addEventListener("backbutton", function (e){
