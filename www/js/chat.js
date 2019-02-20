@@ -602,6 +602,7 @@ function onMessageFormSubmit(e) {
             resetMaterialTextfield(messageInputElement);
             toggleButton();
             last_chat_update();
+            messageInputElement.blur();
         });
     }
 }
@@ -690,6 +691,7 @@ function displayMessage(key, username, uid, text, avatarUrl,
     } else {
         div.querySelector('.username').textContent = username;
         div.querySelector('.avatar').style.backgroundImage = 'url(' + avatarUrl + ')';
+        div.querySelector('.avatar').style.backgroundColor = avatarColor;
         div.querySelector('.time').textContent = trimDate(time)[1];
         div.setAttribute('data-time', time);
 
@@ -726,7 +728,6 @@ function displayMessage(key, username, uid, text, avatarUrl,
 
         if (uid == chatConfig.profile.fields.user_id) {
             $(div).addClass("chat-item-my");
-            messageInputElement.focus();
         }
     }
 

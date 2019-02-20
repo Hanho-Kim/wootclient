@@ -1,6 +1,6 @@
 /* Global Variables */
-var currentVersionIOS = "1.0.8";
-var currentVersionAnd = "1.0.1";
+var currentVersionIOS = "1000";
+var currentVersionAnd = "2000";
 var mobile    = false;
 
 // No slash at the end of the url
@@ -367,9 +367,13 @@ function timestampConverter(timestamp){
   var min     = a.getMinutes();
   var ampm    = '';
 
-  if(hour > 12){
+  if(hour >= 12){
+    if(hour == 12){
+        
+    }else{
+        hour = hour - 12;
+    }
     ampm      = '오후';
-    hour      = hour - 12;
   }else{
     ampm      = '오전';
   }
@@ -804,6 +808,7 @@ var initAjax = "";
 function initiator(newPath, pushState){
   $("#template-view").css({"overflow":""});
   $("body").css({"overflow":"inherit"});
+  $(".overlap-close").click();
 
   // Delete last template Ajax call if exists
   if (initAjax != "") {
@@ -1698,7 +1703,7 @@ var controller = {
             // Hour Minute Restriction
             $("#calendar-input-hour").change(function(){
               var hour = $(this).val();
-              if(hour >= 12){
+              if(hour > 12){
                 hour = 0;
               }else if(hour < 0){
                 hour = 0;
@@ -1751,10 +1756,18 @@ var controller = {
               }
 
               if(ampm == "am"){
+                if(hour == 12){
+                    hour = hour - 12;
+                }
                 timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
               }else{
+                if(hour == 12){
+                    hour = hour - 12;
+                }
                 timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
               }
+                
+              console.log(timestamp);
 
               var ServerDate = new Date(timestamp*1000);
               $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
@@ -2580,7 +2593,7 @@ var controller = {
               var next_action = "unban";
               button.data("action", next_action);
               button.addClass("banned");
-              button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_off.png')");
+              button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_on.png')");
 
               api.post("/account/ban/", data, function(){
                   popup("해당 유저를 차단했습니다.\n앞으로 서로의 게더링, 게시물은 보이지 않습니다.")
@@ -2644,14 +2657,17 @@ var controller = {
             $(".profile-avatar-wrapper-1").show();
                                     
             $(".overlap-close").off('click').on('click',function(){
-                $("#profile-avatar-template").css({"display":"none"});
+                $("#profile-avatar-template").css({"display":"none"}).html("");
                 $("#pullup .background").trigger("click");
             });
             $("#profile-edit-avatar-submit").off('click').on('click',function(){
                 var imageUrl = $(".item-selected .avatar-item").css("background-image");
+                var imageFirstNum = imageUrl.split("-")[0][imageUrl.split("-")[0].length - 1];
+                var imageSecondNum = imageUrl.split("-")[1][0];
                 $("#profile-avatar").css({"background-image":imageUrl});
-                // selected된 것의 input val
-                $("#profile-avatar-template").css({"display":"none"});
+                $('input[name="profile_image_type"]').val(imageFirstNum + "-" + imageSecondNum);
+
+                $("#profile-avatar-template").css({"display":"none"}).html("");
                 $("#pullup .background").trigger("click");
             });
             
