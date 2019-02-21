@@ -48,8 +48,8 @@ html {
   overflow:hidden;
 }
 #header, #subheader{
-    margin-top: constant(safe-area-inset-top);
-    margin-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
 }
 body{
   width:100%;
@@ -60,10 +60,6 @@ body{
   margin:0px;
   padding:0px;
   overflow:hidden;
-  padding-top: constant(safe-area-inset-top);
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 input,textarea{
   font-family: 'san-serif';
@@ -128,8 +124,8 @@ input,textarea{
   width:100%;
   background-color:rgb(253,253,253);
   border-bottom:1px solid rgb(230,230,230);
-  padding:0px;
-  z-index:999;
+  /* padding:0px; */
+  z-index:1000;
 }
 #header .header-left{
   position:relative;
@@ -203,7 +199,8 @@ input,textarea{
   text-align:center;
   font-size:13px;
   border-bottom:1px solid rgb(230,230,230);
-  padding:0px 5px;
+  padding-left: 5px;
+  padding-right: 5px;
   z-index:999;
   display:none;
 }

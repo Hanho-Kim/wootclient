@@ -4141,12 +4141,15 @@ $(document).ready(function(){
     });
 
     // Cordova iOS disable Keyboard Done button
-    Keyboard.hideFormAccessoryBar(true);
+    // Keyboard.hideFormAccessoryBar(true);
     $(document).click(function(e){
       if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){
         Keyboard.hide();
       }
     });
+    
+    // Cordova iOS resizing viewport while input focus happens
+    Keyboard.shrinkView(true);
       
     // Cordova-plugin-screen-orientation : Orientation Lock
     screen.orientation.lock('portrait');
