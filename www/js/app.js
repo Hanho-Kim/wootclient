@@ -2663,7 +2663,7 @@ var controller = {
             $("#profile-edit-avatar-submit").off('click').on('click',function(){
                 var imageUrl = $(".item-selected .avatar-item").css("background-image");
                 var imageFirstNum = imageUrl.split("-")[0][imageUrl.split("-")[0].length - 1];
-                var imageSecondNum = imageUrl.split("-")[1][0];
+                var imageSecondNum = imageUrl.split("-")[1].split(".")[0];
                 $("#profile-avatar").css({"background-image":imageUrl});
                 $('input[name="profile_image_type"]').val(imageFirstNum + "-" + imageSecondNum);
 

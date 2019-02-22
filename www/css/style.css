@@ -65,6 +65,8 @@ input,textarea{
   -webkit-overflow-scrolling: touch;
   width:100vw;
   height:100vh;
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top);
 }
 /* spinner */
   @-webkit-keyframes spin {
