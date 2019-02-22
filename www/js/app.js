@@ -1904,7 +1904,7 @@ var controller = {
                 $("#write-gathering-input-prestage-minpeople").val("");
               }else if(duration && minpeople){
                 $("#pullup .background").click();
-                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
+                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행");
                 $("#write-gathering-input-prestage-duration").val(duration);
                 $("#write-gathering-input-prestage-minpeople").val(minpeople);
               }else{
@@ -2657,8 +2657,9 @@ var controller = {
             $(".profile-avatar-wrapper-1").show();
                                     
             $(".overlap-close").off('click').on('click',function(){
-                $("#profile-avatar-template").css({"display":"none"}).html("");
+                $("#profile-avatar-template").css({"display":"none"});
                 $("#pullup .background").trigger("click");
+                $("#pullup .background").html("")
             });
             $("#profile-edit-avatar-submit").off('click').on('click',function(){
                 var imageUrl = $(".item-selected .avatar-item").css("background-image");
@@ -3604,8 +3605,6 @@ var controller = {
               $(this).height(1).height( $(this).prop('scrollHeight') );
             });
 
-            $("#template-view").animate({ scrollTop: $("#posting-comment-" + cid).offset().top }, 400);
-
             // Post API: Comment
             $("#footer-textarea-submit").off('click').on('click',function(){
                 if ( $("#footer-textarea").val() ) {
@@ -3813,7 +3812,7 @@ var controller = {
       var hdinput = $("#hiddenInput_gatheringdata");
 
       if (button.hasClass("joined")) { // Already Liked
-        popup("정말 참여를 취소하시겠습니까?",function(){
+        popup("정말 참여를 취소하시겠습니까? 다시 채팅방으로 돌아가려면 뒤로가기를 눌러주세요.",function(){
             // cancel the joining
             api.post(url, data, function (res) {
               if(res['ok']) {
@@ -3838,7 +3837,7 @@ var controller = {
       // joining
       } else {
           if(hdinput.data('tochat') == 'pre') {
-            popup("최소 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.", function(){
+            popup("진행 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.", function(){
               api.post(url, data, function (res) {
                 if(res['ok']) {
                   var next_action = "off";

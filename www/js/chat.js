@@ -602,7 +602,7 @@ function onMessageFormSubmit(e) {
             resetMaterialTextfield(messageInputElement);
             toggleButton();
             last_chat_update();
-            messageInputElement.blur();
+            // messageInputElement.blur();
         });
     }
 }
