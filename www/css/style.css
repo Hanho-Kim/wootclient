@@ -407,7 +407,7 @@ input,textarea{
   z-index:999;
 }
 #header .header-left{
-  padding-top:15px;
+  padding: 15px 15px 0 12px;
 }
 #header .header-left i{
   font-size:24px;
@@ -435,9 +435,7 @@ input,textarea{
   font-weight:600;
   font-size:14px;
   letter-spacing:0.5px;
-  padding-top:15px;
-  line-height: 25px;
-  padding-right: 8px;
+  padding: 14px 12px 0 12px;
 }
 #header .header-right-index{
   padding-left:0px;
@@ -584,7 +582,7 @@ margin-top:5px;
   position:absolute;
   padding:10px 15px;
   text-align:center;
-  top:8px;
+  top:2px;
   right:0px;
   font-weight:600;
 }

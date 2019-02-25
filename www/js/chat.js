@@ -602,7 +602,8 @@ function onMessageFormSubmit(e) {
             resetMaterialTextfield(messageInputElement);
             toggleButton();
             last_chat_update();
-            // messageInputElement.blur();
+            messageInputElement.blur();
+            $("#message-textarea").css("height", "25px");
         });
     }
 }

@@ -3137,15 +3137,7 @@ var controller = {
                           }
                       });
                   } else {
-                      var elm = '<div id="popup-message">' +
-                                  '<span>내용을 입력해주세요.</span>' +
-                                '</div>';
-
-                      $("body").append(elm);
-
-                      setTimeout(function(){
-                        $("#popup-message").remove();
-                      }, 5000);
+                    popup("내용을 입력해주세요.");
                   }
               });
 
@@ -3276,15 +3268,7 @@ var controller = {
                           }
                         });
                     } else {
-                      var elm = '<div id="popup-message">' +
-                                  '<span>내용을 입력해주세요.</span>' +
-                                '</div>';
-
-                      $("body").append(elm);
-
-                      setTimeout(function(){
-                        $("#popup-message").remove();
-                      }, 5000);
+                        popup("내용을 입력해주세요.");
                     }
 
                   });
@@ -3527,6 +3511,7 @@ var controller = {
                       $('#footer-textarea').val("");
                       commentEventHandler();
                       
+                      $("#footer-textarea").css("height", "48px");
                       $("#template-view").animate({ scrollTop: $('.board-contents').height() }, 400);
 
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
@@ -3534,17 +3519,8 @@ var controller = {
                   }
               });
           } else {
-              var elm = '<div id="popup-message">' +
-                          '<span>내용을 입력해주세요.</span>' +
-                        '</div>';
-
-              $("body").append(elm);
-
-              setTimeout(function(){
-                $("#popup-message").remove();
-              }, 5000);
+              popup("내용을 입력해주세요.");
           }
-
         });
 
         // Comment Edit Button
