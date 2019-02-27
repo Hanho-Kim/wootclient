@@ -407,7 +407,7 @@ input,textarea{
   z-index:999;
 }
 #header .header-left{
-  padding: 15px 15px 0 12px;
+  padding: 14px 15px 0 12px;
 }
 #header .header-left i{
   font-size:24px;
@@ -445,7 +445,7 @@ input,textarea{
   position:relative;
   float:right;
   margin-top:-1px;
-  margin-left:14px;  
+  margin-left:14px;
 }
 #header .logo img{
 margin-top:5px;
@@ -582,7 +582,7 @@ margin-top:5px;
   position:absolute;
   padding:10px 15px;
   text-align:center;
-  top:2px;
+  top:3px;
   right:0px;
   font-weight:600;
 }
@@ -716,7 +716,7 @@ margin-top:5px;
   display:block;
   text-align:center;
   margin-top:30vh;
-  font-size:18px; 
+  font-size:18px;
   font-weight:600;
   color:rgb(90,90,90);
 }
@@ -741,7 +741,7 @@ margin-top:5px;
 
 #header{
     padding-top: constant(safe-area-inset-top);
-    padding-top: env(safe-area-inset-top);  
+    padding-top: env(safe-area-inset-top);
 }
 #subheader{
     margin-top: constant(safe-area-inset-top);

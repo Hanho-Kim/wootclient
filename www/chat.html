@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="./fonts/icon.css">
     <!-- End of ionicons -->
 
+    <!-- Cordova -->
+		<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+
     <!-- jquery -->
     <script src="./lib/jquery/jquery-3.2.1.min.js"></script>
     <!-- end of jquery -->
@@ -27,6 +30,21 @@
     <script src="./js/anime.min.js"></script>
     <!-- end of anime.js -->
 
+    <!--  facebook SKD -->
+    <script>
+      window.fbAsyncInit = function() {
+            FB.init({
+                appId            : '953763501484205',
+                autoLogAppEvents : true,
+                xfbml            : true,
+                version          : 'v3.2'
+            });
+        FB.AppEvents.logPageView();
+        };
+    </script>
+    <script async defer src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <!-- end -->
+
     <!-- App Styling -->
     <link rel="stylesheet" href="./css/reset.css">
     <link rel="stylesheet" href="./css/chatStyle.css">
@@ -40,7 +58,7 @@
     <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase.js"></script>
-    
+
     <script>
       // Initialize Firebase
       var config = {
@@ -113,7 +131,7 @@
         <div class="participants-item-wrapper">
         </div>
       </div>
-        
+
     </div>
     <div id="chat-room-button-wrapper">
       <div id="chat-room-button-like">
@@ -141,7 +159,7 @@
         <button id="submitImage">
           <i class="ion-android-image"></i>
         </button>
-      </form>      
+      </form>
       <form id="message-form" action="#">
         <textarea id="message-textarea" placeholder="메세지를 입력하세요"></textarea>
         <button type="submit" class="footer-textarea-submit button" id="message-submit">
@@ -160,4 +178,3 @@
 <script src="./js/chat.js"></script>
     </body>
 </html>
-

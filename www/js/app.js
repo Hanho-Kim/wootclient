@@ -15,7 +15,7 @@ var server_toggle = true;  // If toggle on, new server
 
 var signupVariable = {
       address : "",
-      postcode : ""      
+      postcode : ""
 };
 
 /* Global Functions */
@@ -23,7 +23,7 @@ var signupVariable = {
 // Calendar
 //------------------------------------------------------------
 function displayCalendar(element, next, maxDate){
- 
+
  var htmlContent ="";
  var FebNumberOfDays ="";
  var counter = 1;
@@ -41,8 +41,8 @@ function displayCalendar(element, next, maxDate){
  var prevMonth = month -1;
  var day  = dateNow.getDate();
  var year = dateNow.getFullYear();
- 
- 
+
+
  // Feburary exception case
  if (month == 1){
     if ( (year%100!=0) && (year%4==0) || (year%400==0)){
@@ -51,30 +51,30 @@ function displayCalendar(element, next, maxDate){
       FebNumberOfDays = 28;
     }
  }
- 
- 
+
+
  // names of months and week days.
  var monthNames   = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
  var dayNames     = ["일","월","화","수","목","금", "토"];
  var dayPerMonth  = ["31", ""+FebNumberOfDays+"","31","30","31","30","31","31","30","31","30","31"];
- 
+
  // days in previous month and next one , and day of week.
  var nextDate = new Date(year + "/" + nextMonth +'/1');
  var weekdays= nextDate.getDay();
  var weekdays2 = weekdays;
  var numOfDays = dayPerMonth[month];
-     
+
  // this leave a white space for days of pervious month.
  while (weekdays>0){
     htmlContent += "<td class='monthPre'></td>";
- 
+
  // used in next loop.
      weekdays--;
  }
- 
+
  // loop to build the calander body.
  while (counter <= numOfDays){
- 
+
      // When to start new line.
     if (weekdays2 > 6){
         weekdays2 = 0;
@@ -83,7 +83,7 @@ function displayCalendar(element, next, maxDate){
 
     var counterDate = new Date(year + "/" + (month +1) + "/" + counter);
     var timeDiff = Math.abs(counterDate.getTime() - dateNow.getTime());
-    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
     if (counter < day && !next){
         htmlContent +="<td class='calendar-day calendar-disable'>"+counter+"</td>";
@@ -92,11 +92,11 @@ function displayCalendar(element, next, maxDate){
     }else{
         htmlContent +="<td class='calendar-day calendar-disable'>"+counter+"</td>";
     }
-    
+
     weekdays2++;
     counter++;
  }
- 
+
  // building the calendar html body.
  var calendarBody = "";
  if(next){
@@ -118,7 +118,7 @@ function displayCalendar(element, next, maxDate){
  $("#prev-month-button").off("click").on("click",function(){
    displayCalendar("#calendar",false);
  });
- 
+
 }
 
 //============================================================
@@ -153,7 +153,7 @@ function popup( message, callback ){
 
     $("body").append(elm);
 
-    setTimeout(function(){ 
+    setTimeout(function(){
       $("#popup-message").remove();
     }, timebomb);
 
@@ -344,12 +344,14 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
 //------------------------------------------------------------
 function globalEventHandler(){
   $(".history-back").off('click').on('click',function(){
+    FB.AppEvents.logPageView();
     history.back();
   });
   $(".history-home").off('click').on('click',function(){
     window.location.replace('./index.html');
   });
   $("woot-click").off('click').on('click',function(){
+    FB.AppEvents.logPageView();
     initiator($(this).attr("href"), true);
   });
 }
@@ -369,7 +371,7 @@ function timestampConverter(timestamp){
 
   if(hour >= 12){
     if(hour == 12){
-        
+
     }else{
         hour = hour - 12;
     }
@@ -435,7 +437,7 @@ var viewConfig = {
     "controller": "loginCtrl",
     "template": serverParentURL + "/account/logout",
     "footerHide": true
-  },  
+  },
   "/login" : {
     "controller"  : "loginCtrl",
     "template"    : serverParentURL + "/login/login",
@@ -445,12 +447,12 @@ var viewConfig = {
     "controller"  : "loginCtrl",
     "template"    : serverParentURL + "/account/find_username",
     "footerHide"  : true
-  },  
+  },
   "/login/reset_password" : {
     "controller"  : "loginCtrl",
     "template"    : serverParentURL + "/account/reset_password",
     "footerHide"  : true
-  },  
+  },
   "/login/intro" : {
     "controller"  : "loginCtrl",
     "template"    : serverParentURL + "/login/intro",
@@ -465,7 +467,7 @@ var viewConfig = {
     "controller": "signupCtrl",
     "template": serverParentURL + "/account/to_be_approved/",
     "footerHide": true
-  },    
+  },
   "/login/signup/confirm" : {
     "controller"  : "signupConfirmCtrl",
     "template"    : serverParentURL + "/login/confirm",
@@ -580,7 +582,7 @@ var viewConfig = {
     "controller"  : "profileEditCtrl",
     "template"    : serverParentURL + "/people/edit",
     "header"      : "./header/people.profile.edit.html",
-    "footerHide"  : true    
+    "footerHide"  : true
   },
   "/account/change_password" : {
     "controller"  : "passwordEditCtrl",
@@ -723,12 +725,12 @@ var api = {
         $("body").append(elm);
         setTimeout(function(){
           $("#popup-message").remove();
-        }, 5000);        
+        }, 5000);
       }
 
     });
   },
-    
+
   postMulti : function(url, data, successFn){
     var successFn = successFn || function(){};
     var res;
@@ -841,16 +843,16 @@ function initiator(newPath, pushState){
   // Footer Processing
   $.each($(".footer-item"), function(){
     var iconUrl = $(this).css("background-image");
-    
+
     if ( $(this).attr("class").indexOf("footer-item-" + pathParent) > 0 ) {
       iconUrl = iconUrl.split("-")[0] + "-on.png";
     } else {
       iconUrl = iconUrl.split("-")[0] + "-off.png";
     }
-      
-    $(this).css("background-image", iconUrl);      
+
+    $(this).css("background-image", iconUrl);
   });
-    
+
   if(viewConfig[pathname]["footerHide"]){
     $("#footer").css({"display":"none"});
   }else{
@@ -987,7 +989,7 @@ function button_like() {
         button.data("action", next_action);
         button.removeClass("liked");
         button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_off.png')");
-        
+
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
@@ -1030,7 +1032,7 @@ var controller = {
         el: '.swiper-pagination',
       },
     });
-      
+
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
@@ -1050,9 +1052,9 @@ var controller = {
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
 
     api.get("/action/read_all/", function(){});
-      
+
     $('.notification-item').each(function (index) {
-        $(this).off('click').on('click', function() {            
+        $(this).off('click').on('click', function() {
             actionUrl = $(this).data('url');
 
             api.get(actionUrl, function(res) {
@@ -1060,14 +1062,14 @@ var controller = {
                 if(res['ok']) {
                     var urlSplit = res.url.split("/");
                     var urlType = urlSplit[1];
-                    var id = urlType.indexOf("account") >= 0 ? urlSplit[3] : urlSplit[2];  
+                    var id = urlType.indexOf("account") >= 0 ? urlSplit[3] : urlSplit[2];
 
                     // post -> post_detail
                     if ( urlType.indexOf("post") >= 0 ) {
                         initiator("/post_detail?pid=" + id, true);
                     }
                     // gathering (need to fix the condition of if statement through 'chatting_on')
-                    else if ( urlType.indexOf("gathering") >= 0 ) {                                     
+                    else if ( urlType.indexOf("gathering") >= 0 ) {
                         if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
                             window.location.href = "./chat.html?gid=" + id;
                         } else if ( res.target.fields.is_removed == true || res.target.fields.is_accessible == false ) {
@@ -1075,7 +1077,7 @@ var controller = {
                         } else {
                             initiator("/gathering_detail?gid=" + id, true);
                         }
-                    } 
+                    }
                     // woot -> profile
                     else if ( urlType.indexOf("account") >= 0 ) {
                         initiator("/account/profile?uid=" + id, true);
@@ -1087,7 +1089,7 @@ var controller = {
     });
     return;
   },
-  
+
 
   /* Login Ctrl */
   loginCtrl : function(){
@@ -1154,7 +1156,7 @@ var controller = {
                           }
         });
     });
-    
+
     return;
   },
 
@@ -1193,7 +1195,7 @@ var controller = {
               $(".message-password").find("span").css({"color":"#e74c3c"}).text("비밀번호가 일치하지 않습니다.");
           }
       });
-      
+
       $("#signup-address-submit").off('click').on('click',function(){
         var address = $("#signup-address-input").val();
         $("#signup-address-result").html("");
@@ -1243,14 +1245,14 @@ var controller = {
                         });
 
                         // validate address and show signable blocks
-                        /* comment 
+                        /* comment
                         api.post("/account/signup/address/", data, function(response){
                             $("#signup-address-result").hide();
                             if (response['ok']){
                                 // TODO: enable '다음' button
                                 $("#signup-address-block-result").css({"display":"block"});
                                 $("#signup-address-block-result ul").html("");
-                                
+
                             } else {
                                 // TODO: show error and reset search form(다시 검색 가능하도록 화면 초기화)
                                 console.log('not ok');
@@ -1266,7 +1268,7 @@ var controller = {
                                 }, 5000);
 
                             }
-                            
+
                             // TODO: show signable blocks
                             $.each(res['blocks'], function(index, value){
                               $("#signup-address-block-result ul").append('<li>' +
@@ -1290,9 +1292,9 @@ var controller = {
       if($("#signup-item-input-devicetoken") && typeof FCMPlugin != 'undefined'){
           FCMPlugin.getToken(function(token){
               $("#signup-item-input-devicetoken").val(token);
-          });      
+          });
       }
-      
+
       // Radio
       $(".signup-radio-container .signup-radio-button").off('click').on('click',function(){
         var container   = $(this).parent();
@@ -1303,7 +1305,7 @@ var controller = {
         $(container).find("input").val(radioValue);
 
       });
-      
+
       $('.radio-container .checkmark').off('click').on('click', function(){
           var checkbox = $(this).siblings('input[type="checkbox"]');
           if ( checkbox.val() == "off" ) {
@@ -1316,19 +1318,19 @@ var controller = {
       var infoSubmitHandler = function(e){
           e.preventDefault();
           $this = $(this);
-          
+
           var url = $this.attr("action");
 
           if ( $('input[name="address"]').val() != "" && $('input[name="address_detail"]').val() != "" ){
               if ( $('input[name="privacy1"]').val() == "on" && $('input[name="privacy2"]').val() == "on" ){
                   api.post(url, $this.serialize(), function(response){
-                      if ( response['ok'] ){                       
-                          initiator('/signup', false);  // no pushState   
+                      if ( response['ok'] ){
+                          initiator('/signup', false);  // no pushState
                       } else {
                           popup("모든 정보를 정확하게 입력해 주세요.");
                           console.log(response['user_form_errors']);
                           console.log(response['profile_form_errors']);
-                      }                  
+                      }
                   });
               } else {
                   popup("필수 약관들에 동의해주세요.");
@@ -1374,12 +1376,12 @@ var controller = {
       $(".signup-footer-item-forward-4").off('click').on('click',function(){
         $("#signup-4-wrapper").css({"display":"block"});
       });
-            
+
     var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
     $("#model-house-item-wrapper").html("");
 
     $.each(modelHouseHTML,function(index,elm){
-      setTimeout(function(){ 
+      setTimeout(function(){
         $("#model-house-item-wrapper").prepend(elm);
         anime({
           targets: '.model-house-item:nth-child(1)',
@@ -1406,16 +1408,16 @@ var controller = {
 
       // Close
       $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
-        $(".signup-confirm-form-wrapper").css({"display":"none"}) 
+        $(".signup-confirm-form-wrapper").css({"display":"none"})
       });
 
     });
-      
+
     // Verify Upload
     $(".verify-upload-button").off("click").on("click",function(){
         $(".upload-img").click();
     });
-      
+
     // Image Upload
     function imageProcessor(dataURL, fileType, inputOrder) {
       var image = new Image();
@@ -1457,7 +1459,7 @@ var controller = {
 
           context.drawImage(image, 0, 0);
           dataURL   = canvas.toDataURL(fileType);
-            
+
           $('.test-image').attr('src', dataURL);
 
         });
@@ -1477,7 +1479,7 @@ var controller = {
           var inputOrder = event.target.getAttribute('data-inputOrder');
           var file = event.target.files[0];
           var picReader = new FileReader();
-          
+
           console.log(inputOrder);
           console.log(file);
           console.log(picReader);
@@ -1493,7 +1495,7 @@ var controller = {
 
     $("#form-verify").submit(function(event){
         event.preventDefault();
-        
+
         if($("#form-verify input[name='img']").val() == ""){
             popup("주소 이미지를 첨부해주세요.");
             return;
@@ -1510,11 +1512,11 @@ var controller = {
             }
         });
 
-        
+
     });
-      
+
     // Signup Logout
-    
+
     $(".signup-footer-logout").off("click").on("click",function(){
         $.ajax({
                   method    : "GET",
@@ -1749,7 +1751,7 @@ var controller = {
 
                 $("body").append(elm);
 
-                setTimeout(function(){ 
+                setTimeout(function(){
                   $("#popup-message").remove();
                 }, 5000);
                 return;
@@ -1766,7 +1768,7 @@ var controller = {
                 }
                 timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
               }
-                
+
               console.log(timestamp);
 
               var ServerDate = new Date(timestamp*1000);
@@ -1811,7 +1813,7 @@ var controller = {
             j += 1;
             ageup = parseInt(myage) + j;
         }
-                                       
+
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
           $("#pullup-agelimit-input-min-fake .roller").css({"display":"block"});
@@ -1904,7 +1906,7 @@ var controller = {
                 $("#write-gathering-input-prestage-minpeople").val("");
               }else if(duration && minpeople){
                 $("#pullup .background").click();
-                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행");
+                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
                 $("#write-gathering-input-prestage-duration").val(duration);
                 $("#write-gathering-input-prestage-minpeople").val(minpeople);
               }else{
@@ -1943,7 +1945,7 @@ var controller = {
     if ( $('#write-gathering-input-prestage').data("edit") == "yes" ) {
         $('#write-gathering-input-prestage').css("opacity", "0.4");
     }
-      
+
     // Gathering Submit
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
@@ -1957,10 +1959,10 @@ var controller = {
                 console.log("fail");
                 popup('필수 항목들에 내용을 채워주세요.');
                 // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-            }        
+            }
         });
 
-    
+
     });
 
 //     $('#write-gathering-submit').click(function() {
@@ -2098,7 +2100,7 @@ var controller = {
           let str = $(this).text().replace(/\s/g,"").replace("#","");
           woottag.createTag(str);
         });
-          
+
         // Already Exist Tag (for posting_edit)
 
         if($("#woot-tag-wrapper").find("input[type='hidden']").val()){
@@ -2110,7 +2112,7 @@ var controller = {
           });
         }
 
-          
+
       },
 
       createTag : function(str){
@@ -2186,10 +2188,10 @@ var controller = {
         $(".board-select").off('click').on('click',function(){
           $("#pullup .background").click();
           var code = $(this).data("code");
-    
+
           $("#write-posting-input-topic-fake").val($(this).find("span").text());
           $("#write-posting-input-topic").val(code);
-          
+
           api.get("/get_recommended_tags/" + code + "/",function(res){
               var recommendTagArray = res;
               $("#woot-tag-recommendation").find("ul").html("");
@@ -2386,7 +2388,7 @@ var controller = {
   accountMoreCtrl : function(){
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
-      
+
     // Interest
     $(".interest-array").each(function(){
         if($(this).val()){
@@ -2464,19 +2466,19 @@ var controller = {
             });
           });
       }
-      
+
     });
 
 
     return;
   },
-  
+
 
   /* Profile Ctrl */
   profileCtrl : function(){
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
-      
+
     // Interest
     $(".interest-array").each(function(){
         if($(this).val()){
@@ -2503,7 +2505,7 @@ var controller = {
     // History Tab
     $(".profile-section-statistics-tab").off('click').on('click',function(){
       var tab = $(this).data("tab");
-      
+
       /*
       if(tab == "badge"){
         $(".profile-section-statistics-tab").removeClass("selected");
@@ -2512,7 +2514,7 @@ var controller = {
         $(".badge-discover-contents").show();
         $(".posting-wrapper").hide();
         $(".people-contents").hide();
-      
+
         // renderTemplate(serverParentURL + "/people/profile.badge?uid=" + profiledata.uid,"#profile-section-history");
       */
       if(tab == "posting"){
@@ -2535,7 +2537,7 @@ var controller = {
       }
 
     });
-    
+
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
       var $this = $(this);
@@ -2573,10 +2575,10 @@ var controller = {
       var data = {id:targetUid, action:action};
       pullupMenu('pullup_profile_report?uid=' + targetUid,function(){
         if ( button.hasClass("banned") ) {
-            $(".profile-report-block").text("해당 이웃 차단 해제");    
-            $(".profile-report-report").text("해당 이웃 신고 하기");    
+            $(".profile-report-block").text("해당 이웃 차단 해제");
+            $(".profile-report-report").text("해당 이웃 신고 하기");
         }
-        
+
         $(".profile-report-block").off('click').on('click',function(){
           if ( button.hasClass("banned") ) {
               var next_action = "ban";
@@ -2588,7 +2590,7 @@ var controller = {
                   popup("해당 유저를 차단 해제했습니다.\n앞으로 서로의 게더링, 게시물을 볼 수 있습니다.")
               });
               $("#pullup .background").click();
-              
+
           } else {
               var next_action = "unban";
               button.data("action", next_action);
@@ -2610,7 +2612,7 @@ var controller = {
 
               });
               $("#pullup .background").click();
-              
+
           }
         });
         $(".profile-report-report").off('click').on('click',function(){
@@ -2624,10 +2626,10 @@ var controller = {
     });
     return;
   },
-  
+
   // profileCtrl
   profileEditCtrl : function(){
-    var udata = JSON.parse($("#hiddenInput_userdata").val());      
+    var udata = JSON.parse($("#hiddenInput_userdata").val());
     var editdata = JSON.parse($("#hiddenInput_editdata").val());
     if (editdata.initial == "yes" || editdata.dtoken == "" ) {
         $('.header-left').css({"opacity":"0"});
@@ -2635,7 +2637,7 @@ var controller = {
     if ( editdata.dtoken == "" ) {
         popup("간단한 소개와 관심사 3~5개를<br>등록해주세요.");
     }
-    
+
     $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
@@ -2655,11 +2657,10 @@ var controller = {
         pullupMenu("pullup_edit_avatar",function(){
             $(".profile-avatar-wrapper").hide();
             $(".profile-avatar-wrapper-1").show();
-                                    
+
             $(".overlap-close").off('click').on('click',function(){
-                $("#profile-avatar-template").css({"display":"none"});
+                $("#profile-avatar-template").css({"display":"none"}).html("");
                 $("#pullup .background").trigger("click");
-                $("#pullup .background").html("")
             });
             $("#profile-edit-avatar-submit").off('click').on('click',function(){
                 var imageUrl = $(".item-selected .avatar-item").css("background-image");
@@ -2671,7 +2672,7 @@ var controller = {
                 $("#profile-avatar-template").css({"display":"none"}).html("");
                 $("#pullup .background").trigger("click");
             });
-            
+
             $(".profile-avatar-type-list").off('click').on('click',function(){
                 var tab = $(this).data("tab");
 
@@ -2682,7 +2683,7 @@ var controller = {
                 if (tab == 1) {
                     $(".profile-avatar-wrapper-1").show();
                 } else if (tab == 2) {
-                    $(".profile-avatar-wrapper-2").show();                
+                    $(".profile-avatar-wrapper-2").show();
                 } else if (tab == 3) {
                     $(".profile-avatar-wrapper-3").show();
                 } else {
@@ -2692,11 +2693,11 @@ var controller = {
             $(".profile-avatar-wrapper-item").off("click").on("click", function(){
                 $(".profile-avatar-wrapper-item").removeClass("item-selected");
                 $(this).addClass("item-selected");
-                // input value 
+                // input value
             });
         });
     });
-                        
+
     /* updating image change to new version
       $("#template-view").css({"overflow":"hidden"});
       $("body").css({"overflow":"hidden"});
@@ -2738,9 +2739,9 @@ var controller = {
           $("body").css({"overflow":"inherit"});
         });
       });
-    });      
+    });
     */
-                  
+
     // Profile Edit Guide
     $("#profile-edit-guide-nick").css({"display":"none"});
     $("#profile-edit-guide-intro").css({"display":"none"});
@@ -2765,13 +2766,13 @@ var controller = {
         var alreadyInterest = JSON.parse($("#profile-edit-input-interest").val() || "[]");
         $.each(alreadyInterest,function(index,value){
            $("#profile-edit-input-interest-fake").append("<span>"+value+"</span>");
-        
-        $('#profile-edit-guide-interest').hide();        
-        });        
+
+        $('#profile-edit-guide-interest').hide();
+        });
     } else {
-        $('#profile-edit-guide-interest').show();        
+        $('#profile-edit-guide-interest').show();
     }
-      
+
     $("#profile-edit-input-interest-fake").off('click').on('click',function(){
       pullupMenu("pullup_edit_interest",function(){
         var interestArray = JSON.parse($("#profile-edit-input-interest").val() || "[]");
@@ -2800,7 +2801,7 @@ var controller = {
             $(".pullup-interest-detail").css({"display":"none"});
 
           }else{
-            
+
             if(interestArray.length > 4){
                 popup("관심사는 최대 5개까지만 선택가능합니다.");
             }else{
@@ -2811,6 +2812,7 @@ var controller = {
 
                 $(".pullup-interest-detail").css({"display":"block"});
                 $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요").focus();
+                
             }
 
           }
@@ -2829,19 +2831,19 @@ var controller = {
           if(detail == ""){
             return;
           }
-          
+
           interestArray[interestArrayPure.indexOf(interestValue)] = interestValue + ":" + detail;
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
           $("#profile-edit-input-interest-fake").html("");
           $.each(interestArray,function(indx,val){
             $("#profile-edit-input-interest-fake").prepend("<span>" + val + "</span>");
           });
-            
+
           $("#pullup-interest-detail-input").val("");
           $(".pullup-interest-detail").css({"display":"none"});
-            
+
         });
-        
+
         // close button
         $('.close-interest').off('click').on('click', function(){
             $("#pullup .background").trigger('click');
@@ -2866,13 +2868,13 @@ var controller = {
         $("#profile-edit-input-message").val(false);
       }
     });
-    
+
     */
 
     $("#profile-edit-submit").off('click').on('click',function(){
       if($("#profile-edit-input-avatar").val()      == "" ||
         $("#profile-edit-input-description").val()  == "" ||
-        $("#profile-edit-input-interest").val()     == "" || 
+        $("#profile-edit-input-interest").val()     == "" ||
         $("#profile-edit-input-interest").val()     == "[]" ){
         var elm = '<div id="popup-message">' +
                     '<span>모든 값을 정확히 입력해주세요.</span>' +
@@ -2884,10 +2886,10 @@ var controller = {
         }, 5000);
         return;
       }
-    
+
       var data = $("#profile-edit-form").serialize();
       var url = $("#profile-edit-form").attr('action');
-      
+
       api.post(url,data,function(res){
           if(res['ok']) {
               if (editdata.initial == "yes") {
@@ -2903,13 +2905,13 @@ var controller = {
       });
 
     });
-    
+
     if(typeof FCMPlugin != 'undefined'){
         FCMPlugin.getToken(function(token){
            $("#profile-edit-input-devicetoken").val(token);
-        });      
+        });
     }
-      
+
     return;
   },
 
@@ -2975,7 +2977,7 @@ var controller = {
                                 setTimeout(function(){
                                   $("#popup-message").remove();
                                 }, 5000);
-                                return;                                
+                                return;
                             }
                             if (res['ok']) {
                                 popup("비밀번호가 정상적으로 변경되었습니다.");
@@ -3000,7 +3002,7 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
-                
+
     var miscHandler = function(){
         // More button click event handler
         $(".content-more-button").off('click').on('click',function(){
@@ -3009,7 +3011,7 @@ var controller = {
           postContentElm.find(".content-original").css({"display":"block"});
           $(this).remove();
         });
-        
+
         var swiper = new Swiper('.swiper-container', {
           pagination: {
             el: '.swiper-pagination',
@@ -3031,7 +3033,7 @@ var controller = {
                             api.get('/post_delete/' + pid + '/', function(){
                                 targetPost.remove();
                                 location.reload(true);
-                            }); 
+                            });
                         });
                     });
 
@@ -3111,7 +3113,7 @@ var controller = {
             $("body").css({"overflow":"inherit"});
             $("body").removeClass("body-overlap-view");
           });
-          
+
           var commentEventHandler = function(){
               // Post API: Comment - Default
               $("#footer-textarea-submit").off('click').on('click',function(){
@@ -3137,7 +3139,15 @@ var controller = {
                           }
                       });
                   } else {
-                    popup("내용을 입력해주세요.");
+                      var elm = '<div id="popup-message">' +
+                                  '<span>내용을 입력해주세요.</span>' +
+                                '</div>';
+
+                      $("body").append(elm);
+
+                      setTimeout(function(){
+                        $("#popup-message").remove();
+                      }, 5000);
                   }
               });
 
@@ -3183,7 +3193,7 @@ var controller = {
               });
               // Comment Delete Button
               $('.comment-delete-button').off('click').on('click',function(){
-                  $this = $(this);                  
+                  $this = $(this);
 
                   popup("정말 삭제하시겠습니까?", function(){
                       if($this.data('reply') == 'no') {
@@ -3203,7 +3213,7 @@ var controller = {
                                   var count_current = $('#posting-item-' + pid).find('.comment .count');
                                   count_current.text(parseInt(count_current.text()) - count_delete);
 
-                                  comment.hide();                                      
+                                  comment.hide();
                               }
                           });
 
@@ -3268,7 +3278,15 @@ var controller = {
                           }
                         });
                     } else {
-                        popup("내용을 입력해주세요.");
+                      var elm = '<div id="popup-message">' +
+                                  '<span>내용을 입력해주세요.</span>' +
+                                '</div>';
+
+                      $("body").append(elm);
+
+                      setTimeout(function(){
+                        $("#popup-message").remove();
+                      }, 5000);
                     }
 
                   });
@@ -3385,7 +3403,7 @@ var controller = {
             // post delete
             $(".pullup-item-post-delete").off('click').on('click',function(e){
                 e.preventDefault();
-                
+
                 popup("정말 삭제하시겠습니까?", function(){
                     api.get('/post_delete/' + pid + '/', function(){
                         $("#pullup .background").click();
@@ -3416,7 +3434,7 @@ var controller = {
             });
         }
     });
-  
+
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
 
@@ -3449,7 +3467,7 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
-      
+
     // Overlap : Like
     $(".overlap-button-like").off('click').on('click',function(){
         $("#template-view").css({"overflow":"hidden"});
@@ -3510,8 +3528,7 @@ var controller = {
                       $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
                       $('#footer-textarea').val("");
                       commentEventHandler();
-                      
-                      $("#footer-textarea").css("height", "48px");
+
                       $("#template-view").animate({ scrollTop: $('.board-contents').height() }, 400);
 
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
@@ -3519,8 +3536,17 @@ var controller = {
                   }
               });
           } else {
-              popup("내용을 입력해주세요.");
+              var elm = '<div id="popup-message">' +
+                          '<span>내용을 입력해주세요.</span>' +
+                        '</div>';
+
+              $("body").append(elm);
+
+              setTimeout(function(){
+                $("#popup-message").remove();
+              }, 5000);
           }
+
         });
 
         // Comment Edit Button
@@ -3614,14 +3640,14 @@ var controller = {
                   setTimeout(function(){
                     $("#popup-message").remove();
                   }, 5000);
-              }                
+              }
             });
           });
         });
 
         // Comment Delete Button
         $('.comment-delete-button').off('click').on('click',function(){
-            $this = $(this);                  
+            $this = $(this);
 
             popup("정말 삭제하시겠습니까?", function(){
                 if($this.data('reply') == 'no') {
@@ -3640,7 +3666,7 @@ var controller = {
                             var count_current = $('#posting-item-' + pid).find('.comment .count');
                             count_current.text(parseInt(count_current.text()) - count_delete);
 
-                            comment.hide();                                      
+                            comment.hide();
                         }
                     });
 
@@ -3661,14 +3687,14 @@ var controller = {
         });
     }
     commentEventHandler();
-       
+
     return;
   },
 
   /* Gathering Ctrl */
   gatheringCtrl : function(){
     $("#footer").css({"display":"none"});
-    
+
     // Gathering Participate
     $("#gathering-participate-button").off('click').on('click',function(){
 
@@ -3748,15 +3774,15 @@ var controller = {
     /* subtract the count of host */
     $("#gathering-stats-like").text(parseInt($("#gathering-stats-like").text() - 1));
     $("#gathering-stats-participate").text(parseInt($("#gathering-stats-participate").text() - 1));
-    
+
     /* the required number of people */
     var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
     var req_count = gdata.min_num_people - gdata.current_joining_people;
     $('.tobevalid-count').text(req_count);
-      
+
     // gathering-member alert
     $('#gathering-stats-pre').off('click').on('click', function() {
-       popup("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.") 
+       popup("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.")
     });
 
     $('#gathering-stats-nor').off('click').on('click', function(e){
@@ -3788,7 +3814,7 @@ var controller = {
       var hdinput = $("#hiddenInput_gatheringdata");
 
       if (button.hasClass("joined")) { // Already Liked
-        popup("정말 참여를 취소하시겠습니까? 다시 채팅방으로 돌아가려면 뒤로가기를 눌러주세요.",function(){
+        popup("정말 참여를 취소하시겠습니까?",function(){
             // cancel the joining
             api.post(url, data, function (res) {
               if(res['ok']) {
@@ -3813,7 +3839,7 @@ var controller = {
       // joining
       } else {
           if(hdinput.data('tochat') == 'pre') {
-            popup("진행 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.", function(){
+            popup("최소 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.", function(){
               api.post(url, data, function (res) {
                 if(res['ok']) {
                   var next_action = "off";
@@ -3848,12 +3874,12 @@ var controller = {
                       document.location.replace("./chat.html?gid=" + gid);
                     }
                   });
-                });          
+                });
             }
           }
       }
     });
-      
+
     // Gathering More Button Handler
     $("#header-gathering-more-button").off("click").on("click",function(){
       var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
@@ -3876,12 +3902,12 @@ var controller = {
                              $("body").css({"overflow":""});
                          });
                     });
-                  
+
               });
-          });   
+          });
       }else{
           pullupMenu("pullup_gathering_report?gid=" + gid, function(){
-              
+
               $(".pullup-item.gathering-report").off("click").on("click",function(){
 
                  initiator("/report/gathering?gid=" + gid, true);
@@ -3890,8 +3916,8 @@ var controller = {
                  $("body").css({"overflow":""});
 
               });
-              
-          });         
+
+          });
       }
     });
 
@@ -4054,14 +4080,14 @@ var controller = {
                 initiator("/index", false);
             } else {
                 popup(res.msg);
-            }        
+            }
         });
 
-    
+
     });
     return;
   },
-    
+
   /* Void Ctrl */
   voidCtrl : function(){
     return;
@@ -4122,10 +4148,10 @@ $(document).ready(function(){
         Keyboard.hide();
       }
     });
-    
+
     // Cordova iOS resizing viewport while input focus happens
     Keyboard.shrinkView(true);
-      
+
     // Cordova-plugin-screen-orientation : Orientation Lock
     screen.orientation.lock('portrait');
 
@@ -4142,11 +4168,9 @@ $(document).ready(function(){
               success   : function( response ) {
                           console.log(response);
                           response = String(response).replace(" ","");
-                  
+
                           if(response){
-                            $("#update-alert").html("");
-                            $("#update-alert").append($.parseHTML(response));
-                            $("#update-alert").css({"display":"block"});
+                            console.log(1);
                           }
 
                         },

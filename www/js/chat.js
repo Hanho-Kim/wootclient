@@ -66,7 +66,7 @@ function popup( message, callback ){
 
     $("body").append(elm);
 
-    setTimeout(function(){ 
+    setTimeout(function(){
       $("#popup-message").remove();
     }, timebomb);
 
@@ -82,7 +82,7 @@ function last_chat_update() {
    if (last_updated_time && (now - 5*60*1000) < last_updated_time) {
          return;
    }
-    
+
     $.ajax({
         method: "GET",
         url: serverParentURL + "/gathering_last_chat_update/" + globalGid,
@@ -118,7 +118,7 @@ function chatInit() {
 
     var gid = pathParamsJson["gid"];
     globalGid = pathParamsJson["gid"];
-    
+
     var apiPathConfigInfo = serverParentURL + "/chat/gathering_config_info/";
     var apiPathInfo = serverParentURL + "/chat/gathering_info/";
 
@@ -145,8 +145,8 @@ function chatInit() {
     $("#subheader").css({
         "display": "block"
     });
-    
-    // Case of Gathering  
+
+    // Case of Gathering
     // $(".chat-title").text(chatConfig.room.title);
     // $(".chat-date").text(chatConfig.room.date);
     // $(".chat-place").text(chatConfig.room.place);
@@ -214,17 +214,17 @@ function chatInit() {
 
 }
 
-// Enter room and 
+// Enter room and
 function setChatConfig(url, customSuccess) {
     var promise = $.ajax({
         method      : "GET",
         url         : url,
         xhrFields   : { withCredentials: true },
-        success     : function (response) { 
-            return response; 
+        success     : function (response) {
+            return response;
         },
         error       : function (request, status, error) {
-            var elm = 
+            var elm =
                 '<div id="popup-message">' +
                 '<span>API 서버 연결 오류</span>' +
                 '</div>';
@@ -268,11 +268,9 @@ function refreshRoomInfo(url) {
         $(".chat-title").text(fields.title);
         $(".chat-date").text(fields.datetime_kor);
         $(".chat-place").text(fields.address);
-        if ( $(".chat-place").text().length > 17 ) {
-            $(".chat-place").text( $(".chat-place").text().slice(0, 12) + "…" )
-        }
+
         $('.chat-room-overlap-section-sticker').css({"background-image": "url(" + fields.sticker_fullurl + ")"});
-        
+
         $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
         $.each(fields.users_joining,function(index,value){
@@ -286,11 +284,11 @@ function refreshRoomInfo(url) {
           $(".footer-textarea-wrapper").css({"display":"none"});
           $(".footer-textarea-wrapper-readonly").css({"display":"block"});
           $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
-            
+
           $("#chat-room-button-wrapper").css({"display":"none"});
         }
 
-        /* 
+        /*
         $(".chat-room-overlap-section-like").find(".title").text("좋아요 " + fields.users_liking.length + "명");
         $(".like-item-wrapper").html("");
         $.each(fields.users_liking,function(index,value){
@@ -299,7 +297,7 @@ function refreshRoomInfo(url) {
             $(".like-item-wrapper").append('<div class="like-item"><div class="avatar"></div><div class="username">' + like_username + '</div></div>');
         });
         */
-    }); 
+    });
 }
 
 var api = {
@@ -338,13 +336,13 @@ var api = {
 
 $('#chat-room-button-like').off('click').on('click', function(){
   var link = $(location).attr('href');
-  var gid = link.split("=")[1];  
+  var gid = link.split("=")[1];
   document.location.href = "./index.html#/gathering_detail?gid=" + gid;
 });
 
 $('#chat-room-button-cancel').off('click').on('click', function(){
   var link = $(location).attr('href');
-  var gid = link.split("=")[1];  
+  var gid = link.split("=")[1];
   /*
   var action = $(this).data("action");
   var data = {'gid': gid, 'action': action};
@@ -352,11 +350,11 @@ $('#chat-room-button-cancel').off('click').on('click', function(){
 
   api.post("/gathering_join/", data, function (res) {
       if(res['ok']) {
-          document.location.href = "./index.html#/gathering_detail?gid=" + gid;    
+          document.location.href = "./index.html#/gathering_detail?gid=" + gid;
       }
   });
   */
-  document.location.href = "./index.html#/gathering_detail?gid=" + gid;    
+  document.location.href = "./index.html#/gathering_detail?gid=" + gid;
 });
 
 function infiniteScroll() {
@@ -593,8 +591,10 @@ function onMediaFileSelected(event) {
 }
 
 // Triggered when the send new message form is submitted.
+var onMessageFormSubmitBoolean = false;
 function onMessageFormSubmit(e) {
     e.preventDefault();
+    onMessageFormSubmitBoolean = true;
     // Check that the user entered a message and is signed in.
     if (messageInputElement.value && checkSignedInWithMessage()) {
         saveMessage(messageInputElement.value).then(function () {
@@ -602,8 +602,6 @@ function onMessageFormSubmit(e) {
             resetMaterialTextfield(messageInputElement);
             toggleButton();
             last_chat_update();
-            messageInputElement.blur();
-            $("#message-textarea").css("height", "25px");
         });
     }
 }
@@ -729,6 +727,10 @@ function displayMessage(key, username, uid, text, avatarUrl,
         if (uid == chatConfig.profile.fields.user_id) {
             $(div).addClass("chat-item-my");
         }
+        if (onMessageFormSubmitBoolean){
+          messageInputElement.focus();
+          onMessageFormSubmitBoolean = false;
+        }
     }
 
     // Show the card fading-in and scroll to view the new message.
@@ -806,31 +808,25 @@ $("textarea").on('keydown keyup', function () {
 //------------------------------------------------------------
 document.addEventListener("deviceready",function(){
 
-    // Cordova iOS disable Keyboard Done button
-    Keyboard.hideFormAccessoryBar(true);
-    $(document).click(function(e){
-      if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){
-        Keyboard.hide();
-      }
-    });
+
+
+    // Android Back Button Overwrite
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+    document.addEventListener("backbutton", function (e){
+
+        e.preventDefault();
+        if (exitApp) {
+          clearInterval(intval)
+          (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
+        }else {
+          if($("#chat-room-image").hasClass("activated")){
+            $(".chat-room-image-close").click();
+          }else{
+            exitApp = true
+            navigator.app.backHistory();
+          }
+        }
+    }, false);
+
 
 });
-
-// Android Back Button Overwrite
-var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
-document.addEventListener("backbutton", function (e){
-
-    e.preventDefault();
-    alert('back!');
-    if (exitApp) {
-      clearInterval(intval)
-      (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-    }else {
-      if($("#chat-room-image").hasClass("activated")){
-        $(".chat-room-image-close").click();
-      }else{
-        exitApp = true
-        navigator.app.backHistory();
-      }
-    }
-}, false);
