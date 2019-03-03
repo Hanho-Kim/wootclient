@@ -10,8 +10,8 @@ var serverParentURL = "http://www.hellowoot.co.kr"
 
 
 // Alternate between new and old servers
-var server_toggle = true;  // If toggle on, new server
-
+var server_toggle = true;  // If toggle false, old & test server
+var plugin_toggle = true;  // if toggle false, test mode
 
 var signupVariable = {
       address : "",
@@ -344,15 +344,19 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
 //------------------------------------------------------------
 function globalEventHandler(){
   $(".history-back").off('click').on('click',function(){
-    FB.AppEvents.logPageView();
     history.back();
   });
   $(".history-home").off('click').on('click',function(){
     window.location.replace('./index.html');
   });
   $("woot-click").off('click').on('click',function(){
-    FB.AppEvents.logPageView();
     initiator($(this).attr("href"), true);
+    if (plugin_toggle) {
+        var pageurl = window.location.href.split("#")[1].split("?");
+        logViewedContentEvent(pageurl[0], pageurl[1] || "none");
+
+        FB.AppEvents.logPageView();        
+    }
   });
 }
 
@@ -414,6 +418,26 @@ function makeAjaxSubmitHandler(successFn) {
     }
 
     return handler;
+}
+
+//============================================================
+// Facebook SDK App Event Functions
+//------------------------------------------------------------
+if (plugin_toggle) {      
+  function logViewedContentEvent(contentType, contentId) {
+    var params = {};
+    params[FB.AppEvents.ParameterNames.CONTENT_TYPE] = contentType;
+    params[FB.AppEvents.ParameterNames.CONTENT_ID] = contentId;
+    FB.AppEvents.logEvent(FB.AppEvents.EventNames.VIEWED_CONTENT, null, params);
+    console.log(params);
+  }
+  function logCompletedTutorialEvent(contentId, success) {
+      var params = {};
+      params[FB.AppEvents.ParameterNames.CONTENT_ID] = contentId;
+      params[FB.AppEvents.ParameterNames.SUCCESS] = success ? 1 : 0;
+      FB.AppEvents.logEvent(FB.AppEvents.EventNames.COMPLETED_TUTORIAL, null, params);
+      console.log(params);
+  }
 }
 
 /* End of Global Functions */
@@ -627,9 +651,9 @@ if (server_toggle){
   viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
 
     // login.html
-  viewConfig["/login"]["template"] = serverParentURL + "/account/login/";
+  viewConfig["/login"]["template"] = serverParentURL + "/account/login";
   viewConfig["/login/intro"]["template"] = serverParentURL + "/misc/intro";
-  viewConfig["/signup"]["template"] = serverParentURL + "/account/signup/";
+  viewConfig["/signup"]["template"] = serverParentURL + "/account/signup";
 
   viewConfig["/message"]["template"] = serverParentURL + "/misc/message_list";
 
@@ -993,10 +1017,14 @@ function button_like() {
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
+          
+          if (plugin_toggle) { logCompletedTutorialEvent("like_post", false); }
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count - 1);
           $('#gathering-stats-nor').data("link", "");
+
+          if (plugin_toggle) { logCompletedTutorialEvent("like_gath", false); }
         }
       }
     });
@@ -1013,15 +1041,21 @@ function button_like() {
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
+          
+          if (plugin_toggle) { logCompletedTutorialEvent("like_post", true); }
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
           $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
+            
+          if (plugin_toggle) { logCompletedTutorialEvent("like_gath", true); }
         }
       }
     });
   }
 }
+
+
 
 /* Controller */
 var controller = {
@@ -1745,15 +1779,7 @@ var controller = {
               var timestamp   = "";
 
               if(!date || !hour || !minute){
-                var elm = '<div id="popup-message">' +
-                            '<span>모든 값을 정확히 입력해주세요</span>' +
-                          '</div>';
-
-                $("body").append(elm);
-
-                setTimeout(function(){
-                  $("#popup-message").remove();
-                }, 5000);
+                popup("모든 값을 정확히 입력해주세요.");
                 return;
               }
 
@@ -1955,6 +1981,8 @@ var controller = {
                console.log("gotcha!");
                var gid = res['gid'].toString();
                initiator('/gathering_detail?gid=' + gid, false);
+                
+               if (plugin_toggle) { logCompletedTutorialEvent("write_gath", true); }
             } else {
                 console.log("fail");
                 popup('필수 항목들에 내용을 채워주세요.');
@@ -2321,6 +2349,8 @@ var controller = {
              var pid = response['pid'].toString();
              var cordovaLocation = '/post_detail?pid=' + pid
              initiator(cordovaLocation, false);
+              
+             if (plugin_toggle) { logCompletedTutorialEvent("write_post", true); }
           } else {
               console.log("fail");
               popup('필수 항목들에 내용을 채워주세요.');
@@ -2550,7 +2580,7 @@ var controller = {
             $this.data("action", "woot");
             $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
 
-            console.log("unwoot!")
+            if (plugin_toggle) { logCompletedTutorialEvent("like_woot", false); }
           }
         });
 
@@ -2561,7 +2591,7 @@ var controller = {
             $this.data('action', 'unwoot');
             $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
 
-            console.log("woot!")
+            if (plugin_toggle) { logCompletedTutorialEvent("like_woot", true); }
           }
         });
       }
@@ -2587,9 +2617,11 @@ var controller = {
               button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_off.png')");
 
               api.post("/account/ban/", data, function(){
-                  popup("해당 유저를 차단 해제했습니다.\n앞으로 서로의 게더링, 게시물을 볼 수 있습니다.")
+                  popup("해당 유저를 차단 해제했습니다.\n앞으로 서로의 게더링, 게시물을 볼 수 있습니다.");
               });
               $("#pullup .background").click();
+              
+              if (plugin_toggle) { logCompletedTutorialEvent("ban", false); }
 
           } else {
               var next_action = "unban";
@@ -2599,20 +2631,10 @@ var controller = {
 
               api.post("/account/ban/", data, function(){
                   popup("해당 유저를 차단했습니다.\n앞으로 서로의 게더링, 게시물은 보이지 않습니다.")
-
-                var elm = '<div id="popup-message">' +
-                            '<span>해당 유저를 차단했습니다.<br>앞으로 서로의 게더링, 게시물은 보이지 않습니다.</span>' +
-                          '</div>';
-
-                $("body").append(elm);
-
-                setTimeout(function(){
-                  $("#popup-message").remove();
-                }, 10000);
-
               });
               $("#pullup .background").click();
 
+              if (plugin_toggle) { logCompletedTutorialEvent("ban", true); }
           }
         });
         $(".profile-report-report").off('click').on('click',function(){
@@ -3136,6 +3158,8 @@ var controller = {
 
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
+                              
+                              if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                           }
                       });
                   } else {
@@ -3275,18 +3299,12 @@ var controller = {
 
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
+                              
+                              if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                           }
                         });
                     } else {
-                      var elm = '<div id="popup-message">' +
-                                  '<span>내용을 입력해주세요.</span>' +
-                                '</div>';
-
-                      $("body").append(elm);
-
-                      setTimeout(function(){
-                        $("#popup-message").remove();
-                      }, 5000);
+                        popup("내용을 입력해주세요.");
                     }
 
                   });
@@ -3533,18 +3551,12 @@ var controller = {
 
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
                       comment_count.text(parseInt(comment_count.text()) + 1);
+                      
+                      if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                   }
               });
           } else {
-              var elm = '<div id="popup-message">' +
-                          '<span>내용을 입력해주세요.</span>' +
-                        '</div>';
-
-              $("body").append(elm);
-
-              setTimeout(function(){
-                $("#popup-message").remove();
-              }, 5000);
+              popup("내용을 입력해주세요.");
           }
 
         });
@@ -3628,18 +3640,12 @@ var controller = {
 
                           var comment_count = $('#posting-item-' + pid).find('.comment .count');
                           comment_count.text(parseInt(comment_count.text()) + 1);
+                          
+                          if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                       }
                     });
               } else {
-                  var elm = '<div id="popup-message">' +
-                              '<span>내용을 입력해주세요.</span>' +
-                            '</div>';
-
-                  $("body").append(elm);
-
-                  setTimeout(function(){
-                    $("#popup-message").remove();
-                  }, 5000);
+                  popup("내용을 입력해주세요.");
               }
             });
           });
@@ -3830,6 +3836,8 @@ var controller = {
                 // pre-stage인 경우
                 var count_pre = parseInt($(".tobevalid-count").text());
                 $(".tobevalid-count").text(count_pre + 1);
+                  
+                if (plugin_toggle) { logCompletedTutorialEvent("join", false); }
 
                 initiator("/gathering_list", true);
               }
@@ -3850,6 +3858,8 @@ var controller = {
                   var count_pre = parseInt($(".tobevalid-count").text());
                   $(".tobevalid-count").text(count_pre - 1);
 
+                  if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
+                    
                   if( parseInt($(".tobevalid-count").text()) <= 0 ) {
                       document.location.replace("./chat.html?gid=" + gid);
                   }
@@ -3857,7 +3867,7 @@ var controller = {
               });
             });
           } else {
-            if ( gdata.current_joining_people >= gdata.max_num_people ) {
+            if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
                 popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
             } else {
                 popup("게더링 채팅방으로 이동합니다.", function(){
@@ -3870,6 +3880,8 @@ var controller = {
 
                       var count_nor = parseInt($("#gathering-stats-participate").text());
                       $("#gathering-stats-participate").text(count_nor + 1);
+
+                      if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
 
                       document.location.replace("./chat.html?gid=" + gid);
                     }
@@ -4078,8 +4090,10 @@ var controller = {
             if (res['ok']){
                 popup('신고가 정상적으로 접수되었습니다.');
                 initiator("/index", false);
+                
+                if (plugin_toggle) { logCompletedTutorialEvent("report", true); }
             } else {
-                popup(res.msg);
+                popup("신고 유형을 선택하고 내용을 작성해주세요.");
             }
         });
 

@@ -32,17 +32,30 @@
 
     <!--  facebook SKD -->
     <script>
-      window.fbAsyncInit = function() {
-            FB.init({
-                appId            : '953763501484205',
-                autoLogAppEvents : true,
-                xfbml            : true,
-                version          : 'v3.2'
-            });
-        FB.AppEvents.logPageView();
+        window.fbAsyncInit = function() {
+          FB.init({
+              appId            : '953763501484205',
+              autoLogAppEvents : true,
+              xfbml            : true,
+              version          : 'v3.2'
+          });
+          FB.AppEvents.logPageView();
+
+          var params = {};
+          var pageurl = window.location.href.split("/")[3].split("?");
+          params[FB.AppEvents.ParameterNames.CONTENT_TYPE] = "/" + pageurl[0].split(".")[0];
+          params[FB.AppEvents.ParameterNames.CONTENT_ID] = pageurl[1]; 
+          FB.AppEvents.logEvent(FB.AppEvents.EventNames.VIEWED_CONTENT, null, params);
         };
+        
+        (function(d, s, id){
+             var js, fjs = d.getElementsByTagName(s)[0];
+             if (d.getElementById(id)) {return;}
+             js = d.createElement(s); js.id = id;
+             js.src = "https://connect.facebook.net/en_US/sdk.js";
+             fjs.parentNode.insertBefore(js, fjs);
+           }(document, 'script', 'facebook-jssdk'));
     </script>
-    <script async defer src="https://connect.facebook.net/en_US/sdk.js"></script>
     <!-- end -->
 
     <!-- App Styling -->

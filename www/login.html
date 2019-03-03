@@ -24,7 +24,29 @@
 		<!-- JS cookie -->
 		<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 
+        <!--  facebook SKD -->
+        <script>
+            window.fbAsyncInit = function() {
+                FB.init({
+                    appId            : '953763501484205',
+                    autoLogAppEvents : true,
+                    xfbml            : true,
+                    version          : 'v3.2'
+                });
+                FB.AppEvents.logPageView();
+                FB.AppEvents.activateApp();
+            };
 
+            (function(d, s, id){
+                 var js, fjs = d.getElementsByTagName(s)[0];
+                 if (d.getElementById(id)) {return;}
+                 js = d.createElement(s); js.id = id;
+                 js.src = "https://connect.facebook.net/en_US/sdk.js";
+                 fjs.parentNode.insertBefore(js, fjs);
+               }(document, 'script', 'facebook-jssdk'));
+        </script>
+        <!-- end -->
+        
 		<!-- bootstrap -->
 		<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 		<script src="./lib/bootstrap/js/bootstrap.min.js"></script>
