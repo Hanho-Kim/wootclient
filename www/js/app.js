@@ -87,7 +87,7 @@ function displayCalendar(element, next, maxDate){
 
     if (counter < day && !next){
         htmlContent +="<td class='calendar-day calendar-disable'>"+counter+"</td>";
-    }else if(diffDays < 15){
+    }else if(diffDays < 31){
         htmlContent +="<td class='calendar-day' onclick='$(\"#calendar-input-date\").val(" + (counterDate.getTime()/1000) + ");$(\".calendar-day\").removeClass(\"selected\");$(this).addClass(\"selected\");'>"+counter+"</td>";
     }else{
         htmlContent +="<td class='calendar-day calendar-disable'>"+counter+"</td>";
@@ -355,7 +355,7 @@ function globalEventHandler(){
         var pageurl = window.location.href.split("#")[1].split("?");
         logViewedContentEvent(pageurl[0], pageurl[1] || "none");
 
-        FB.AppEvents.logPageView();        
+        FB.AppEvents.logPageView();
     }
   });
 }
@@ -423,7 +423,7 @@ function makeAjaxSubmitHandler(successFn) {
 //============================================================
 // Facebook SDK App Event Functions
 //------------------------------------------------------------
-if (plugin_toggle) {      
+if (plugin_toggle) {
   function logViewedContentEvent(contentType, contentId) {
     var params = {};
     params[FB.AppEvents.ParameterNames.CONTENT_TYPE] = contentType;
@@ -515,7 +515,7 @@ var viewConfig = {
     "footerHide"  : true
   },
   "/write" : {
-        "controller"  : "writeCtrl",
+    "controller"  : "writeCtrl",
     "template"    : serverParentURL + "/write/gathering",
     "header"      : "./header/write.html",
     "footerHide"  : true
@@ -1017,7 +1017,7 @@ function button_like() {
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
-          
+
           if (plugin_toggle) { logCompletedTutorialEvent("like_post", false); }
         } else {
           var count = parseInt($("#gathering-stats-like").text());
@@ -1041,13 +1041,13 @@ function button_like() {
         if (type == 'post'){
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
-          
+
           if (plugin_toggle) { logCompletedTutorialEvent("like_post", true); }
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
           $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
-            
+
           if (plugin_toggle) { logCompletedTutorialEvent("like_gath", true); }
         }
       }
@@ -1795,8 +1795,6 @@ var controller = {
                 timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
               }
 
-              console.log(timestamp);
-
               var ServerDate = new Date(timestamp*1000);
               $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
               $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
@@ -1878,20 +1876,9 @@ var controller = {
             $("#write-gathering-input-agelimit-min").val(minage);
             $("#write-gathering-input-agelimit-max").val(maxage);
             $("#write-gathering-input-agelimit-has").val(true);
-          }else{
-
-            var elm = '<div id="popup-message">' +
-                        '<span>최소나이와 최대나이를 모두 입력해주세요</span>' +
-                      '</div>';
-
-            $("body").append(elm);
-
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 5000);
-
+          } else {
+            popup('최소나이와 최대나이를 모두 입력해주세요');
           }
-
         });
 
       });
@@ -1930,23 +1917,13 @@ var controller = {
                 $("#write-gathering-input-prestage").val("");
                 $("#write-gathering-input-prestage-duration").val("");
                 $("#write-gathering-input-prestage-minpeople").val("");
-              }else if(duration && minpeople){
+              } else if (duration && minpeople){
                 $("#pullup .background").click();
-                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 공개");
+                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행");
                 $("#write-gathering-input-prestage-duration").val(duration);
                 $("#write-gathering-input-prestage-minpeople").val(minpeople);
-              }else{
-
-                var elm = '<div id="popup-message">' +
-                            '<span>모든 값을 정확히 입력해주세요</span>' +
-                          '</div>';
-
-                $("body").append(elm);
-
-                setTimeout(function(){
-                  $("#popup-message").remove();
-                }, 5000);
-
+              } else {
+                popup("모든 값을 정확히 입력해주세요.");
               }
 
             });
@@ -1956,6 +1933,44 @@ var controller = {
     });
 
     // Gathering Max People Num
+    $("#write-gathering-input-maxpeople-fake").off('click').on('click',function(){
+        pullupMenu("pullup_maxpeople",function(){
+            var i = 4;
+            while(i <= 50){
+                $(".roller-max-people ul").append('<li class="button" data-maxpeople="' + i + '">' + i + '</li>');
+                i += 1;
+            }
+
+            // Maxnumpeople Event Handler
+            $("#pullup-maxpeople-input-fake input").off('click').on('click',function(){
+                $("#pullup-maxpeople-input-fake .roller").css({"display":"block"});
+
+                $("#pullup-maxpeople-input-fake li").off('click').on('click',function(){
+                  $("#pullup-maxpeople-input-fake input").val($(this).data("maxpeople"));
+                  $("#pullup-maxpeople-input-fake .roller").css({"display":"none"});
+                });
+            });
+
+            // Maxnumpeople Submit
+            $("#pullup-maxpeople-submit").off('click').on('click',function(){
+              var maxpeople = $("#pullup-maxpeople-input-fake input").val();
+              console.log(1);
+              if( !maxpeople ){
+              console.log(2);
+                  $("#pullup .background").click();
+                  $("#write-gathering-input-maxpeople-fake").val("");
+                  $("#write-gathering-input-maxpeople").val("");
+              } else {
+              console.log(3);
+                  $("#pullup .background").click();
+                  $("#write-gathering-input-maxpeople-fake").val(maxpeople + "명 까지만 참여 가능");
+                  $("#write-gathering-input-maxpeople").val(maxpeople);
+              }
+              console.log(4);
+            });
+        });
+    });
+
     $("#write-gathering-input-maxpeople").off('change').on('change',function(){
       if($(this).val() == ""){
         $("#write-gathering-input-maxpeople-has").val(false);
@@ -1975,16 +1990,21 @@ var controller = {
     // Gathering Submit
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
+        $("#pullup").show();
+        $("#pullup").append('<div class="loading"><span>업로드 중이니 잠시만 기다려주세요..</span></div>');
+
         var url = $(this).attr('action');
         api.post(url, $(this).serialize(), function(res){
             if (res['ok']){
-               console.log("gotcha!");
-               var gid = res['gid'].toString();
-               initiator('/gathering_detail?gid=' + gid, false);
-                
-               if (plugin_toggle) { logCompletedTutorialEvent("write_gath", true); }
+                var gid = res['gid'].toString();
+                initiator('/gathering_detail?gid=' + gid, false);
+                $("#pullup").hide();
+                $("#pullup .loading").remove();
+
+                if (plugin_toggle) { logCompletedTutorialEvent("write_gath", true); }
             } else {
-                console.log("fail");
+                $("#pullup").hide();
+                $("#pullup .loading").remove();
                 popup('필수 항목들에 내용을 채워주세요.');
                 // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
             }
@@ -1992,24 +2012,6 @@ var controller = {
 
 
     });
-
-//     $('#write-gathering-submit').click(function() {
-//         var url = $(this).parents("form").attr("action");
-//         api.post(
-//             url,
-//             $('form.gathering_write').serialize(),
-//             function(){
-//                 if (data['ok']){
-//                     $('form.gathering_write input[type=submit]').click();
-//                     // 바로 글 쓴 곳으로 이동
-//                 } else {
-//                     console.log("fail");
-//                     // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-//                     // 채우라는 에러메세지
-//                 }
-//             }
-//         )
-//     });
 
     /*
     $("#write-gathering-submit").off('click').on('click',function(){
@@ -2184,27 +2186,13 @@ var controller = {
         /* When length of tag is exceeded maximum length */
         maxLengthExceed : function(){
           console.log("Maximum tag length exceeded");
-          var elm = '<div id="popup-message">' +
-                      '<span>태그 길이는 최대 20자까지만 가능합니다.</span>' +
-                    '</div>';
-          $("body").append(elm);
-
-          setTimeout(function(){
-            $("#popup-message").remove();
-          }, 5000);
+          popup("태그 길이는 최대 20자까지만 가능합니다.");
         },
 
         /* When count of tags is exceeded maximum number */
         maxNumberExceed : function(){
           console.log("Maximum tag number exceeded");
-          var elm = '<div id="popup-message">' +
-                      '<span>태그는 최대 5개까지만 쓸 수 있습니다.</span>' +
-                    '</div>';
-          $("body").append(elm);
-
-          setTimeout(function(){
-            $("#popup-message").remove();
-          }, 5000);
+          popup("태그는 최대 5개까지만 쓸 수 있습니다.");
         }
       }
     }
@@ -2334,6 +2322,8 @@ var controller = {
     // Posting Submit
     $('form#write-posting-form').submit(function(event){
       event.preventDefault();
+      $("#pullup").show();
+      $("#pullup").append('<div class="loading"><span>업로드 중이니 잠시만 기다려주세요..</span></div>');
 
       $('form#write-posting-form input[name="img"]').each(function(){
         if($(this).val() == ""){
@@ -2346,13 +2336,16 @@ var controller = {
 
       api.postMulti(url, data, function(response){
           if (response['ok']){
-             var pid = response['pid'].toString();
-             var cordovaLocation = '/post_detail?pid=' + pid
-             initiator(cordovaLocation, false);
-              
-             if (plugin_toggle) { logCompletedTutorialEvent("write_post", true); }
+
+              var pid = response['pid'].toString();
+              initiator('/post_detail?pid=' + pid, false);
+              $("#pullup").hide();
+              $("#pullup .loading").remove();
+
+              if (plugin_toggle) { logCompletedTutorialEvent("write_post", true); }
           } else {
-              console.log("fail");
+              $("#pullup").hide();
+              $("#pullup .loading").remove();
               popup('필수 항목들에 내용을 채워주세요.');
               // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
           }
@@ -2620,7 +2613,7 @@ var controller = {
                   popup("해당 유저를 차단 해제했습니다.\n앞으로 서로의 게더링, 게시물을 볼 수 있습니다.");
               });
               $("#pullup .background").click();
-              
+
               if (plugin_toggle) { logCompletedTutorialEvent("ban", false); }
 
           } else {
@@ -2834,7 +2827,7 @@ var controller = {
 
                 $(".pullup-interest-detail").css({"display":"block"});
                 $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요").focus();
-                
+
             }
 
           }
@@ -3138,6 +3131,11 @@ var controller = {
 
           var commentEventHandler = function(){
               // Post API: Comment - Default
+
+              $("#footer-textarea").on('keydown keyup', function () {
+                    $(this).height(1).height( $(this).prop('scrollHeight') );
+              });
+
               $("#footer-textarea-submit").off('click').on('click',function(){
                   if ($("#footer-textarea").val()) {
                       var data = {
@@ -3149,7 +3147,7 @@ var controller = {
                       api.post("/comment/write/",data,function(res){
                           if (res['ok']) {
                               $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
-                              $('#footer-textarea').val("");
+                              $('#footer-textarea').val("").css("height", "48px");
                               commentEventHandler();
 
                               var heightSum = 0;
@@ -3158,24 +3156,17 @@ var controller = {
 
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
-                              
+
                               if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                           }
                       });
                   } else {
-                      var elm = '<div id="popup-message">' +
-                                  '<span>내용을 입력해주세요.</span>' +
-                                '</div>';
-
-                      $("body").append(elm);
-
-                      setTimeout(function(){
-                        $("#popup-message").remove();
-                      }, 5000);
+                      popup("내용을 입력해주세요.");
                   }
               });
 
               // Comment Edit Button
+              /*
               $(".comment-edit-button").off('click').on('click',function(){
                 var cid = $(this).closest(".posting-comment").data("cid");
 
@@ -3215,6 +3206,8 @@ var controller = {
                 });
 
               });
+              */
+
               // Comment Delete Button
               $('.comment-delete-button').off('click').on('click',function(){
                   $this = $(this);
@@ -3292,6 +3285,7 @@ var controller = {
                               $('#footer-textarea').val("");
                               $('#posting-comment-' + cid).removeClass("selected");
                               $("#footer-textarea").attr("placeholder", "댓글 달기...");
+                              $('#footer-textarea').val("").css("height", "48px");
                               commentEventHandler();
 
                               var heightSum = $('.board-contents').height();
@@ -3299,7 +3293,7 @@ var controller = {
 
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
-                              
+
                               if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                           }
                         });
@@ -3544,14 +3538,14 @@ var controller = {
               api.post("/comment/write/",data,function(res){
                   if (res['ok']) {
                       $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
-                      $('#footer-textarea').val("");
+                      $('#footer-textarea').val("").css("height", "48px");
                       commentEventHandler();
 
                       $("#template-view").animate({ scrollTop: $('.board-contents').height() }, 400);
 
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
                       comment_count.text(parseInt(comment_count.text()) + 1);
-                      
+
                       if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                   }
               });
@@ -3562,6 +3556,7 @@ var controller = {
         });
 
         // Comment Edit Button
+        /*
         $(".comment-edit-button").off('click').on('click',function(){
           var cid = $(this).closest(".posting-comment").data("cid");
 
@@ -3601,7 +3596,7 @@ var controller = {
           });
 
         });
-
+        */
 
         // Comment Recomment Button
         $(".recomment-button").off('click').on('click',function(){
@@ -3633,6 +3628,7 @@ var controller = {
                           $('#footer-textarea').val("");
                           $('#posting-comment-' + cid).removeClass("selected");
                           $("#footer-textarea").attr("placeholder", "댓글 달기...");
+                          $('#footer-textarea').val("").css("height", "48px");
                           commentEventHandler();
 
                           var heightSum = $('.board-contents').height();
@@ -3640,7 +3636,7 @@ var controller = {
 
                           var comment_count = $('#posting-item-' + pid).find('.comment .count');
                           comment_count.text(parseInt(comment_count.text()) + 1);
-                          
+
                           if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
                       }
                     });
@@ -3836,7 +3832,7 @@ var controller = {
                 // pre-stage인 경우
                 var count_pre = parseInt($(".tobevalid-count").text());
                 $(".tobevalid-count").text(count_pre + 1);
-                  
+
                 if (plugin_toggle) { logCompletedTutorialEvent("join", false); }
 
                 initiator("/gathering_list", true);
@@ -3859,7 +3855,7 @@ var controller = {
                   $(".tobevalid-count").text(count_pre - 1);
 
                   if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
-                    
+
                   if( parseInt($(".tobevalid-count").text()) <= 0 ) {
                       document.location.replace("./chat.html?gid=" + gid);
                   }
@@ -4090,7 +4086,7 @@ var controller = {
             if (res['ok']){
                 popup('신고가 정상적으로 접수되었습니다.');
                 initiator("/index", false);
-                
+
                 if (plugin_toggle) { logCompletedTutorialEvent("report", true); }
             } else {
                 popup("신고 유형을 선택하고 내용을 작성해주세요.");
@@ -4156,7 +4152,8 @@ $(document).ready(function(){
     });
 
     // Cordova iOS disable Keyboard Done button
-    // Keyboard.hideFormAccessoryBar(true);
+    Keyboard.hideFormAccessoryBar(false);
+
     $(document).click(function(e){
       if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){
         Keyboard.hide();

@@ -74,8 +74,6 @@ function popup( message, callback ){
 
 }
 
-
-
 function last_chat_update() {
 
    var now = Date.now();
@@ -297,6 +295,9 @@ function refreshRoomInfo(url) {
             $(".like-item-wrapper").append('<div class="like-item"><div class="avatar"></div><div class="username">' + like_username + '</div></div>');
         });
         */
+
+        // remove done button on chat
+        Keyboard.hideFormAccessoryBar(true);
     });
 }
 
@@ -451,7 +452,7 @@ function loadMessages() {
         lastChatDataTime = data.time;
         displayMessage(
             snap.key, data.name, data.uid,
-            data.text, data.avatarUrl, data.avatarColor,
+            data.text, data.avatarUrl,
             data.time, data.notification, data.imageUrl, true);
     };
 
@@ -489,7 +490,7 @@ function loadMessagesOnceInfiniteScroll(keyFrom, count) {
             lastChatDataTimeInfiniteScroll = data.time;
             divWrapper = $(divWrapper).append(
                 displayMessage(key, data.name, data.uid, data.text,
-                    data.avatarUrl, data.avatarColor, data.time,
+                    data.avatarUrl, data.time,
                     data.notification, data.imageUrl, false));
         }); // $.each ends
 
@@ -516,7 +517,6 @@ function saveMessage(messageText) {
         uid: fields.user_id,
         text: messageText,
         avatarUrl: fields.profile_image_url,
-        avatarColor: "#26de81",
         time: String(time),
         notification: false
     }).catch(function (error) {
@@ -534,7 +534,6 @@ function saveImageMessage(file) {
         uid : fields.user_id,
         text: "이미지 업로드중..",
         avatarUrl   : fields.profile_image_url,
-        avatarColor : "#26de81",
         time        : String(time),
         notification: false,
         imageUrl    : ""
@@ -602,6 +601,7 @@ function onMessageFormSubmit(e) {
             resetMaterialTextfield(messageInputElement);
             toggleButton();
             last_chat_update();
+            messageInputElement.style.height = "25px";
         });
     }
 }
@@ -667,7 +667,7 @@ var LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif?a';
 
 // Displays a Message in the UI.
 function displayMessage(key, username, uid, text, avatarUrl,
-    avatarColor, time, notification, imageUrl, appendBool) {
+    time, notification, imageUrl, appendBool) {
 
     var div = document.getElementById(key);
     if (!div) { // Not Child_change
@@ -799,16 +799,15 @@ $("textarea").on('keydown keyup', function () {
     $(this).height(1).height($(this).prop('scrollHeight'));
 });
 
-//============================================================
-// Cordova Settings
-//------------------------------------------------------------
+$("#chat-room-scroll").off('click').on('click', function(){
+    $("#message-textarea").blur();
+});
 
 //============================================================
 // Cordova Settings
 //------------------------------------------------------------
+
 document.addEventListener("deviceready",function(){
-
-
 
     // Android Back Button Overwrite
     var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);

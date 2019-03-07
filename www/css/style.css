@@ -356,7 +356,20 @@ input,textarea{
   padding:10px;
   font-weight:600;
 }
-
+#pullup .loading {
+  position: fixed;
+  top: 50%;
+  margin-top: -50px;
+  z-index: 9999;
+  text-align: center;
+  width: 80%;
+  left: 10%;
+  padding: 15px 30px;
+  border-radius: 10px;
+  opacity: 0.9;
+  background-color: rgb(1,1,1);
+  color: white;
+}
 /* End of Pullup */
 
 /* Misc Page */

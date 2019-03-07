@@ -33,21 +33,15 @@
     <!--  facebook SKD -->
     <script>
         window.fbAsyncInit = function() {
-          FB.init({
-              appId            : '953763501484205',
-              autoLogAppEvents : true,
-              xfbml            : true,
-              version          : 'v3.2'
-          });
+              FB.init({
+                  appId            : '953763501484205',
+                  autoLogAppEvents : true,
+                  xfbml            : true,
+                  version          : 'v3.2'
+              });
           FB.AppEvents.logPageView();
+          };
 
-          var params = {};
-          var pageurl = window.location.href.split("/")[3].split("?");
-          params[FB.AppEvents.ParameterNames.CONTENT_TYPE] = "/" + pageurl[0].split(".")[0];
-          params[FB.AppEvents.ParameterNames.CONTENT_ID] = pageurl[1]; 
-          FB.AppEvents.logEvent(FB.AppEvents.EventNames.VIEWED_CONTENT, null, params);
-        };
-        
         (function(d, s, id){
              var js, fjs = d.getElementsByTagName(s)[0];
              if (d.getElementById(id)) {return;}
@@ -102,13 +96,8 @@
 </div>
 <div id="subheader" class="row">
   <div class="chat-header-detail">
-    <div class="date">
-      <i class="ion-calendar"></i>
-      <span class="chat-date"></span>
-    </div>
-    <div class="place">
-      <i class="ion-ios-location"></i>
-      <span class="chat-place"></span>
+    <div class="chat-notice">
+      <span>※ 무단불참은 신고 대상으로 우트 이용이 제한됩니다 ※</span>
     </div>
   </div>
 </div>
