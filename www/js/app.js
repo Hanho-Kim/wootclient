@@ -1130,6 +1130,17 @@ var controller = {
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
 
+    // iOS: blur keyboard
+    $(".login-contents").off("click").on("click", function(){
+        $("input").blur();
+    });
+    $(".account-find").off("click").on("click", function(){
+        $("input").blur();
+    });    
+    $("input").off("click").on("click", function(event){
+        event.stopPropagation();
+    });
+      
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
@@ -1197,6 +1208,18 @@ var controller = {
   signupCtrl : function() {
       $("#header").hide();
       $("#footer").hide();
+
+      // iOS: blur keyboard
+      $(".signup-item-wrapper").off("click").on("click", function(){
+          $("input").blur();
+          $("textarea").blur();
+      });
+      $("input").off("click").on("click", function(event){
+        event.stopPropagation();
+      });
+      $("textarea").off("click").on("click", function(event){
+        event.stopPropagation();
+      });
 
       // redirection to login or signup
       $('#redirect-signup').trigger('click');
@@ -1613,6 +1636,18 @@ var controller = {
     /* Global */
     $("textarea").on('keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') - 16);
+    });
+
+    // iOS: blur keyboard
+    $(".write-section").off("click").on("click", function(){
+        $("input").blur();
+        $("textarea").blur();
+    });
+    $("input").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
+    $("textarea").off("click").on("click", function(event){
+      event.stopPropagation();
     });
 
     /* subheader */
@@ -2658,16 +2693,18 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
     });
 
-    // Profile Avatar Change
-    /*
-    $("#profile-avatar-change-button").off('click').on('click',function(){
-      api.get("/account/change_profile_image",function(response){
-        console.log(response);
-        $("#profile-avatar").css({"background-image":"url(" +response.profile_image_url + ")"});
-        $("#profile-edit-input-avatar").val(response.avatarID);
-      });
+    // iOS: blur keyboard
+    $(".profile-contents").off("click").on("click", function(){
+        $("input").blur();
+        $("textarea").blur();
     });
-    */
+    $("input").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
+    $("textarea").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
+
     $("#profile-avatar-change-button").off('click').on('click',function(){
         pullupMenu("pullup_edit_avatar",function(){
             $(".profile-avatar-wrapper").hide();
@@ -2931,6 +2968,19 @@ var controller = {
   },
 
   passwordEditCtrl : function(){
+
+      // iOS: blur keyboard
+      $(".profile-contents").off("click").on("click", function(){
+          $("input").blur();
+          $("textarea").blur();
+      });
+      $("input").off("click").on("click", function(event){
+        event.stopPropagation();
+      });
+      $("textarea").off("click").on("click", function(event){
+        event.stopPropagation();
+      });
+
       $('[name="old_password"]')
         .attr("id", "profile-edit-password-input-current")
         .attr("placeholder", "기존 비밀번호를 입력해주세요");
@@ -3113,6 +3163,18 @@ var controller = {
         });
 
         renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + pid, "#posting-overlap-view", function(){
+
+          // iOS: blur keyboard
+          $(".board-detail-contents").off("click").on("click", function(){
+              $("input").blur();
+              $("textarea").blur();
+          });
+          $("input").off("click").on("click", function(event){
+            event.stopPropagation();
+          });
+          $("textarea").off("click").on("click", function(event){
+            event.stopPropagation();
+          });
 
           // Close Event Handler
           $(".overlap-close").off('click').on('click',function(){
@@ -3405,6 +3467,18 @@ var controller = {
       },
     });
     var pid = $('.button-misc').data("pid");
+
+    // iOS: blur keyboard
+    $(".board-contents").off("click").on("click", function(){
+        $("input").blur();
+        $("textarea").blur();
+    });
+    $("input").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
+    $("textarea").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
 
     $(".button-misc").off('click').on('click',function(){
 
@@ -4078,6 +4152,19 @@ var controller = {
         $("#report-code").val(reportCode);
     });
 
+    // iOS: blur keyboard
+    $(".report-form-wrapper").off("click").on("click", function(){
+        $("input").blur();
+        $("textarea").blur();
+    });
+    $("input").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
+    $("textarea").off("click").on("click", function(event){
+      event.stopPropagation();
+    });
+
+
     $('form.report').off('submit').on('submit', function(event){
         event.preventDefault();
         var url = $(this).attr('action');
@@ -4152,7 +4239,7 @@ $(document).ready(function(){
     });
 
     // Cordova iOS disable Keyboard Done button
-    Keyboard.hideFormAccessoryBar(false);
+    Keyboard.hideFormAccessoryBar(true);
 
     $(document).click(function(e){
       if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){

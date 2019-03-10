@@ -344,7 +344,7 @@ $('#chat-room-button-like').off('click').on('click', function(){
 $('#chat-room-button-cancel').off('click').on('click', function(){
   var link = $(location).attr('href');
   var gid = link.split("=")[1];
-  /*
+  /* need csrf token from server
   var action = $(this).data("action");
   var data = {'gid': gid, 'action': action};
   var button = $(this);
