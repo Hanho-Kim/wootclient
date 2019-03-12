@@ -271,10 +271,10 @@ function refreshRoomInfo(url) {
 
         $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
         $(".participants-item-wrapper").html("");
-        $.each(fields.users_joining,function(index,value){
-            var participants_uid = value[0];
-            var participants_username = value[1];
-            var participants_avatar = "'http://www.hellowoot.co.kr/static/asset/images/profile_images/" + value[2] + ".png'";
+        $.each(fields.users_joining,function(index, value){
+            var participants_uid = fields.users_joining[index].user_id;
+            var participants_username = fields.users_joining[index].nick;
+            var participants_avatar = "'http://www.hellowoot.co.kr/static/asset/images/profile_images/" + fields.users_joining[index].profile_image_type + ".png'";
             $(".participants-item-wrapper").append('<a href="./index.html#/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></a>');
         });
 
@@ -296,8 +296,6 @@ function refreshRoomInfo(url) {
         });
         */
 
-        // remove done button on chat
-        Keyboard.hideFormAccessoryBar(true);
     });
 }
 

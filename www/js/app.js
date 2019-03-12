@@ -1071,6 +1071,23 @@ var controller = {
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block);
 
+    var device_pc = ["Win16", "Win32", "Win64", "Mac", "MacIntel"];
+    if ( device_pc.indexOf(navigator.platform) < 0 ) {
+        FCMPlugin.getToken(function(dtoken) {
+            if ( userdata.dtoken && userdata.dtoken != dtoken ){
+                var data = {"devicetoken":dtoken};
+                api.post("/account/change_devicetoken/", data, function(res){
+                    if (res['ok']) {
+                        console.log("devicetoken updated");
+                    }
+                });
+            }
+            console.log("devicetoken not updated");
+            return;
+        });
+        return;
+    }
+
     // Header Notification Highlight
     var notidata = JSON.parse($("#hiddenInput_notidata").val() || null);
     var numNewNoti = notidata.num_noti;
@@ -1136,11 +1153,11 @@ var controller = {
     });
     $(".account-find").off("click").on("click", function(){
         $("input").blur();
-    });    
+    });
     $("input").off("click").on("click", function(event){
         event.stopPropagation();
     });
-      
+
     var swiper = new Swiper('.swiper-container', {
       pagination: {
         el: '.swiper-pagination',
@@ -4238,6 +4255,9 @@ $(document).ready(function(){
         }
     });
 
+    // clear badge when deviceready
+    cordova.plugins.notification.badge.clear();
+
     // Cordova iOS disable Keyboard Done button
     Keyboard.hideFormAccessoryBar(true);
 
@@ -4297,6 +4317,12 @@ $(document).ready(function(){
         }
     }, false);
   });
+
+  // clear badge when resume
+  document.addEventListener("resume", onResume, false);
+  function onResume() {
+      cordova.plugins.notification.badge.clear();
+  }
 
 });
 
