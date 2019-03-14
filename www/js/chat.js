@@ -35,39 +35,39 @@ var globalGid = ""; // global variable
 
 
 //============================================================
-// Popup
+// chat-popup
 //------------------------------------------------------------
 function popup( message, callback ){
 
   if(typeof callback == "function"){
 
-    var elm = '<div id="popup-message">' +
+    var elm = '<div id="chat-popup-message">' +
                 '<span>' + message + '</span>' +
                 '<div class="button-wrapper"><div class="confirm button">확인</div><div class="cancel button">취소</div></div>' +
               '</div>';
 
     $("body").append(elm);
 
-    $("#popup-message .confirm").off("click").on("click",function(){
+    $("#chat-popup-message .confirm").off("click").on("click",function(){
       callback();
-      $("#popup-message").remove();
+      $("#chat-popup-message").remove();
     });
-    $("#popup-message .cancel").off("click").on("click",function(){
-      $("#popup-message").remove();
+    $("#chat-popup-message .cancel").off("click").on("click",function(){
+      $("#chat-popup-message").remove();
     });
 
   }else{
 
     var timebomb   = callback     || 5000;
 
-    var elm = '<div id="popup-message">' +
+    var elm = '<div id="chat-popup-message">' +
                 '<span>' + message + '</span>' +
               '</div>';
 
     $("body").append(elm);
 
     setTimeout(function(){
-      $("#popup-message").remove();
+      $("#chat-popup-message").remove();
     }, timebomb);
 
   }
@@ -91,12 +91,12 @@ function last_chat_update() {
             last_updated_time = now;
         },
         error: function (request, status, error) {
-            var elm = '<div id="popup-message">' +
+            var elm = '<div id="chat-popup-message">' +
                 '<span>API 서버 연결 오류</span>' +
                 '</div>';
             $("body").append(elm);
             setTimeout(function () {
-                $("#popup-message").remove();
+                $("#chat-popup-message").remove();
             }, 5000);
         }
     });
@@ -121,12 +121,12 @@ function chatInit() {
     var apiPathInfo = serverParentURL + "/chat/gathering_info/";
 
     if (!gid) {
-        var elm = '<div id="popup-message">' +
+        var elm = '<div id="chat-popup-message">' +
             '<span>잘못된 접근</span>' +
             '</div>';
         $("body").append(elm);
         setTimeout(function () {
-            $("#popup-message").remove();
+            $("#chat-popup-message").remove();
         }, 5000);
         return false;
     }
@@ -139,33 +139,10 @@ function chatInit() {
 
     refreshRoomInfo(apiPathInfo + "?gid=" + gid);
 
-    $("#header").addClass("with-subheader");
-    $("#subheader").css({
+    $("#chat-header").addClass("with-subheader");
+    $("#chat-subheader").css({
         "display": "block"
     });
-
-    // Case of Gathering
-    // $(".chat-title").text(chatConfig.room.title);
-    // $(".chat-date").text(chatConfig.room.date);
-    // $(".chat-place").text(chatConfig.room.place);
-    // $(".chat-description").append($.parseHTML(chatConfig.room.description));
-
-    // if(chatConfig.room.disable == "true"){
-    //   $(".footer-textarea-wrapper").css({"display":"none"});
-    //   $(".footer-textarea-wrapper-readonly").css({"display":"block"});
-    //   $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
-    // }
-
-    // Case of Direct Message
-    // $(".chat-title").text(chatConfig.room.title);
-    // $(".chat-room-overlap-section-title .subtitle").css({"display":"none"});
-
-    // if(chatConfig.room.disable == "true"){
-    //   $(".footer-textarea-wrapper").css({"display":"none"});
-    //   $(".footer-textarea-wrapper-readonly").css({"display":"block"});
-    //   $("#message-textarea-readolny").attr("placeholder","채팅을 할 수 없습니다.");
-    // }
-
 
     //============================================================
     // Event Handlers
@@ -223,12 +200,12 @@ function setChatConfig(url, customSuccess) {
         },
         error       : function (request, status, error) {
             var elm =
-                '<div id="popup-message">' +
+                '<div id="chat-popup-message">' +
                 '<span>API 서버 연결 오류</span>' +
                 '</div>';
             $("body").append(elm);
             setTimeout(function () {
-                $("#popup-message").remove();
+                $("#chat-popup-message").remove();
             }, 5000);
         }
     });
@@ -251,12 +228,12 @@ function refreshRoomInfo(url) {
             return response;
         },
         error: function (request, status, error) {
-            var elm = '<div id="popup-message">' +
+            var elm = '<div id="chat-popup-message">' +
                 '<span>API 서버 연결 오류</span>' +
                 '</div>';
             $("body").append(elm);
             setTimeout(function () {
-                $("#popup-message").remove();
+                $("#chat-popup-message").remove();
             }, 5000);
         }
     });
@@ -279,23 +256,12 @@ function refreshRoomInfo(url) {
         });
 
         if(!chatConfig.is_chatting_on){
-          $(".footer-textarea-wrapper").css({"display":"none"});
-          $(".footer-textarea-wrapper-readonly").css({"display":"block"});
+          $(".chat-footer-textarea-wrapper").css({"display":"none"});
+          $(".chat-footer-textarea-wrapper-readonly").css({"display":"block"});
           $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
 
           $("#chat-room-button-wrapper").css({"display":"none"});
         }
-
-        /*
-        $(".chat-room-overlap-section-like").find(".title").text("좋아요 " + fields.users_liking.length + "명");
-        $(".like-item-wrapper").html("");
-        $.each(fields.users_liking,function(index,value){
-            var like_username = value[1];
-            var like_avatar = value[2];
-            $(".like-item-wrapper").append('<div class="like-item"><div class="avatar"></div><div class="username">' + like_username + '</div></div>');
-        });
-        */
-
     });
 }
 
@@ -322,12 +288,12 @@ var api = {
       return successFn(res);
     })
     .catch(function(){
-      var elm = '<div id="popup-message">' +
+      var elm = '<div id="chat-popup-message">' +
                   '<span>API 연결 오류</span>' +
                 '</div>';
       $("body").append(elm);
       setTimeout(function(){
-        $("#popup-message").remove();
+        $("#chat-popup-message").remove();
       }, 5000);
     });
   }

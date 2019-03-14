@@ -28,6 +28,7 @@
 		<link rel="stylesheet" type="text/css" href="./css/reset.css?v=181024a">
 		<link rel="stylesheet" type="text/css" href="./css/style.css?v=181024a">
 		<link rel="stylesheet" type="text/css" href="./css/serverStyleDefault.min.css?v=190220a">
+        <link rel="stylesheet" type="text/css" href="./css/chatStyle.css?=190313a">
 
         <!--  facebook SKD -->
         <script>
@@ -52,7 +53,7 @@
         </script>
         <!-- end -->
 
-    <!-- googlefont -->
+        <!-- googlefont -->
 		<link rel="stylesheet" href="http://cdn.rawgit.com/hiun/NanumSquare/master/nanumsquare.css">
 
 		<!-- exif.js -->
@@ -69,6 +70,29 @@
 		<script src="./lib/hello-week-master/helloweek.min.js"></script>
 		<link rel="stylesheet" href="./lib/hello-week-master/helloweek.min.css">
 
+        <!-- Import and configure the Firebase SDK -->
+        <!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
+        <!-- If you do not want to serve/host your project using Firebase Hosting see https://firebase.google.com/docs/web/setup -->
+        <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-database.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-storage.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase.js"></script>
+
+        <script>
+          // Initialize Firebase
+          var config = {
+            apiKey: "AIzaSyAMFHKSxppr8qPKyxfktkyfOVPP5tH44Gk",
+            authDomain: "woot-f7616.firebaseapp.com",
+            databaseURL: "https://woot-f7616.firebaseio.com",
+            projectId: "woot-f7616",
+            storageBucket: "woot-f7616.appspot.com",
+            messagingSenderId: "193591463376"
+          };
+          firebase.initializeApp(config);
+        </script>
+
+        
 	</head>
 	<body>
 
