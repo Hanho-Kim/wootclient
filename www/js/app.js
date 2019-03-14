@@ -1,6 +1,6 @@
 /* Global Variables */
-var currentVersionIOS = "1000";
-var currentVersionAnd = "2000";
+var currentVersionIOS = "1001";
+var currentVersionAnd = "2001";
 var mobile    = false;
 
 // No slash at the end of the url
@@ -553,23 +553,23 @@ var viewConfig = {
     "header"      : "./header/board.posting.like.html"
   },
   "/gathering_list" : {
-    "controller"  : "voidCtrl",
+    "controller"  : "gatheringListCtrl",
     "template"    : serverParentURL + "/gathering/discover",
     "header"      : "./header/gathering.html"
   },
   "/gathering_list/my" : {
-    "controller"  : "voidCtrl",
+    "controller"  : "gatheringListCtrl",
     "template"    : serverParentURL + "/gathering/my",
     "header"      : "./header/gathering.my.html"
   },
   "/gathering_detail" : {
-    "controller"  : "gatheringCtrl",
+    "controller"  : "gatheringDetailCtrl",
     "template"    : serverParentURL + "/gathering/detail",
     "header"      : "./header/gathering.detail.html",
     "footerHide"  : true
   },
   "/gathering_members" : {
-    "controller"  : "gatheringCtrl",
+    "controller"  : "gatheringDetailCtrl",
     "template"    : serverParentURL + "/gathering/participants",
     "header"      : "./header/gathering.participants.html",
     "footerHide"  : true
@@ -620,7 +620,7 @@ var viewConfig = {
     "header"      : "./header/index.html"
   },
   "/gathering/like" : {
-    "controller"  : "gatheringCtrl",
+    "controller"  : "gatheringDetailCtrl",
     "template"    : serverParentURL + "/gathering/like",
     "header"      : "./header/gathering.like.html",
     "footerHide"  : true
@@ -1095,6 +1095,33 @@ var controller = {
       $('.header-right-index-item.notification').append('<span class="header-item-noti">' + numNewNoti + '</span>');
     }
 
+    // requiring points for gathering
+    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
+
+    $.each($(".gathering-item"), function(){
+        $(this).off("click").on("click", function(){
+
+            var item = $(this);
+            var gid = item.data("id");
+
+            if ( item.data("join") ) {
+                if ( item.data("chaton") ) {
+                    initiator("/chat?gid=" + gid, true);
+                } else {
+                    initiator("/gathering_detail?gid=" + gid, true);
+                }        
+            } else {
+                if ( points_left >= 3 ) {
+                    initiator("/gathering_detail?gid=" + gid, true);                
+                } else {
+                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요. '내 프로필'에서 '포인트'를 클릭해주세요.");
+                }
+            }
+        });
+    });    
+      
+      
     return;
   },
 
@@ -2006,19 +2033,15 @@ var controller = {
             // Maxnumpeople Submit
             $("#pullup-maxpeople-submit").off('click').on('click',function(){
               var maxpeople = $("#pullup-maxpeople-input-fake input").val();
-              console.log(1);
               if( !maxpeople ){
-              console.log(2);
                   $("#pullup .background").click();
                   $("#write-gathering-input-maxpeople-fake").val("");
                   $("#write-gathering-input-maxpeople").val("");
               } else {
-              console.log(3);
                   $("#pullup .background").click();
                   $("#write-gathering-input-maxpeople-fake").val(maxpeople + "명 까지만 참여 가능");
                   $("#write-gathering-input-maxpeople").val(maxpeople);
               }
-              console.log(4);
             });
         });
     });
@@ -2554,6 +2577,9 @@ var controller = {
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
+    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
+
     // Interest
     $(".interest-array").each(function(){
         if($(this).val()){
@@ -2613,32 +2639,56 @@ var controller = {
 
     });
 
+    // Points count
+    $(".profile-button-points .points").text(points_left);
+
+    // Points guide
+    $(".profile-button-points").off("click").on("click", function(){
+        $("#points-guide-background").show();
+        $("#points-guide").show();
+
+        $("#points-guide-close").off("click").on("click", function(){
+            $("#points-guide-background").hide();
+            $("#points-guide").hide();            
+        });
+        
+    });
+    
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
       var $this = $(this);
       var targetUid = $this.data("uid");
       var action = $this.data("action");
+      
       if($(this).hasClass("liked")){
-        api.post("/account/woot/",{id:targetUid, action:action},function(res){
-          if(res['ok']){
-            $this.removeClass("liked");
-            $this.data("action", "woot");
-            $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
+        popup("우트를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.", function() {
+            api.post("/account/woot/",{id:targetUid, action:action},function(res){
+              if(res['ok']){
+                $this.removeClass("liked");
+                $this.data("action", "woot");
+                $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
 
-            if (plugin_toggle) { logCompletedTutorialEvent("like_woot", false); }
-          }
+                if (plugin_toggle) { logCompletedTutorialEvent("like_woot", false); }
+              }
+            });
         });
 
       }else{
-        api.post("/account/woot/",{id:targetUid, action:action},function(res){
-          if(res['ok']){
-            $this.addClass("liked");
-            $this.data('action', 'unwoot');
-            $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
+        if(points_left >= 1) {      
+            popup("웃님과 우트하시겠습니까? 우트하려면 포인트 1점이 소모됩니다.", function() {
+                api.post("/account/woot/",{id:targetUid, action:action},function(res){
+                  if(res['ok']){
+                    $this.addClass("liked");
+                    $this.data('action', 'unwoot');
+                    $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
 
-            if (plugin_toggle) { logCompletedTutorialEvent("like_woot", true); }
-          }
-        });
+                    if (plugin_toggle) { logCompletedTutorialEvent("like_woot", true); }
+                  }
+                });
+            });
+        } else {
+            popup("웃님과 우트를 하기 위해서는 포인트 1점이 필요해요. '내 프로필'에서 '포인트'를 확인해주세요.");
+        }
       }
     });
 
@@ -3792,64 +3842,41 @@ var controller = {
     return;
   },
 
+    
+  gatheringListCtrl : function() {
+    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
+
+    $.each($(".gathering-item"), function(){
+        $(this).off("click").on("click", function(){
+
+            var item = $(this);
+            var gid = item.data("id");
+
+            if ( item.data("join") ) {
+                if ( item.data("chaton") ) {
+                    initiator("/chat?gid=" + gid, true);
+                } else {
+                    initiator("/gathering_detail?gid=" + gid, true);
+                }        
+            } else {
+                if ( points_left >= 3 ) {
+                    initiator("/gathering_detail?gid=" + gid, true);                
+                } else {
+                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요. '내 프로필'에서 '포인트'를 클릭해주세요.");
+                }
+            }
+        });
+    });    
+    return;
+  },
+
   /* Gathering Ctrl */
-  gatheringCtrl : function(){
+  gatheringDetailCtrl : function(){
     $("#footer").css({"display":"none"});
-
-    // Gathering Participate
-    $("#gathering-participate-button").off('click').on('click',function(){
-
-      /*
-      $("#template-view-loading").css({"display":"block"});
-      $("#template-view-loading").css({"opacity":"1"});
-
-      var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
-      var chatRoomRef = cordova.InAppBrowser.open(encodeURI( chatServerURL + '?cid=' + gatheringdata.cid ),'_blank', 'clearcache=yes,location=no,zoom=no,hideurlbar=yes,hidenavigationbuttons=yes,disallowoverscroll=yes,toolbar=no');
-
-      chatRoomRef.hide();
-      chatRoomRef.addEventListener( "loadstop", function(){
-
-              chatRoomRef.show();
-              $("#template-view-loading").css({"display":"none"});
-              $("#template-view-loading").css({"opacity":"0"});
-
-              var loop = window.setInterval(function(){
-                      chatRoomRef.executeScript({
-                        code: "window.shouldClose"
-                      },
-                      function(values){
-                        if(values[0]){
-                            chatRoomRef.close();
-                            window.clearInterval(loop);
-                            chatRoomRef = undefined;
-                        }
-                      });
-              },500);
-
-      });
-
-      chatRoomRef.addEventListener( "loaderror", function(){
-
-              $("#template-view-loading").css({"display":"none"});
-              $("#template-view-loading").css({"opacity":"0"});
-              chatRoomRef.close();
-              chatRoomRef = undefined;
-
-              var elm = '<div id="popup-message">' +
-                          '<span>채팅 서버 연결 오류</span>' +
-                        '</div>';
-
-              $("body").append(elm);
-
-              setTimeout(function(){
-                $("#popup-message").remove();
-              }, 5000);
-
-      });
-
-
-    });
-
+        
+    // gathering sub-tabs
+    /*
     $(".gathering-detail-tab").off('click').on('click',function(){
       var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
       var tab = $(this).data("tab");
@@ -3869,8 +3896,6 @@ var controller = {
         renderTemplate(serverParentURL + "/gathering/detail.comment?uid=" + gatheringdata.gid,"#gathering-details-view");
       }
       */
-
-    });
 
     /* subtract the count of host */
     $("#gathering-stats-like").text(parseInt($("#gathering-stats-like").text() - 1));
@@ -3915,7 +3940,7 @@ var controller = {
       var hdinput = $("#hiddenInput_gatheringdata");
 
       if (button.hasClass("joined")) { // Already Liked
-        popup("정말 참여를 취소하시겠습니까?",function(){
+        popup("정말 참여를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.",function(){
             // cancel the joining
             api.post(url, data, function (res) {
               if(res['ok']) {
@@ -3942,7 +3967,7 @@ var controller = {
       // joining
       } else {
           if(hdinput.data('tochat') == 'pre') {
-            popup("최소 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.", function(){
+            popup("최소 진행 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.<br>참여에는 포인트 3점이 소모됩니다.", function(){
               api.post(url, data, function (res) {
                 if(res['ok']) {
                   var next_action = "off";
@@ -3965,7 +3990,7 @@ var controller = {
             if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
                 popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
             } else {
-                popup("게더링 채팅방으로 이동합니다.", function(){
+                popup("게더링 채팅방으로 이동합니다. 참여에는 포인트 3점이 소모됩니다.", function(){
                   api.post(url, data, function (res) {
                     if(res['ok']) {
                       var next_action = "off";
@@ -4235,6 +4260,10 @@ var controller = {
                 var participants_username = fields.users_joining[index].nick;
                 var participants_avatar = "'http://www.hellowoot.co.kr/static/asset/images/profile_images/" + fields.users_joining[index].profile_image_type + ".png'";
                 $(".participants-item-wrapper").append('<woot-click href="/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></woot-click>');
+            });
+            
+            $("woot-click").off('click').on('click',function(){
+                initiator($(this).attr("href"), false);
             });
     
             if(!chatConfig.is_chatting_on){
