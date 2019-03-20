@@ -1,16 +1,26 @@
 @font-face {
-    font-family: 'NanumSquareRoundLight';
-    src: url("../fonts/NanumSquareRoundOTFL.eot");
-    src: url("../fonts/NanumSquareRoundOTFL.eot?#iefix") format('embedded-opentype'),
-         url("../fonts/NanumSquareRoundOTFL.woff") format('woff'),
-         url("../fonts/NanumSquareRoundOTFL.ttf") format('truetype');
+  font-family: 'Nanum Square';
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/NanumSquareR.eot");
+  src: local('Nanum Square Regular'),
+       local('NanumSquareR'),
+       url("../fonts/NanumSquareR.eot?#iefix") format('embedded-opentype'),
+       url("../fonts/NanumSquareR.woff2") format('woff2'),
+       url("../fonts/NanumSquareR.woff") format('woff'),
+       url("../fonts/NanumSquareR.ttf") format('truetype');
 }
 @font-face {
-    font-family: 'NanumSquareRoundRegular';
-    src: url("../fonts/NanumSquareRoundOTFR.eot");
-    src: url("../fonts/NanumSquareRoundOTFR.eot?#iefix") format('embedded-opentype'),
-         url("../fonts/NanumSquareRoundOTFR.woff") format('woff'),
-         url("../fonts/NanumSquareRoundOTFR.ttf") format('truetype');
+  font-family: 'Nanum Square';
+  font-style: bold;
+  font-weight: 700;
+  src: url("../fonts/NanumSquareB.eot");
+  src: local('Nanum Square Bold'),
+       local('NanumSquareB'),
+       url("../fonts/NanumSquareB.eot?#iefix") format('embedded-opentype'),
+       url("../fonts/NanumSquareB.woff2") format('woff2'),
+       url("../fonts/NanumSquareB.woff") format('woff'),
+       url("../fonts/NanumSquareB.ttf") format('truetype');
 }
 @font-face {
     font-family: 'NanumSquareRoundBold';
@@ -25,13 +35,6 @@
     src: url("../fonts/NanumSquareRoundOTFEB.eot?#iefix") format('embedded-opentype'),
          url("../fonts/NanumSquareRoundOTFEB.woff") format('woff'),
          url("../fonts/NanumSquareRoundOTFEB.ttf") format('truetype');
-}
-@font-face {
-    font-family: 'BMDOHYEON';
-    src: url("../fonts/BMDOHYEON.ttf") format('truetype');
-    src: url("../fonts/BMDOHYEON.otf") fomat('opentype'),
-         url("../fonts/BMDOHYEON.woff") format('woff'),
-         url("../fonts/BMDOHYEON.woff2") format('woff2');
 }
 
 a{

@@ -265,6 +265,7 @@ function pullupMenu(menu,successFn){
                       // Event Handler Enactive
                       $("#pullup .background").off('click').on('click',function(){
                         $("#pullup").css({"display":"none"});
+                        $("#pullup .pullup-inner").html("");
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
                         anime({
@@ -446,15 +447,15 @@ if (plugin_toggle) {
 //============================================================
 // View Configuration
 //------------------------------------------------------------
-var viewConfig = {  
+var viewConfig = {
   "/index" : {
     "controller"  : "mainCtrl",
-    "template"    : serverParentURL + "/index",
+    "template"    : serverParentURL + "/home",
     "header"      : "./header/index.html"
   },
   "/invalid_status": {
     "controller": "loginCtrl",
-    "template": serverParentURL + "/account/invalid_status/",
+    "template": serverParentURL + "/account/invalid_status",
     "footerHide": true
   },
   "/logout": {
@@ -464,7 +465,7 @@ var viewConfig = {
   },
   "/login" : {
     "controller"  : "loginCtrl",
-    "template"    : serverParentURL + "/login/login",
+    "template"    : serverParentURL + "/account/login",
     "footerHide"  : true
   },
   "/login/find_username" : {
@@ -479,17 +480,17 @@ var viewConfig = {
   },
   "/login/intro" : {
     "controller"  : "loginCtrl",
-    "template"    : serverParentURL + "/login/intro",
+    "template"    : serverParentURL + "/misc/intro",
     "footerHide"  : true
   },
   "/signup": {
     "controller": "signupCtrl",
-    "template": serverParentURL + "/account/signup/",
+    "template": serverParentURL + "/account/signup",
     "footerHide": true
   },
   "/signup/to_be_approved": {
     "controller": "signupCtrl",
-    "template": serverParentURL + "/account/to_be_approved/",
+    "template": serverParentURL + "/account/to_be_approved",
     "footerHide": true
   },
   "/login/signup/confirm" : {
@@ -499,10 +500,10 @@ var viewConfig = {
   },
   "/message" : {
     "controller"  : "messageCtrl",
-    "template"    : serverParentURL + "/message/discover",
+    "template"    : serverParentURL + "/misc/message_list",
     "header"      : "./header/message.html"
   },
-  "/message/inbox" : {
+  "/message/inbox" : { // Doesn't exist
     "controller"  : "messageInboxCtrl",
     "template"    : serverParentURL + "/message/inbox",
     "header"      : "./header/message.inbox.html",
@@ -510,13 +511,13 @@ var viewConfig = {
   },
   "/notification" : {
     "controller"  : "notificationCtrl",
-    "template"    : serverParentURL + "/notification/notification",
+    "template"    : serverParentURL + "/action/notification",
     "header"      : "./header/notification.html",
     "footerHide"  : true
   },
   "/write" : {
     "controller"  : "writeCtrl",
-    "template"    : serverParentURL + "/write/gathering",
+    "template"    : serverParentURL + "/write",
     "header"      : "./header/write.html",
     "footerHide"  : true
   },
@@ -534,50 +535,50 @@ var viewConfig = {
   },
   "/post_category_list" : {
     "controller"  : "voidCtrl",
-    "template"    : serverParentURL + "/board/discover",
+    "template"    : serverParentURL + "/post_category_list",
     "header"      : "./header/board.html"
   },
   "/post_list" : {
     "controller"  : "postListCtrl",
-    "template"    : serverParentURL + "/board/posting",
+    "template"    : serverParentURL + "/post_list",
     "header"      : "./header/board.posting.html"
   },
   "/post_detail" : {
     "controller"  : "postDetailCtrl",
-    "template"    : serverParentURL + "/board/detail",
+    "template"    : serverParentURL + "/post_detail",
     "header"      : "./header/board.posting.html"
   },
   "/post_users_liking" : {
     "controller"  : "voidCtrl",
-    "template"    : serverParentURL + "/board/like",
+    "template"    : serverParentURL + "/post_users_liking",
     "header"      : "./header/board.posting.like.html"
   },
   "/gathering_list" : {
     "controller"  : "gatheringListCtrl",
-    "template"    : serverParentURL + "/gathering/discover",
+    "template"    : serverParentURL + "/gathering_list",
     "header"      : "./header/gathering.html"
   },
   "/gathering_list/my" : {
     "controller"  : "gatheringListCtrl",
-    "template"    : serverParentURL + "/gathering/my",
+    "template"    : serverParentURL + "/gathering_list/my",
     "header"      : "./header/gathering.my.html"
   },
   "/gathering_detail" : {
     "controller"  : "gatheringDetailCtrl",
-    "template"    : serverParentURL + "/gathering/detail",
+    "template"    : serverParentURL + "/gathering_detail",
     "header"      : "./header/gathering.detail.html",
     "footerHide"  : true
   },
   "/gathering_members" : {
     "controller"  : "gatheringDetailCtrl",
-    "template"    : serverParentURL + "/gathering/participants",
+    "template"    : serverParentURL + "/gathering_members",
     "header"      : "./header/gathering.participants.html",
     "footerHide"  : true
   },
   "/chat" : {
     "controller"  : "chatCtrl",
     "template"    : serverParentURL + "/chat/gathering_detail",
-    "header"      : "./header/chat.html",
+    "header"      : "./header/void.html",
     "footerHide"  : true
   },
   "/gathering/review" : {
@@ -594,23 +595,23 @@ var viewConfig = {
   },
   "/account/more" : {
     "controller"  : "accountMoreCtrl",
-    "template"    : serverParentURL + "/people/discover",
+    "template"    : serverParentURL + "/account/more",
     "header"      : "./header/people.html"
   },
   "/account/profile" : {
     "controller"  : "profileCtrl",
-    "template"    : serverParentURL + "/people/profile",
+    "template"    : serverParentURL + "/account/profile",
     "header"      : "./header/people.profile.html"
   },
   "/account/edit" : {
     "controller"  : "profileEditCtrl",
-    "template"    : serverParentURL + "/people/edit",
+    "template"    : serverParentURL + "/account/edit",
     "header"      : "./header/people.profile.edit.html",
     "footerHide"  : true
   },
   "/account/change_password" : {
     "controller"  : "passwordEditCtrl",
-    "template"    : serverParentURL + "/people/edit.password",
+    "template"    : serverParentURL + "/account/change_password",
     "header"      : "./header/people.profile.edit.password.html",
     "footerHide"  : true
   },
@@ -618,12 +619,6 @@ var viewConfig = {
     "controller"  : "debugCtrl",
     "template"    : serverParentURL + "/debug",
     "header"      : "./header/index.html"
-  },
-  "/gathering/like" : {
-    "controller"  : "gatheringDetailCtrl",
-    "template"    : serverParentURL + "/gathering/like",
-    "header"      : "./header/gathering.like.html",
-    "footerHide"  : true
   },
   "/report/gathering" : {
     "controller"  : "reportCtrl",
@@ -642,38 +637,25 @@ var viewConfig = {
     "template"    : serverParentURL + "/support/suggest",
     "header"      : "./header/suggest.html",
     "footerHide"  : true
+  },
+  "/guideone" : {
+    "controller"  : "voidCtrl",
+    "template"    : serverParentURL + "/misc/guideone",
+    "header"      : "./header/void.html",
+    "footerHide"  : true
+  },
+  "/guidetwo" : {
+    "controller"  : "voidCtrl",
+    "template"    : serverParentURL + "/misc/guidetwo",
+    "header"      : "./header/void.html",
+    "footerHide"  : true
+  },
+  "/guidethree" : {
+    "controller"  : "voidCtrl",
+    "template"    : serverParentURL + "/misc/guidethree",
+    "header"      : "./header/void.html",
+    "footerHide"  : true
   }
-}
-
-if (server_toggle){
-  // Don't put / at the end for now
-  viewConfig["/index"]["template"] = serverParentURL + "/home";
-  viewConfig["/notification"]["template"] = serverParentURL + "/action/notification";
-
-    // login.html
-  viewConfig["/login"]["template"] = serverParentURL + "/account/login";
-  viewConfig["/login/intro"]["template"] = serverParentURL + "/misc/intro";
-  viewConfig["/signup"]["template"] = serverParentURL + "/account/signup";
-
-  viewConfig["/message"]["template"] = serverParentURL + "/misc/message_list";
-
-  viewConfig["/gathering_list"]["template"] = serverParentURL + "/gathering_list";
-  viewConfig["/gathering_list/my"]["template"] = serverParentURL + "/gathering_list/my/";
-  viewConfig["/gathering_detail"]["template"] = serverParentURL + "/gathering_detail";
-  viewConfig["/gathering_members"]["template"] = serverParentURL + "/gathering_members";
-
-  viewConfig["/write"]["template"] = serverParentURL + "/write";
-
-  viewConfig["/post_category_list"]["template"] = serverParentURL + "/post_category_list";
-  viewConfig["/post_list"]["template"] = serverParentURL + "/post_list";
-  viewConfig["/post_detail"]["template"] = serverParentURL + "/post_detail";
-  viewConfig["/post_users_liking"]["template"] = serverParentURL + "/post_users_liking";
-
-  viewConfig["/account/more"]["template"] = serverParentURL + "/account/more";
-  viewConfig["/account/profile"]["template"] = serverParentURL + "/account/profile";
-  viewConfig["/account/edit"]["template"] = serverParentURL + "/account/edit";
-  viewConfig["/account/change_password"]["template"] = serverParentURL + "/account/change_password";
-
 }
 
 var api = {
@@ -1069,23 +1051,38 @@ var controller = {
 
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    $("#header-title").text(userdata.block);
+    $("#header-title").text(userdata.block + " 블록");
+
+    function refreshDeviceToken() {
+        FCMPlugin.onTokenRefresh(function(dtoken) {
+            if (dtoken && userdata.dtoken != dtoken) {
+                api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
+                    if (res['ok']) {
+                        console.log("dtoken updated by Refresh")
+                    } else {
+                        console.log("api.post failed - Refresh")
+                    }
+                    return;
+                });
+            }
+        });
+        FCMPlugin.getToken(function(dtoken) {
+          if (dtoken && userdata.dtoken != dtoken) {
+                api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
+                    if (res['ok']) {
+                        console.log("dtoken updated by Get")
+                    } else {
+                        console.log("api.post failed - Get")
+                    }
+                    return;
+                });
+            }
+        });
+    }
 
     var device_pc = ["Win16", "Win32", "Win64", "Mac", "MacIntel"];
     if ( device_pc.indexOf(navigator.platform) < 0 ) {
-        FCMPlugin.getToken(function(dtoken) {
-            if ( userdata.dtoken && userdata.dtoken != dtoken ){
-                var data = {"devicetoken":dtoken};
-                api.post("/account/change_devicetoken/", data, function(res){
-                    if (res['ok']) {
-                        console.log("devicetoken updated");
-                    }
-                });
-            }
-            console.log("devicetoken not updated");
-            return;
-        });
-        return;
+        refreshDeviceToken();
     }
 
     // Header Notification Highlight
@@ -1110,18 +1107,18 @@ var controller = {
                     initiator("/chat?gid=" + gid, true);
                 } else {
                     initiator("/gathering_detail?gid=" + gid, true);
-                }        
+                }
             } else {
                 if ( points_left >= 3 ) {
-                    initiator("/gathering_detail?gid=" + gid, true);                
+                    initiator("/gathering_detail?gid=" + gid, true);
                 } else {
                     popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요. '내 프로필'에서 '포인트'를 클릭해주세요.");
                 }
             }
         });
-    });    
-      
-      
+    });
+
+
     return;
   },
 
@@ -1149,7 +1146,7 @@ var controller = {
                     // gathering (need to fix the condition of if statement through 'chatting_on')
                     else if ( urlType.indexOf("gathering") >= 0 ) {
                         if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
-                            window.location.href = "./chat.html?gid=" + id;
+                            initiator("/chat?gid=" + id, true);
                         } else if ( res.target.fields.is_removed == true || res.target.fields.is_accessible == false ) {
                             popup('사라진 게더링이라서 접근이 불가능합니다.');
                         } else {
@@ -2066,6 +2063,7 @@ var controller = {
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
         $("#pullup").show();
+        $("#pullup .pullup-inner").html("");
         $("#pullup").append('<div class="loading"><span>업로드 중이니 잠시만 기다려주세요..</span></div>');
 
         var url = $(this).attr('action');
@@ -2084,88 +2082,7 @@ var controller = {
                 // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
             }
         });
-
-
     });
-
-    /*
-    $("#write-gathering-submit").off('click').on('click',function(){
-      var inputs = [
-                      {"id":"sticker","require":true},
-                      {"id":"title","require":true},
-                      {"id":"description","require":true},
-                      {"id":"location","require":true},
-                      {"id":"time","require":true},
-                      {"id":"maxpeople","require":false},
-                      {"id":"agelimit","require":false},
-                      {"id":"instant","require":true},
-                      {"id":"mintime","require":true},
-                      {"id":"minpeople","require":true}
-                   ];
-
-      var required = true;
-      var data = {};
-
-      $.each(inputs, function(ind,val){
-        data[val.id] = $("#write-posting-input-" + val.id).val();
-
-        if(val.require){ // Check required fields
-
-          if( $("#write-gathering-input-" + val.id).val().length == 0 ){
-
-            $("#write-gathering-input-" + val.id).css({"border-bottom":"1px solid #eb3b5a"}).change(function(){
-              $(this).css({"border-bottom":"1px solid rgb(210,210,210)"});
-            });
-
-            $("#write-gathering-input-" + val.id + "-fake").css({"border-bottom":"1px solid #eb3b5a"}).change(function(){
-              $(this).css({"border-bottom":"1px solid rgb(210,210,210)"});
-            });
-
-            var elm = '<div id="popup-message">' +
-                        '<span>필수 정보를 반드시 입력해주세요.</span>' +
-                      '</div>';
-
-            $("body").append(elm);
-
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 5000);
-
-            required = false;
-
-          }
-
-        }
-
-        if($("#write-gathering-input-instant").val() == false){
-          if( $("#write-gathering-input-mintime").val().length != 0 || $("#write-gathering-input-minpeople").val().length != 0 ){
-
-            var elm = '<div id="popup-message">' +
-                        '<span>필수 정보를 반드시 입력해주세요.</span>' +
-                      '</div>';
-
-            $("body").append(elm);
-
-            setTimeout(function(){
-              $("#popup-message").remove();
-            }, 5000);
-
-            required = false;
-
-          }
-        }
-
-      });
-
-      if(required){ // All requirements are met
-        api.post("/api/v1/post/gathering",data,function(){
-          return document.location.replace("./gathering.my.html");
-        });
-
-      }
-
-    });
-    */
 
     /* Write Posting */
 
@@ -2485,7 +2402,7 @@ var controller = {
   /* People Ctrl */
   accountMoreCtrl : function(){
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    $("#header-title").text(userdata.block);
+    $("#header .header-center").text(userdata.block + " 블록 웃님들");
 
     // Interest
     $(".interest-array").each(function(){
@@ -2649,17 +2566,17 @@ var controller = {
 
         $("#points-guide-close").off("click").on("click", function(){
             $("#points-guide-background").hide();
-            $("#points-guide").hide();            
+            $("#points-guide").hide();
         });
-        
+
     });
-    
+
     // Profile Buttons Like
     $(".profile-button-like").off('click').on('click',function(){
       var $this = $(this);
       var targetUid = $this.data("uid");
       var action = $this.data("action");
-      
+
       if($(this).hasClass("liked")){
         popup("우트를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.", function() {
             api.post("/account/woot/",{id:targetUid, action:action},function(res){
@@ -2674,7 +2591,7 @@ var controller = {
         });
 
       }else{
-        if(points_left >= 1) {      
+        if(points_left >= 1) {
             popup("웃님과 우트하시겠습니까? 우트하려면 포인트 1점이 소모됩니다.", function() {
                 api.post("/account/woot/",{id:targetUid, action:action},function(res){
                   if(res['ok']){
@@ -2710,6 +2627,7 @@ var controller = {
               button.data("action", next_action);
               button.removeClass("banned");
               button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_off.png')");
+              button.find('span').text("얼음");
 
               api.post("/account/ban/", data, function(){
                   popup("해당 유저를 차단 해제했습니다.\n앞으로 서로의 게더링, 게시물을 볼 수 있습니다.");
@@ -2723,6 +2641,7 @@ var controller = {
               button.data("action", next_action);
               button.addClass("banned");
               button.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_freeze_on.png')");
+              button.find('span').text("땡");
 
               api.post("/account/ban/", data, function(){
                   popup("해당 유저를 차단했습니다.\n앞으로 서로의 게더링, 게시물은 보이지 않습니다.");
@@ -2978,14 +2897,14 @@ var controller = {
         $("#profile-edit-input-push").val(false);
       }
     });
-    
+
     $("#profile-edit-input-chat-push-fake").change(function(){
       if($(this).is(":checked")){
         $("#profile-edit-input-chat-push").val(true);
       }else{
         $("#profile-edit-input-chat-push").val(false);
       }
-    });    
+    });
 
     /* message will be added later
     $("#profile-edit-input-message-fake").change(function(){
@@ -3171,6 +3090,7 @@ var controller = {
                         e.preventDefault();
                         popup("정말 삭제하시겠습니까?", function(){
                             api.get('/post_delete/' + pid + '/', function(){
+                                $("#pullup .background").click();
                                 targetPost.remove();
                                 location.reload(true);
                             });
@@ -3842,7 +3762,7 @@ var controller = {
     return;
   },
 
-    
+
   gatheringListCtrl : function() {
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
     var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
@@ -3858,23 +3778,23 @@ var controller = {
                     initiator("/chat?gid=" + gid, true);
                 } else {
                     initiator("/gathering_detail?gid=" + gid, true);
-                }        
+                }
             } else {
                 if ( points_left >= 3 ) {
-                    initiator("/gathering_detail?gid=" + gid, true);                
+                    initiator("/gathering_detail?gid=" + gid, true);
                 } else {
                     popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요. '내 프로필'에서 '포인트'를 클릭해주세요.");
                 }
             }
         });
-    });    
+    });
     return;
   },
 
   /* Gathering Ctrl */
   gatheringDetailCtrl : function(){
     $("#footer").css({"display":"none"});
-        
+
     // gathering sub-tabs
     /*
     $(".gathering-detail-tab").off('click').on('click',function(){
@@ -3981,7 +3901,7 @@ var controller = {
                   if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
 
                   if( parseInt($(".tobevalid-count").text()) <= 0 ) {
-                      document.location.replace("./chat.html?gid=" + gid);
+                      initiator("/chat?gid=" + gid, false);
                   }
                 }
               });
@@ -4003,7 +3923,7 @@ var controller = {
 
                       if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
 
-                      document.location.replace("./chat.html?gid=" + gid);
+                      initiator("/chat?gid=" + gid, false);
                     }
                   });
                 });
@@ -4029,9 +3949,7 @@ var controller = {
                     popup("해당 게더링을 정말 삭제하시겠습니까?",function(){
                          api.post("/gathering_delete/" + gid + "/", null, function(){
                              initiator("/gathering_list", false);
-                             $("#pullup").css({"display":"none"});
-                             $("#template-view").css({"overflow":""});
-                             $("body").css({"overflow":""});
+                             $("#pullup .background").click();
                          });
                     });
 
@@ -4068,26 +3986,26 @@ var controller = {
   /* chatting */
   chatCtrl : function() {
     'use strict';
-    
+
     // $('some element').on('some keyboard input submit event, last_chat_update);
-    
+
     // refer to https: //github.com/firebase/friendlychat-web
-    
+
     var chatConfig;
     var lastChatDataTime = "";
     var lastChatDataTimeInfiniteScroll = "";
     var infiniteScrollKey;
-    var infiniteScrollEnd = false;    
-    
+    var infiniteScrollEnd = false;
+
     var last_updated_time = null; // global variable
     var globalGid = ""; // global variable
-        
+
     function last_chat_update() {
        var now = Date.now();
        if (last_updated_time && (now - 5*60*1000) < last_updated_time) {
              return;
        }
-    
+
         $.ajax({
             method: "GET",
             url: serverParentURL + "/gathering_last_chat_update/" + globalGid,
@@ -4108,11 +4026,11 @@ var controller = {
             }
         });
     }
-    
+
     function chatInit() {
         var pathParams = location.href.split("?")[1] || "";
         var pathParamsJson = {};
-    
+
         if (pathParams != "") {
             var pathParamsArray = pathParams.split("&");
             $.each(pathParamsArray, function (index, value) {
@@ -4120,13 +4038,13 @@ var controller = {
             });
             pathParams = "?" + pathParams;
         }
-    
+
         var gid = pathParamsJson["gid"];
         globalGid = pathParamsJson["gid"];
-    
+
         var apiPathConfigInfo = serverParentURL + "/chat/gathering_config_info/";
         var apiPathInfo = serverParentURL + "/chat/gathering_info/";
-    
+
         if (!gid) {
             var elm = '<div id="chat-popup-message">' +
                 '<span>잘못된 접근</span>' +
@@ -4137,20 +4055,20 @@ var controller = {
             }, 5000);
             return false;
         }
-    
+
         setChatConfig(apiPathConfigInfo + "?gid=" + gid, function() {
             initFirebaseAuth();
             loadMessages();
             infiniteScroll();
         });
-    
+
         refreshRoomInfo(apiPathInfo + "?gid=" + gid);
-    
+
         $("#chat-header").addClass("with-subheader");
         $("#chat-subheader").css({
             "display": "block"
         });
-    
+
         //============================================================
         // Event Handlers
         //------------------------------------------------------------
@@ -4158,7 +4076,7 @@ var controller = {
             history.back(1);
             //window.shouldClose=true;
         });
-    
+
         $(".overlap-button").off('click').on('click', function () {
             $("#chat-room-overlap").css({
                 "display": "block"
@@ -4166,14 +4084,14 @@ var controller = {
             $("#chat-room-overlap-background").css({
                 "display": "block"
             });
-    
+
             anime({
                 targets: "#chat-room-overlap",
                 translateX: '-100%',
                 duration: 500,
                 easing: 'easeInOutQuart'
             });
-    
+
             $("#chat-room-overlap-background").off('click').on('click', function () {
                 anime({
                     targets: "#chat-room-overlap",
@@ -4190,12 +4108,12 @@ var controller = {
                     }
                 });
             });
-    
+
             refreshRoomInfo(apiPathInfo + "?gid=" + gid);
         }); // $(".overlap-button").on
-    
+
     }
-    
+
     // Enter room and
     function setChatConfig(url, customSuccess) {
         var promise = $.ajax({
@@ -4216,13 +4134,13 @@ var controller = {
                 }, 5000);
             }
         });
-    
+
         promise.then(function (res) {
             chatConfig = res;
             customSuccess();
         });
     }
-    
+
     // Refresh Room Infos
     function refreshRoomInfo(url) {
         var promise = $.ajax({
@@ -4250,9 +4168,9 @@ var controller = {
             $(".chat-title").text(fields.title);
             $(".chat-date").text(fields.datetime_kor);
             $(".chat-place").text(fields.address);
-    
+
             $('.chat-room-overlap-section-sticker').css({"background-image": "url(" + fields.sticker_fullurl + ")"});
-    
+
             $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
             $(".participants-item-wrapper").html("");
             $.each(fields.users_joining,function(index, value){
@@ -4261,27 +4179,27 @@ var controller = {
                 var participants_avatar = "'http://www.hellowoot.co.kr/static/asset/images/profile_images/" + fields.users_joining[index].profile_image_type + ".png'";
                 $(".participants-item-wrapper").append('<woot-click href="/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></woot-click>');
             });
-            
+
             $("woot-click").off('click').on('click',function(){
                 initiator($(this).attr("href"), false);
             });
-    
+
             if(!chatConfig.is_chatting_on){
               $(".chat-footer-textarea-wrapper").css({"display":"none"});
               $(".chat-footer-textarea-wrapper-readonly").css({"display":"block"});
               $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
-    
+
               $("#chat-room-button-wrapper").css({"display":"none"});
             }
         });
     }
-        
+
     $('#chat-room-button-like').off('click').on('click', function(){
       var link = $(location).attr('href');
       var gid = link.split("=")[1];
       document.location.href = "./index.html#/gathering_detail?gid=" + gid;
     });
-    
+
     $('#chat-room-button-cancel').off('click').on('click', function(){
       var link = $(location).attr('href');
       var gid = link.split("=")[1];
@@ -4289,7 +4207,7 @@ var controller = {
       var action = $(this).data("action");
       var data = {'gid': gid, 'action': action};
       var button = $(this);
-    
+
       api.post("/gathering_join/", data, function (res) {
           if(res['ok']) {
               document.location.href = "./index.html#/gathering_detail?gid=" + gid;
@@ -4298,16 +4216,16 @@ var controller = {
       */
       document.location.href = "./index.html#/gathering_detail?gid=" + gid;
     });
-    
+
     function infiniteScroll() {
         $("#chat-room-scroll").unbind("scroll.chat")
             .bind("scroll.chat", function () {
                 if (200 <= $("#chat-room-scroll").scrollTop()) {
                     return;
                 }
-    
+
                 loadMessagesOnceInfiniteScroll(infiniteScrollKey, 12);
-    
+
                 $(this).unbind("scroll.chat");
                 setTimeout(function () {
                     if (infiniteScrollEnd) {
@@ -4328,8 +4246,8 @@ var controller = {
                 }, 1000);
             }); // bind
     }
-    
-    
+
+
     function signIn() {
         //firebase.auth().signInAnonymously();
         firebase.auth().signInWithEmailAndPassword(
@@ -4337,26 +4255,26 @@ var controller = {
             chatConfig.firebase.authKey
         );
     }
-    
+
     function signOut() {
         firebase.auth().signOut();
     }
-    
+
     function initFirebaseAuth() {
         firebase.auth().onAuthStateChanged(authStateObserver);
     }
-    
+
     // Returns true if a user is signed-in.
     function isUserSignedIn() {
         return !!firebase.auth().currentUser;
     }
-    
+
     function trimDate(date) {
         var date = new Date(date);
         var week = new Array('일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일');
         var weeklabel = date.getDay();
         var dateLocal = date.toLocaleString('ko-KR');
-    
+
         var splited = dateLocal.split(" 오전 ");
         if (splited.length > 1) {
             splited[0] = splited[0] + " " + week[weeklabel];
@@ -4369,7 +4287,7 @@ var controller = {
             return splited;
         }
     }
-    
+
     // Loads chat messages history and listens for upcoming ones.
     function loadMessages() {
         var callback = function (snap) {
@@ -4377,7 +4295,7 @@ var controller = {
                 infiniteScrollKey = snap.key;
             }
             var data = snap.val();
-    
+
             if (trimDate(data.time)[0] != trimDate(lastChatDataTime)[0]) {
                 $(messageListElement).append(
                     $.parseHTML(
@@ -4393,14 +4311,14 @@ var controller = {
                 data.text, data.avatarUrl,
                 data.time, data.notification, data.imageUrl, true);
         };
-    
+
         firebase.database().ref(chatConfig.firebase.instancePath)
             .limitToLast(12).on('child_added', callback);
         firebase.database().ref(chatConfig.firebase.instancePath)
             .limitToLast(12).on('child_changed', callback);
     }
-    
-    
+
+
     function loadMessagesOnceInfiniteScroll(keyFrom, count) {
         var callback = function (snap) {
             var array = snap.val();
@@ -4431,7 +4349,7 @@ var controller = {
                         data.avatarUrl, data.time,
                         data.notification, data.imageUrl, false));
             }); // $.each ends
-    
+
             $(messageListElement).prepend(divWrapper);
             setTimeout(function () {
                 $(divWrapper).find("chat-item").add('visible')
@@ -4442,9 +4360,9 @@ var controller = {
         };
         firebase.database().ref(chatConfig.firebase.instancePath)
             .orderByKey().endAt(keyFrom).limitToLast(count).once('value').then(callback);
-    
+
     }
-    
+
     // Saves a new message on the Firebase DB.
     function saveMessage(messageText) {
         // TODO 8: Push a new message to Firebase.
@@ -4461,7 +4379,7 @@ var controller = {
             console.error('Error writing new message to Firebase Database', error);
         });
     }
-    
+
     // Saves a new message containing an image in Firebase.
     // This first saves the image in Firebase storage.
     function saveImageMessage(file) {
@@ -4493,25 +4411,25 @@ var controller = {
             console.error('There was an error uploading a file to Cloud Storage:', error);
         });
     }
-    
+
     // Saves the messaging device token to the datastore.
     function saveMessagingDeviceToken() {
         // TODO 10: Save the device token in the realtime datastore
     }
-    
+
     // Requests permissions to show notifications.
     function requestNotificationsPermissions() {
         // TODO 11: Request permissions to send notifications.
     }
-    
+
     // Triggered when a file is selected via the media picker.
     function onMediaFileSelected(event) {
         event.preventDefault();
         var file = event.target.files[0];
-    
+
         // Clear the selection in the file picker input.
         imageFormElement.reset();
-    
+
         // Check if the file is an image.
         if (!file.type.match('image.*')) {
             var data = {
@@ -4526,7 +4444,7 @@ var controller = {
             saveImageMessage(file);
         }
     }
-    
+
     // Triggered when the send new message form is submitted.
     var onMessageFormSubmitBoolean = false;
     function onMessageFormSubmit(e) {
@@ -4543,7 +4461,7 @@ var controller = {
             });
         }
     }
-    
+
     // Triggers when the auth state change for instance when the user signs-in or signs-out.
     function authStateObserver(user) {
         if (user) {} else {
@@ -4551,14 +4469,14 @@ var controller = {
             signIn();
         }
     }
-    
+
     // Returns true if user is signed-in. Otherwise false and displays a message.
     function checkSignedInWithMessage() {
         // Return true if the user is signed in Firebase
         if (isUserSignedIn()) {
             return true;
         }
-    
+
         // Display a message to the user using a Toast.
         var data = {
             message: 'You must sign-in first',
@@ -4567,15 +4485,15 @@ var controller = {
         signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
         return false;
     }
-    
+
     // Resets the given MaterialTextField.
     function resetMaterialTextfield(element) {
         element.value = '';
         //element.parentNode.MaterialTextfield.boundUpdateClassesHandler();
     }
-    
+
     // Template for messages.
-    
+
     var MESSAGE_TEMPLATE =
       '<div class="chat-item chat-item-message">' +
         '<div class="avatar"></div>' +
@@ -4590,23 +4508,23 @@ var controller = {
           '</div>' +
         '</div>' +
       '</div>';
-    
+
     var NOTIFICATION_TEMPLATE =
       '<div class="chat-item chat-item-notification-time">' +
         '<div class="chat-notification">' +
           '<span></span>' +
         '</div>' +
       '</div>';
-    
-    
+
+
     // A loading image URL.
     var LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif?a';
-    
-    
+
+
     // Displays a Message in the UI.
     function displayMessage(key, username, uid, text, avatarUrl,
         time, notification, imageUrl, appendBool) {
-    
+
         var div = document.getElementById(key);
         if (!div) { // Not Child_change
             var container = document.createElement('div');
@@ -4621,7 +4539,7 @@ var controller = {
                 $(messageListElement).append(div);
             }
         }
-    
+
         // Set Username, Avatar, Time
         if (notification) {
             div.querySelector('.chat-notification span').textContent = text;
@@ -4630,7 +4548,7 @@ var controller = {
             div.querySelector('.avatar').style.backgroundImage = 'url(' + avatarUrl + ')';
             div.querySelector('.time').textContent = trimDate(time)[1];
             div.setAttribute('data-time', time);
-    
+
             // Add Message
             var messageElement = div.querySelector('.message-cloud p');
             var imageElement = div.querySelector('.message-cloud .message-image');
@@ -4661,7 +4579,7 @@ var controller = {
                     });
                 });
             }
-    
+
             if (uid == chatConfig.profile.fields.user_id) {
                 $(div).addClass("chat-item-my");
             }
@@ -4670,7 +4588,7 @@ var controller = {
               onMessageFormSubmitBoolean = false;
             }
         }
-    
+
         // Show the card fading-in and scroll to view the new message.
         setTimeout(function () {
             div.classList.add('visible')
@@ -4678,10 +4596,10 @@ var controller = {
         if (appendBool) {
             $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
         }
-    
+
         return div;
     }
-    
+
     // Enables or disables the submit button depending on the values of the input
     // fields.
     function toggleButton() {
@@ -4691,7 +4609,7 @@ var controller = {
             submitButtonElement.setAttribute('disabled', 'true');
         }
     }
-    
+
     // Checks that the Firebase SDK has been correctly setup and configured.
     function checkSetup() {
         if (!window.firebase || !(firebase.app instanceof Function) || !firebase.app().options) {
@@ -4700,10 +4618,10 @@ var controller = {
                 'sure you are running the codelab using `firebase serve`');
         }
     }
-    
+
     // Checks that Firebase has been imported.
     checkSetup();
-    
+
     // Shortcuts to DOM Elements.
     var messageListElement    = document.getElementById('chat-room');
     var messageFormElement    = document.getElementById('message-form');
@@ -4712,45 +4630,45 @@ var controller = {
     var imageButtonElement    = document.getElementById('submitImage');
     var imageFormElement      = document.getElementById('image-form');
     var mediaCaptureElement   = document.getElementById('mediaCapture');
-    
+
     /*
     var userPicElement = document.getElementById('user-pic');
     var userNameElement = document.getElementById('user-name');
     var signInSnackbarElement = document.getElementById('must-signin-snackbar');
-    
+
     // Saves message on form submit.
     */
     messageFormElement.addEventListener('submit', onMessageFormSubmit);
     messageInputElement.addEventListener('keyup', toggleButton);
     messageInputElement.addEventListener('change', toggleButton);
-    
+
     // Events for image upload.
     imageButtonElement.addEventListener('click', function (e) {
         e.preventDefault();
         mediaCaptureElement.click();
     });
     mediaCaptureElement.addEventListener('change', onMediaFileSelected);
-    
+
     chatInit();
-    
+
     $("textarea").on('keydown keyup', function () {
         $(this).height(1).height($(this).prop('scrollHeight'));
     });
-    
+
     $("#chat-room-scroll").off('click').on('click', function(){
         $("#message-textarea").blur();
     });
-    
+
     //============================================================
     // Cordova Settings
     //------------------------------------------------------------
-    
+
     document.addEventListener("deviceready",function(){
-    
+
         // Android Back Button Overwrite
         var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
         document.addEventListener("backbutton", function (e){
-    
+
             e.preventDefault();
             if (exitApp) {
               clearInterval(intval)
@@ -4764,8 +4682,8 @@ var controller = {
               }
             }
         }, false);
-    
-    
+
+
     });
     return;
   },
@@ -4916,17 +4834,17 @@ $(document).ready(function(){
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
     // cordova-plugin-fcm : Push Notification
-    FCMPlugin.onNotification(function(data){
-        if(data.wasTapped){
-          //Notification was received on device tray and tapped by the user.
-          if(data.url){
-            initiator(data.url);
-            history.pushState(null, null, document.location.pathname + '#' + data.url);
-          }
-        }else{
-          //Notification was received in foreground. Maybe the user needs to be notified.
-        }
-    });
+    // FCMPlugin.onNotification(function(data){
+    //     if(data.wasTapped){
+    //       //Notification was received on device tray and tapped by the user.
+    //       if(data.url){
+    //         initiator(data.url);
+    //         history.pushState(null, null, document.location.pathname + '#' + data.url);
+    //       }
+    //     }else{
+    //       //Notification was received in foreground. Maybe the user needs to be notified.
+    //     }
+    // });
 
     // clear badge when deviceready
     cordova.plugins.notification.badge.clear();
