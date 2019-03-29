@@ -125,6 +125,10 @@ input,textarea{
   line-height:1.4em;
   color:white;
 }
+#popup-message span woot-click{
+  display: block;
+  margin-top: 8px;
+}
 #popup-message .button-wrapper{
   position:relative;
   display:block;
@@ -596,7 +600,7 @@ margin-top:5px;
 }
 .footer-textarea-submit{
   position:absolute;
-  padding:10px 15px;
+  padding: 15px;
   text-align:center;
   top:3px;
   right:0px;

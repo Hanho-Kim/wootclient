@@ -1,6 +1,6 @@
 /* Global Variables */
-var currentVersionIOS = "1001";
-var currentVersionAnd = "2001";
+var currentVersioniOS = "1002";
+var currentVersionAnd = "2002";
 var mobile    = false;
 
 // No slash at the end of the url
@@ -345,6 +345,8 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
 //------------------------------------------------------------
 function globalEventHandler(){
   $(".history-back").off('click').on('click',function(){
+    $("template-view").removeAttr("style");
+    $("#popup-message").hide();
     history.back();
   });
   $(".history-home").off('click').on('click',function(){
@@ -352,13 +354,31 @@ function globalEventHandler(){
   });
   $("woot-click").off('click').on('click',function(){
     initiator($(this).attr("href"), true);
+    $("#popup-message").hide();
+
     if (plugin_toggle) {
         var pageurl = window.location.href.split("#")[1].split("?");
         logViewedContentEvent(pageurl[0], pageurl[1] || "none");
-
-        FB.AppEvents.logPageView();
     }
   });
+}
+
+// Facebook SDK App Event Functions
+if (plugin_toggle) {
+  function logViewedContentEvent(contentType, contentId) {
+    var params = {};
+    params["CONTENT_TYPE"] = contentType;
+    params["CONTENT_ID"] = contentId;
+    facebookConnectPlugin.logEvent("VIEWED_CONTENT", params, null);
+    console.log(params);
+  }
+  function logCompletedTutorialEvent(contentId, success) {
+      var params = {};
+      params["CONTENT_ID"] = contentId;
+      params["SUCCESS"] = success ? 1 : 0;
+      facebookConnectPlugin.logEvent("COMPLETED_TUTORIAL", params, null);
+      console.log(params);
+  }
 }
 
 //============================================================
@@ -399,7 +419,8 @@ function imageElementDelete(e,inputOrder){
   // Reset input
   $("#write-posting-input-photo-wrapper").find("input").each(function(){
     if(this.getAttribute('data-inputOrder') == inputOrder){
-      $(this).val("");
+      this.type = ''
+      this.type = 'file'
     }
   });
 
@@ -419,26 +440,6 @@ function makeAjaxSubmitHandler(successFn) {
     }
 
     return handler;
-}
-
-//============================================================
-// Facebook SDK App Event Functions
-//------------------------------------------------------------
-if (plugin_toggle) {
-  function logViewedContentEvent(contentType, contentId) {
-    var params = {};
-    params[FB.AppEvents.ParameterNames.CONTENT_TYPE] = contentType;
-    params[FB.AppEvents.ParameterNames.CONTENT_ID] = contentId;
-    FB.AppEvents.logEvent(FB.AppEvents.EventNames.VIEWED_CONTENT, null, params);
-    console.log(params);
-  }
-  function logCompletedTutorialEvent(contentId, success) {
-      var params = {};
-      params[FB.AppEvents.ParameterNames.CONTENT_ID] = contentId;
-      params[FB.AppEvents.ParameterNames.SUCCESS] = success ? 1 : 0;
-      FB.AppEvents.logEvent(FB.AppEvents.EventNames.COMPLETED_TUTORIAL, null, params);
-      console.log(params);
-  }
 }
 
 /* End of Global Functions */
@@ -718,7 +719,7 @@ var api = {
     .catch(function(){
       if(errorStatus == 403){
         var elm = '<div id="popup-message">' +
-                    '<span>연결 오류.<br>앱을 완전히 껐다 다시 켜주세요.</span>' +
+                    '<span>연결 오류. 앱을 완전히 껐다 다시 켜주세요. 그리고 앱을 최신버전으로 업데이트해주세요</span>' +
                   '</div>';
         $("body").append(elm);
         setTimeout(function(){
@@ -941,22 +942,8 @@ function initiator(newPath, pushState){
             }
           });
 
-          // Login Check
-          /*
-          if(pathParent != "login"){
-            var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-            if(!userdata.login){
-              window.location.href = "./login.html#/login";
-            }
-          }else{
-            var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-            if(userdata.login){
-              window.location.href = "./index.html#/index";
-            }
-          }
-          */
-          controller[viewConfig[value]["controller"]](pathParamsJson);
           globalEventHandler();
+          controller[viewConfig[value]["controller"]](pathParamsJson);
       })
       .catch(function(){
           renderTemplate("404.html", "#template-view", function(){
@@ -1000,13 +987,17 @@ function button_like() {
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
 
-          if (plugin_toggle) { logCompletedTutorialEvent("like_post", false); }
+          if (plugin_toggle) {
+              logCompletedTutorialEvent("like_post", false);
+          }
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count - 1);
           $('#gathering-stats-nor').data("link", "");
 
-          if (plugin_toggle) { logCompletedTutorialEvent("like_gath", false); }
+          if (plugin_toggle) {
+              logCompletedTutorialEvent("like_gath", false);
+          }
         }
       }
     });
@@ -1024,13 +1015,17 @@ function button_like() {
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
 
-          if (plugin_toggle) { logCompletedTutorialEvent("like_post", true); }
+          if (plugin_toggle) {
+              logCompletedTutorialEvent("like_post", true);
+          }
         } else {
           var count = parseInt($("#gathering-stats-like").text());
           $("#gathering-stats-like").text(count + 1);
           $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
 
-          if (plugin_toggle) { logCompletedTutorialEvent("like_gath", true); }
+          if (plugin_toggle) {
+              logCompletedTutorialEvent("like_gath", true);
+          }
         }
       }
     });
@@ -1058,9 +1053,9 @@ var controller = {
             if (dtoken && userdata.dtoken != dtoken) {
                 api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
                     if (res['ok']) {
-                        console.log("dtoken updated by Refresh")
+                        console.log("dtoken updated by Refresh");
                     } else {
-                        console.log("api.post failed - Refresh")
+                        console.log("api.post failed - Refresh");
                     }
                     return;
                 });
@@ -1070,9 +1065,9 @@ var controller = {
           if (dtoken && userdata.dtoken != dtoken) {
                 api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
                     if (res['ok']) {
-                        console.log("dtoken updated by Get")
+                        console.log("dtoken updated by Get");
                     } else {
-                        console.log("api.post failed - Get")
+                        console.log("api.post failed - Get");
                     }
                     return;
                 });
@@ -1082,7 +1077,7 @@ var controller = {
 
     var device_pc = ["Win16", "Win32", "Win64", "Mac", "MacIntel"];
     if ( device_pc.indexOf(navigator.platform) < 0 ) {
-        refreshDeviceToken();
+       refreshDeviceToken();
     }
 
     // Header Notification Highlight
@@ -1094,7 +1089,7 @@ var controller = {
 
     // requiring points for gathering
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
+    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
     $.each($(".gathering-item"), function(){
         $(this).off("click").on("click", function(){
@@ -1102,7 +1097,9 @@ var controller = {
             var item = $(this);
             var gid = item.data("id");
 
-            if ( item.data("join") ) {
+            if ( item.hasClass("gathering-item-more") ) {
+                initiator("/gathering_list", true);
+            } else if ( item.data("join") ) {
                 if ( item.data("chaton") ) {
                     initiator("/chat?gid=" + gid, true);
                 } else {
@@ -1112,7 +1109,8 @@ var controller = {
                 if ( points_left >= 3 ) {
                     initiator("/gathering_detail?gid=" + gid, true);
                 } else {
-                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요. '내 프로필'에서 '포인트'를 클릭해주세요.");
+                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
+                    globalEventHandler();
                 }
             }
         });
@@ -1171,7 +1169,7 @@ var controller = {
     $("#header").css({"display":"none"});
     $("#footer").css({"display":"none"});
 
-    // iOS: blur keyboard
+    // iOS: blur keyboard by clicking outside area
     $(".login-contents").off("click").on("click", function(){
         $("input").blur();
     });
@@ -1207,7 +1205,7 @@ var controller = {
                             }
                         },
             error     : function( request, status, error ) {
-              popup('로그인하는데 오류가 발생했습니다.<br>앱을 완전히 껐다 다시 켜주세요.');
+              popup('연결 오류. 앱을 완전히 껐다 다시 켜주세요. 그리고 앱을 최신버전으로 업데이트해주세요');
             }
       });
     });
@@ -1226,20 +1224,28 @@ var controller = {
 
     $('#account-find-input-submit-password').off('click').on('click', function(e){
         e.preventDefault();
-        $.ajax({
-              url       : serverParentURL + "/account/reset_password/",
-              type      : 'POST',
-              data      : $(this).closest('form').serialize(),
-              headers   : {
-                        'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
-              },
-              credentials: 'include',
-              xhrFields : { withCredentials: true },
-              success   : function( response ) {
-                            res = response
-                          },
-              error     : function( request, status, error ) {
-                          }
+        popup("입력하신 메일 주소가 정확하나요? 정확하지 않을 경우 비밀번호 설정 메일이 가지 않습니다.", function() {
+            $.ajax({
+                  url       : serverParentURL + "/account/reset_password/",
+                  type      : 'POST',
+                  data      : $(this).closest('form').serialize(),
+                  headers   : {
+                            'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                  },
+                  credentials: 'include',
+                  xhrFields : { withCredentials: true },
+                  success   : function( response ) {
+                                  $("#background-resetpassword").show();
+                                  popup("메일을 전송 중이니 잠시만 기다려주세요..", 7000);
+                                  setTimeout( function(){
+                                      $("#background-resetpassword").hide();
+                                      popup("비밀번호 설정 메일을 보내드렸습니다. 최대 5분 이상 시간이 걸릴 수 있습니다.")
+                                  }, 7000);
+                              },
+                  error     : function( request, status, error ) {
+                              }
+            });
+
         });
     });
 
@@ -1250,7 +1256,7 @@ var controller = {
       $("#header").hide();
       $("#footer").hide();
 
-      // iOS: blur keyboard
+      // iOS: blur keyboard by clicking outside area
       $(".signup-item-wrapper").off("click").on("click", function(){
           $("input").blur();
           $("textarea").blur();
@@ -1404,13 +1410,41 @@ var controller = {
 
       });
 
-      $('.radio-container .checkmark').off('click').on('click', function(){
-          var checkbox = $(this).siblings('input[type="checkbox"]');
-          if ( checkbox.val() == "off" ) {
-              checkbox.val("on");
-          } else {
-              checkbox.val("off");
-          }
+      $.each($(".signup-radio-container .signup-radio-button-route"), function(){
+          var inputRoute = $(this).find("input");
+
+          $(this).off("click").on("click", function(){
+              if ( $(this).data("radio") == "off") {
+                  $(this).addClass("selected");
+                  $(this).data("radio", "on");
+                  inputRoute.val(true);
+              } else {
+                  $(this).removeClass("selected");
+                  $(this).data("radio", "off");
+                  inputRoute.val(false);
+              }
+          });
+      });
+
+      $.each($('.radio-container .checkmark-signup'), function(){
+          var checkmark = $(this);
+          console.log(checkmark);
+          var parent = $(this).closest(".radio-container");
+          console.log(parent);
+          var checkbox = parent.find('input[type="checkbox"]');
+          console.log(checkbox);
+
+          checkmark.off('click').on('click', function(){
+              if ( checkmark.hasClass("selected") ) {
+                  console.log("off");
+                  checkbox.val("off");
+                  checkmark.removeClass("selected");
+              } else {
+                  console.log("on");
+                  checkbox.val("on");
+                  checkmark.addClass("selected");
+              }
+          });
       });
 
       var infoSubmitHandler = function(e){
@@ -1679,7 +1713,7 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') - 16);
     });
 
-    // iOS: blur keyboard
+    // iOS: blur keyboard by clicking outside area
     $(".write-section").off("click").on("click", function(){
         $("input").blur();
         $("textarea").blur();
@@ -2062,22 +2096,20 @@ var controller = {
     // Gathering Submit
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
-        $("#pullup").show();
-        $("#pullup .pullup-inner").html("");
-        $("#pullup").append('<div class="loading"><span>업로드 중이니 잠시만 기다려주세요..</span></div>');
+        $("#pullup-write").show();
 
         var url = $(this).attr('action');
         api.post(url, $(this).serialize(), function(res){
             if (res['ok']){
                 var gid = res['gid'].toString();
                 initiator('/gathering_detail?gid=' + gid, false);
-                $("#pullup").hide();
-                $("#pullup .loading").remove();
+                $("#pullup-write").hide();
 
-                if (plugin_toggle) { logCompletedTutorialEvent("write_gath", true); }
+                if (plugin_toggle) {
+                    logCompletedTutorialEvent("write_gath", true);
+                }
             } else {
-                $("#pullup").hide();
-                $("#pullup .loading").remove();
+                $("#pullup-write").hide();
                 popup('필수 항목들에 내용을 채워주세요.');
                 // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
             }
@@ -2314,8 +2346,7 @@ var controller = {
     // Posting Submit
     $('form#write-posting-form').submit(function(event){
       event.preventDefault();
-      $("#pullup").show();
-      $("#pullup").append('<div class="loading"><span>업로드 중이니 잠시만 기다려주세요..</span></div>');
+      $("#pullup-write").show();
 
       $('form#write-posting-form input[name="img"]').each(function(){
         if($(this).val() == ""){
@@ -2328,16 +2359,15 @@ var controller = {
 
       api.postMulti(url, data, function(response){
           if (response['ok']){
-
               var pid = response['pid'].toString();
               initiator('/post_detail?pid=' + pid, false);
-              $("#pullup").hide();
-              $("#pullup .loading").remove();
+              $("#pullup-write").hide();
 
-              if (plugin_toggle) { logCompletedTutorialEvent("write_post", true); }
+              if (plugin_toggle) {
+                  logCompletedTutorialEvent("write_post", true);
+              }
           } else {
-              $("#pullup").hide();
-              $("#pullup .loading").remove();
+              $("#pullup-write").hide();
               popup('필수 항목들에 내용을 채워주세요.');
               // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
           }
@@ -2495,7 +2525,7 @@ var controller = {
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
+    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
     // Interest
     $(".interest-array").each(function(){
@@ -2585,7 +2615,9 @@ var controller = {
                 $this.data("action", "woot");
                 $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
 
-                if (plugin_toggle) { logCompletedTutorialEvent("like_woot", false); }
+                if (plugin_toggle) {
+                    logCompletedTutorialEvent("like_woot", false);
+                }
               }
             });
         });
@@ -2599,12 +2631,15 @@ var controller = {
                     $this.data('action', 'unwoot');
                     $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
 
-                    if (plugin_toggle) { logCompletedTutorialEvent("like_woot", true); }
+                    if (plugin_toggle) {
+                        logCompletedTutorialEvent("like_woot", true);
+                    }
                   }
                 });
             });
         } else {
-            popup("웃님과 우트를 하기 위해서는 포인트 1점이 필요해요. '내 프로필'에서 '포인트'를 확인해주세요.");
+          popup("웃님과 우트를 하기 위해서는 포인트 1점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
+          globalEventHandler();
         }
       }
     });
@@ -2634,7 +2669,9 @@ var controller = {
               });
               $("#pullup .background").click();
 
-              if (plugin_toggle) { logCompletedTutorialEvent("ban", false); }
+              if (plugin_toggle) {
+                  logCompletedTutorialEvent("ban", false);
+              }
 
           } else {
               var next_action = "unban";
@@ -2648,7 +2685,9 @@ var controller = {
               });
               $("#pullup .background").click();
 
-              if (plugin_toggle) { logCompletedTutorialEvent("ban", true); }
+              if (plugin_toggle) {
+                  logCompletedTutorialEvent("ban", true);
+              }
           }
         });
         $(".profile-report-report").off('click').on('click',function(){
@@ -2679,7 +2718,7 @@ var controller = {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
     });
 
-    // iOS: blur keyboard
+    // iOS: blur keyboard by clicking outside area
     $(".profile-contents").off("click").on("click", function(){
         $("input").blur();
         $("textarea").blur();
@@ -2735,50 +2774,6 @@ var controller = {
             });
         });
     });
-
-    /* updating image change to new version
-      $("#template-view").css({"overflow":"hidden"});
-      $("body").css({"overflow":"hidden"});
-
-      $("#profile-avatar-overlap-view").append(
-                                        '<div id="header" class="row">' +
-                                          '<div class="header-left history-back button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
-                                          '</div>' +
-                                          '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
-                                            '<span>썸네일 선택</span>' +
-                                          '</div>' +
-                                          '<div class="header-right button col-lg-4 col-md-4 col-sm-4 col-xs-4" id="profile-edit-avatar-select">' +
-                                            '<span style="color:#45aaf2;font-weight:600;">저장</span>' +
-                                          '</div>' +
-                                        '</div>');
-
-      $("#profile-avatar-overlap-view").css({"display":"block"});
-      $("#profile-avatar-overlap-view").addClass("activated");
-      anime({
-          targets: "#profile-avatar-overlap-view",
-          translateX: '-100%',
-          duration: 300,
-          easing: 'easeInOutQuart'
-      });
-
-      renderTemplate(serverParentURL + 'misc/edit_avatar', "#profile-avatar-overlap-view", function(){
-
-        // Close Event Handler
-        $("#profile-edit-avatar-select").off('click').on('click',function(){
-          anime({
-            targets: "#profile-avatar-overlap-view",
-            translateX: '100%',
-            duration: 10
-          });
-          $("#profile-avatar-overlap-view").html("");
-          $("#profile-avatar-overlap-view").removeClass("activated");
-          $("#profile-avatar-overlap-view").css({"display":"none"});
-          $("#template-view").css({"overflow":""});
-          $("body").css({"overflow":"inherit"});
-        });
-      });
-    });
-    */
 
     // Profile Edit Guide
     $("#profile-edit-guide-nick").css({"display":"none"});
@@ -2963,7 +2958,7 @@ var controller = {
 
   passwordEditCtrl : function(){
 
-      // iOS: blur keyboard
+      // iOS: blur keyboard by clicking outside area
       $(".profile-contents").off("click").on("click", function(){
           $("input").blur();
           $("textarea").blur();
@@ -3092,7 +3087,6 @@ var controller = {
                             api.get('/post_delete/' + pid + '/', function(){
                                 $("#pullup .background").click();
                                 targetPost.remove();
-                                location.reload(true);
                             });
                         });
                     });
@@ -3159,7 +3153,7 @@ var controller = {
 
         renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + pid, "#posting-overlap-view", function(){
 
-          // iOS: blur keyboard
+          // iOS: blur keyboard by clicking outside area
           $(".board-detail-contents").off("click").on("click", function(){
               $("input").blur();
               $("textarea").blur();
@@ -3214,7 +3208,9 @@ var controller = {
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
 
-                              if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
+                              if (plugin_toggle) {
+                                  logCompletedTutorialEvent("comment", true);
+                              }
                           }
                       });
                   } else {
@@ -3351,7 +3347,9 @@ var controller = {
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
 
-                              if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
+                              if (plugin_toggle) {
+                                logCompletedTutorialEvent("comment", true);
+                              }
                           }
                         });
                     } else {
@@ -3461,9 +3459,12 @@ var controller = {
         el: '.swiper-pagination',
       },
     });
+
+    $("footer-")
+
     var pid = $('.button-misc').data("pid");
 
-    // iOS: blur keyboard
+    // iOS: blur keyboard by clicking outside area
     $(".board-contents").off("click").on("click", function(){
         $("input").blur();
         $("textarea").blur();
@@ -3615,7 +3616,9 @@ var controller = {
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
                       comment_count.text(parseInt(comment_count.text()) + 1);
 
-                      if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
+                      if (plugin_toggle) {
+                        logCompletedTutorialEvent("comment", true);
+                      }
                   }
               });
           } else {
@@ -3706,7 +3709,9 @@ var controller = {
                           var comment_count = $('#posting-item-' + pid).find('.comment .count');
                           comment_count.text(parseInt(comment_count.text()) + 1);
 
-                          if (plugin_toggle) { logCompletedTutorialEvent("comment", true); }
+                          if (plugin_toggle) {
+                            logCompletedTutorialEvent("comment", true);
+                          }
                       }
                     });
               } else {
@@ -3765,7 +3770,7 @@ var controller = {
 
   gatheringListCtrl : function() {
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt( parseInt(udata.points_earned) - parseInt(udata.points_used) );
+    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
     $.each($(".gathering-item"), function(){
         $(this).off("click").on("click", function(){
@@ -3783,7 +3788,8 @@ var controller = {
                 if ( points_left >= 3 ) {
                     initiator("/gathering_detail?gid=" + gid, true);
                 } else {
-                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요. '내 프로필'에서 '포인트'를 클릭해주세요.");
+                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
+                    globalEventHandler();
                 }
             }
         });
@@ -3794,6 +3800,9 @@ var controller = {
   /* Gathering Ctrl */
   gatheringDetailCtrl : function(){
     $("#footer").css({"display":"none"});
+
+    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
     // gathering sub-tabs
     /*
@@ -3852,84 +3861,95 @@ var controller = {
 
     // gathering join
     $('.button-participate').off('click').on('click', function(){
-      var gid = $(this).data("gid");
-      var action = $(this).data("action");
-      var data = {'gid': gid, 'action': action};
-      var button = $(this);
-      var url = "/gathering_join/"
-      var hdinput = $("#hiddenInput_gatheringdata");
+        var gid = $(this).data("gid");
+        var action = $(this).data("action");
+        var data = {'gid': gid, 'action': action};
+        var button = $(this);
+        var url = "/gathering_join/"
+        var hdinput = $("#hiddenInput_gatheringdata");
 
-      if (button.hasClass("joined")) { // Already Liked
-        popup("정말 참여를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.",function(){
-            // cancel the joining
-            api.post(url, data, function (res) {
-              if(res['ok']) {
-                var next_action = "on";
-                button.data("action", next_action);
-                button.removeClass("joined");
-                button.html("<span>참여하기</span>")
-
-                // normal인 경우
-                var count_nor = parseInt($(".gathering-stats-participate").text());
-                $(".gathering-stats-participate").text(count_nor - 1);
-
-                // pre-stage인 경우
-                var count_pre = parseInt($(".tobevalid-count").text());
-                $(".tobevalid-count").text(count_pre + 1);
-
-                if (plugin_toggle) { logCompletedTutorialEvent("join", false); }
-
-                initiator("/gathering_list", true);
-              }
-            });
-        });
-
-      // joining
-      } else {
-          if(hdinput.data('tochat') == 'pre') {
-            popup("최소 진행 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.<br>참여에는 포인트 3점이 소모됩니다.", function(){
+        if (button.hasClass("joined")) { // Already Liked
+          popup("정말 참여를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.",function(){
+              // cancel the joining
               api.post(url, data, function (res) {
                 if(res['ok']) {
-                  var next_action = "off";
+                  var next_action = "on";
                   button.data("action", next_action);
-                  button.addClass("joined");
-                  button.html("<span>참여취소</span>")
+                  button.removeClass("joined");
+                  button.html("<span>참여하기</span>")
 
+                  // normal인 경우
+                  var count_nor = parseInt($(".gathering-stats-participate").text());
+                  $(".gathering-stats-participate").text(count_nor - 1);
+
+                  // pre-stage인 경우
                   var count_pre = parseInt($(".tobevalid-count").text());
-                  $(".tobevalid-count").text(count_pre - 1);
+                  $(".tobevalid-count").text(count_pre + 1);
 
-                  if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
-
-                  if( parseInt($(".tobevalid-count").text()) <= 0 ) {
-                      initiator("/chat?gid=" + gid, false);
+                  if (plugin_toggle) {
+                      logCompletedTutorialEvent("join", false);
                   }
+
+                  initiator("/gathering_list", true);
                 }
               });
-            });
-          } else {
-            if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
-                popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
-            } else {
-                popup("게더링 채팅방으로 이동합니다. 참여에는 포인트 3점이 소모됩니다.", function(){
-                  api.post(url, data, function (res) {
-                    if(res['ok']) {
-                      var next_action = "off";
-                      button.data("action", next_action);
-                      button.addClass("joined");
-                      button.html("<span>참여취소</span>")
+          });
 
-                      var count_nor = parseInt($("#gathering-stats-participate").text());
-                      $("#gathering-stats-participate").text(count_nor + 1);
+        // joining
+        } else {
+          if (points_left >= 3) {
+            if(hdinput.data('tochat') == 'pre') {
+              popup("최소 진행 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.<br>참여에는 포인트 3점이 소모됩니다.", function(){
+                api.post(url, data, function (res) {
+                  if(res['ok']) {
+                    var next_action = "off";
+                    button.data("action", next_action);
+                    button.addClass("joined");
+                    button.html("<span>참여취소</span>")
 
-                      if (plugin_toggle) { logCompletedTutorialEvent("join", true); }
+                    var count_pre = parseInt($(".tobevalid-count").text());
+                    $(".tobevalid-count").text(count_pre - 1);
 
-                      initiator("/chat?gid=" + gid, false);
+                    if (plugin_toggle) {
+                        logCompletedTutorialEvent("join", true);
                     }
-                  });
+
+                    if( parseInt($(".tobevalid-count").text()) <= 0 ) {
+                        initiator("/chat?gid=" + gid, false);
+                    }
+                  }
                 });
+              });
+            } else {
+              if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
+                  popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
+              } else {
+                  popup("게더링 채팅방으로 이동합니다. 참여에는 포인트 3점이 소모됩니다.", function(){
+                    api.post(url, data, function (res) {
+                      if(res['ok']) {
+                        var next_action = "off";
+                        button.data("action", next_action);
+                        button.addClass("joined");
+                        button.html("<span>참여취소</span>")
+
+                        var count_nor = parseInt($("#gathering-stats-participate").text());
+                        $("#gathering-stats-participate").text(count_nor + 1);
+
+                        if (plugin_toggle) {
+                            logCompletedTutorialEvent("join", true);
+                        }
+
+                        initiator("/chat?gid=" + gid, false);
+                      }
+                    });
+                  });
+              }
             }
+          } else {
+              popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
+              globalEventHandler();
           }
-      }
+        }
     });
 
     // Gathering More Button Handler
@@ -3990,6 +4010,9 @@ var controller = {
     // $('some element').on('some keyboard input submit event, last_chat_update);
 
     // refer to https: //github.com/firebase/friendlychat-web
+
+    // scroll overlap error
+    $("#template-view").css({'-webkit-overflow-scrolling': 'auto', 'overflow-y': 'hidden'});
 
     var chatConfig;
     var lastChatDataTime = "";
@@ -4072,10 +4095,6 @@ var controller = {
         //============================================================
         // Event Handlers
         //------------------------------------------------------------
-        $(".history-back").off('click').on('click', function () {
-            history.back(1);
-            //window.shouldClose=true;
-        });
 
         $(".overlap-button").off('click').on('click', function () {
             $("#chat-room-overlap").css({
@@ -4180,16 +4199,22 @@ var controller = {
                 $(".participants-item-wrapper").append('<woot-click href="/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></woot-click>');
             });
 
-            $("woot-click").off('click').on('click',function(){
-                initiator($(this).attr("href"), false);
+            $("woot-click").off("click").on("click", function(){
+                $("#template-view").removeAttr("style");
+                initiator($(this).attr("href"), true);
+            });
+
+            $(".history-back").off("click").on("click", function(){
+                $("#template-view").removeAttr("style");
+                history.back();
             });
 
             if(!chatConfig.is_chatting_on){
-              $(".chat-footer-textarea-wrapper").css({"display":"none"});
-              $(".chat-footer-textarea-wrapper-readonly").css({"display":"block"});
-              $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
+                $(".chat-footer-textarea-wrapper").css({"display":"none"});
+                $(".chat-footer-textarea-wrapper-readonly").css({"display":"block"});
+                $("#message-textarea-readolny").attr("placeholder","채팅이 종료된 게더링입니다.");
 
-              $("#chat-room-button-wrapper").css({"display":"none"});
+                $("#chat-room-button-wrapper").css({"display":"none"});
             }
         });
     }
@@ -4197,24 +4222,25 @@ var controller = {
     $('#chat-room-button-like').off('click').on('click', function(){
       var link = $(location).attr('href');
       var gid = link.split("=")[1];
-      document.location.href = "./index.html#/gathering_detail?gid=" + gid;
+      initiator("/gathering_detail?gid=" + gid, true);
     });
 
     $('#chat-room-button-cancel').off('click').on('click', function(){
       var link = $(location).attr('href');
       var gid = link.split("=")[1];
-      /* need csrf token from server
       var action = $(this).data("action");
       var data = {'gid': gid, 'action': action};
       var button = $(this);
 
-      api.post("/gathering_join/", data, function (res) {
-          if(res['ok']) {
-              document.location.href = "./index.html#/gathering_detail?gid=" + gid;
-          }
+      popup("참여를 취소하시겠습니까? 참여를 취소해도 포인트는 되돌려 받지 못해요.", function(){
+          api.post("/gathering_join/", data, function (res) {
+              if(res['ok']) {
+                  initiator("/gathering_detail?gid=" + gid, false);
+              } else {
+                  popup("게더링 상세보기에서 참여를 취소해주세요.")
+              }
+          });
       });
-      */
-      document.location.href = "./index.html#/gathering_detail?gid=" + gid;
     });
 
     function infiniteScroll() {
@@ -4352,7 +4378,7 @@ var controller = {
 
             $(messageListElement).prepend(divWrapper);
             setTimeout(function () {
-                $(divWrapper).find("chat-item").add('visible')
+                $(divWrapper).find("chat-item").add('visible');
             }, 1);
             setTimeout(function () {
                 $("#chat-room-scroll").scrollTop($(divWrapper).height() - 150);
@@ -4360,7 +4386,6 @@ var controller = {
         };
         firebase.database().ref(chatConfig.firebase.instancePath)
             .orderByKey().endAt(keyFrom).limitToLast(count).once('value').then(callback);
-
     }
 
     // Saves a new message on the Firebase DB.
@@ -4583,9 +4608,10 @@ var controller = {
             if (uid == chatConfig.profile.fields.user_id) {
                 $(div).addClass("chat-item-my");
             }
+
             if (onMessageFormSubmitBoolean){
-              messageInputElement.focus();
-              onMessageFormSubmitBoolean = false;
+                $(messageInputElement).focus();
+                onMessageFormSubmitBoolean = false;
             }
         }
 
@@ -4659,32 +4685,6 @@ var controller = {
         $("#message-textarea").blur();
     });
 
-    //============================================================
-    // Cordova Settings
-    //------------------------------------------------------------
-
-    document.addEventListener("deviceready",function(){
-
-        // Android Back Button Overwrite
-        var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
-        document.addEventListener("backbutton", function (e){
-
-            e.preventDefault();
-            if (exitApp) {
-              clearInterval(intval)
-              (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-            }else {
-              if($("#chat-room-image").hasClass("activated")){
-                $(".chat-room-image-close").click();
-              }else{
-                exitApp = true
-                navigator.app.backHistory();
-              }
-            }
-        }, false);
-
-
-    });
     return;
   },
 
@@ -4760,7 +4760,7 @@ var controller = {
         $("#report-code").val(reportCode);
     });
 
-    // iOS: blur keyboard
+    // iOS: blur keyboard by clicking outside area
     $(".report-form-wrapper").off("click").on("click", function(){
         $("input").blur();
         $("textarea").blur();
@@ -4782,7 +4782,9 @@ var controller = {
                 popup('신고가 정상적으로 접수되었습니다.');
                 initiator("/index", false);
 
-                if (plugin_toggle) { logCompletedTutorialEvent("report", true); }
+                if (plugin_toggle) {
+                    logCompletedTutorialEvent("report", true);
+                }
             } else {
                 popup("신고 유형을 선택하고 내용을 작성해주세요.");
             }
@@ -4833,10 +4835,9 @@ $(document).ready(function(){
   // Cordova Plugin
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
-    // cordova-plugin-fcm : Push Notification
     // FCMPlugin.onNotification(function(data){
     //     if(data.wasTapped){
-    //       //Notification was received on device tray and tapped by the user.
+    //       //Notification was received78902 qZ  on device tray and tapped by the user.
     //       if(data.url){
     //         initiator(data.url);
     //         history.pushState(null, null, document.location.pathname + '#' + data.url);
@@ -4852,12 +4853,6 @@ $(document).ready(function(){
     // Cordova iOS disable Keyboard Done button
     Keyboard.hideFormAccessoryBar(true);
 
-    $(document).click(function(e){
-      if(e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA"){
-        Keyboard.hide();
-      }
-    });
-
     // Cordova iOS resizing viewport while input focus happens
     Keyboard.shrinkView(true);
 
@@ -4871,15 +4866,16 @@ $(document).ready(function(){
     if(!getCookie("updateNotCheck")){
       $.ajax({
               method    : "GET",
-              url       : serverParentURL + "/misc/updateHTML?currentVersionIOS=" + currentVersionIOS + "&currentVersionAnd=" + currentVersionAnd + "&platform=" + device.platform,
+              url       : serverParentURL + "/misc/updateHTML?currentVersioniOS=" + currentVersioniOS + "&currentVersionAnd=" + currentVersionAnd + "&platform=" + device.platform,
               xhrFields : {withCredentials: true},
               credentials: 'include',
               success   : function( response ) {
-                          console.log(response);
-                          response = String(response).replace(" ","");
+                          // console.log(response);
 
                           if(response){
-                            console.log(1);
+                            $("body").html("");
+                            $("body").append(response);
+                            console.log("need update");
                           }
 
                         },
