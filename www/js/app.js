@@ -2706,12 +2706,6 @@ var controller = {
   profileEditCtrl : function(){
     var udata = JSON.parse($("#hiddenInput_userdata").val());
     var editdata = JSON.parse($("#hiddenInput_editdata").val());
-    if (editdata.initial == "yes" || editdata.dtoken == "" ) {
-        $('.header-left').css({"opacity":"0"});
-    }
-    if ( editdata.dtoken == "" ) {
-        popup("간단한 소개와 관심사 3~5개를<br>등록해주세요.");
-    }
 
     $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
@@ -4835,6 +4829,9 @@ $(document).ready(function(){
   // Cordova Plugin
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
+
+    // webview setCookie error solved by inject-cookie pluginf
+    wkWebView.injectCookie('http://www.hellowoot.co.kr/');
     // FCMPlugin.onNotification(function(data){
     //     if(data.wasTapped){
     //       //Notification was received78902 qZ  on device tray and tapped by the user.
