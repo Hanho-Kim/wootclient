@@ -1,6 +1,6 @@
 /* Global Variables */
-var currentVersioniOS = "1002";
-var currentVersionAnd = "2002";
+var currentVersioniOS = "1002"; // this must be string, not integer
+var currentVersionAnd = "2003"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
@@ -1075,8 +1075,7 @@ var controller = {
         });
     }
 
-    var device_pc = ["Win16", "Win32", "Win64", "Mac", "MacIntel"];
-    if ( device_pc.indexOf(navigator.platform) < 0 ) {
+    if(typeof FirebasePlugin != 'undefined'){
        refreshDeviceToken();
     }
 
@@ -2165,8 +2164,6 @@ var controller = {
               $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
           });
         }
-
-
       },
 
       createTag : function(str){
@@ -4851,7 +4848,7 @@ $(document).ready(function(){
     Keyboard.hideFormAccessoryBar(true);
 
     // Cordova iOS resizing viewport while input focus happens
-    Keyboard.shrinkView(true);
+    // Keyboard.shrinkView(true);
 
     // Cordova-plugin-screen-orientation : Orientation Lock
     screen.orientation.lock('portrait');

@@ -1,4 +1,23 @@
 @font-face {
+  font-family: 'Test';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Test Regular'),
+       local('TestRegular'),
+       url("../fonts/NanumSquareTestR.woff") format('woff'),
+       url("../fonts/NanumSquareTestR.ttf") format('truetype');
+}
+@font-face {
+  font-family: 'Test';
+  font-style: bold;
+  font-weight: 700;
+  src: local('Test Bold'),
+       local('TestBold'),
+       url("../fonts/NanumSquareTestB.woff") format('woff'),
+       url("../fonts/NanumSquareTestB.ttf") format('truetype');
+}
+
+@font-face {
   font-family: 'Nanum Square';
   font-style: normal;
   font-weight: 400;
