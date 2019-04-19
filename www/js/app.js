@@ -4964,7 +4964,7 @@ $(document).ready(function(){
     }
 
     // Android Back Button Overwrite
-    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 2000);
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
     document.addEventListener("backbutton", function (e){
         e.preventDefault();
         if (exitApp) {
