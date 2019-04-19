@@ -356,7 +356,7 @@ function globalEventHandler(){
     initiator($(this).attr("href"), true);
     $("#popup-message").hide();
 
-    if (plugin_toggle) {
+    if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
         var pageurl = window.location.href.split("#")[1].split("?");
         logViewedContentEvent(pageurl[0], pageurl[1] || "none");
     }
@@ -364,7 +364,7 @@ function globalEventHandler(){
 }
 
 // Facebook SDK App Event Functions
-if (plugin_toggle) {
+if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
   function logViewedContentEvent(contentType, contentId) {
     var params = {};
     params["CONTENT_TYPE"] = contentType;
@@ -848,17 +848,8 @@ function initiator(newPath, pushState){
   var pathParent  = pathname.split("/")[1];
 
   // Footer Processing
-  $.each($(".footer-item"), function(){
-    var iconUrl = $(this).css("background-image");
-
-    if ( $(this).attr("class").indexOf("footer-item-" + pathParent) > 0 ) {
-      iconUrl = iconUrl.split("-")[0] + "-on.png";
-    } else {
-      iconUrl = iconUrl.split("-")[0] + "-off.png";
-    }
-
-    $(this).css("background-image", iconUrl);
-  });
+  $("#footer").find(".footer-item").removeClass("selected");
+  $("#footer").find(".footer-item-" + pathParent).addClass("selected");
 
   if(viewConfig[pathname]["footerHide"]){
     $("#footer").css({"display":"none"});
@@ -878,11 +869,11 @@ function initiator(newPath, pushState){
     pathParams = "?" + pathParams;
   }
 
-  if (server_toggle){
-    var highlight_url = "/common/highlight"
-  } else {
-    var highlight_url = "/api/v1/get/highlight"
-  }
+  // if (server_toggle){
+  //   var highlight_url = "/common/highlight"
+  // } else {
+  //   var highlight_url = "/api/v1/get/highlight"
+  // }
 
   // Server side id add
   var idChecklist = ["uid","gid","bid","pid"];
@@ -987,7 +978,7 @@ function button_like() {
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
 
-          if (plugin_toggle) {
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
               logCompletedTutorialEvent("like_post", false);
           }
         } else {
@@ -995,7 +986,7 @@ function button_like() {
           $("#gathering-stats-like").text(count - 1);
           $('#gathering-stats-nor').data("link", "");
 
-          if (plugin_toggle) {
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
               logCompletedTutorialEvent("like_gath", false);
           }
         }
@@ -1015,7 +1006,7 @@ function button_like() {
           var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
           $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
 
-          if (plugin_toggle) {
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
               logCompletedTutorialEvent("like_post", true);
           }
         } else {
@@ -1023,13 +1014,22 @@ function button_like() {
           $("#gathering-stats-like").text(count + 1);
           $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
 
-          if (plugin_toggle) {
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
               logCompletedTutorialEvent("like_gath", true);
           }
         }
       }
     });
   }
+}
+
+function pullupGuideTemplate(templeteUrl){
+  pullupMenu(templeteUrl, function(){
+      $(".overlap-close").off("click").on("click",function(){
+          $("#template-view-pullup").css({"display":"none"}).html("");
+          $("#pullup .background").trigger("click");
+      });
+  });
 }
 
 
@@ -1049,7 +1049,7 @@ var controller = {
     $("#header-title").text(userdata.block + " 블록");
 
     function refreshDeviceToken() {
-        FCMPlugin.onTokenRefresh(function(dtoken) {
+        FirebasePlugin.onTokenRefresh(function(dtoken) {
             if (dtoken && userdata.dtoken != dtoken) {
                 api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
                     if (res['ok']) {
@@ -1061,7 +1061,7 @@ var controller = {
                 });
             }
         });
-        FCMPlugin.getToken(function(dtoken) {
+        FirebasePlugin.getToken(function(dtoken) {
           if (dtoken && userdata.dtoken != dtoken) {
                 api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
                     if (res['ok']) {
@@ -1090,31 +1090,30 @@ var controller = {
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
     var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
-    $.each($(".gathering-item"), function(){
-        $(this).off("click").on("click", function(){
+    $(".gathering-item").off("click").on("click", function(){
+        var item = $(this);
+        var gid = item.data("id");
 
-            var item = $(this);
-            var gid = item.data("id");
-
-            if ( item.hasClass("gathering-item-more") ) {
-                initiator("/gathering_list", true);
-            } else if ( item.data("join") ) {
-                if ( item.data("chaton") ) {
-                    initiator("/chat?gid=" + gid, true);
-                } else {
-                    initiator("/gathering_detail?gid=" + gid, true);
-                }
+        if ( item.hasClass("gathering-item-more") ) {
+            initiator("/gathering_list", true);
+        } else if ( item.data("join") ) {
+            if ( item.data("chaton") ) {
+                initiator("/chat?gid=" + gid, true);
             } else {
-                if ( points_left >= 3 ) {
-                    initiator("/gathering_detail?gid=" + gid, true);
-                } else {
-                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
-                    globalEventHandler();
-                }
+                initiator("/gathering_detail?gid=" + gid, true);
             }
-        });
+        } else {
+            if ( points_left >= 3 ) {
+                initiator("/gathering_detail?gid=" + gid, true);
+            } else {
+              popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              $(".guide-point").off("click").on("click", function(){
+                  $("#popup-message").hide();
+                  pullupGuideTemplate("pullup_guide_point");
+              });
+            }
+        }
     });
-
 
     return;
   },
@@ -1134,14 +1133,14 @@ var controller = {
                 if(res['ok']) {
                     var urlSplit = res.url.split("/");
                     var urlType = urlSplit[1];
-                    var id = urlType.indexOf("account") >= 0 ? urlSplit[3] : urlSplit[2];
+                    var id = urlType.indexOf("account") > -1 ? urlSplit[3] : urlSplit[2];
 
                     // post -> post_detail
-                    if ( urlType.indexOf("post") >= 0 ) {
+                    if ( urlType.indexOf("post") > -1 ) {
                         initiator("/post_detail?pid=" + id, true);
                     }
                     // gathering (need to fix the condition of if statement through 'chatting_on')
-                    else if ( urlType.indexOf("gathering") >= 0 ) {
+                    else if ( urlType.indexOf("gathering") > -1 ) {
                         if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
                             initiator("/chat?gid=" + id, true);
                         } else if ( res.target.fields.is_removed == true || res.target.fields.is_accessible == false ) {
@@ -1151,7 +1150,7 @@ var controller = {
                         }
                     }
                     // woot -> profile
-                    else if ( urlType.indexOf("account") >= 0 ) {
+                    else if ( urlType.indexOf("account") > -1 ) {
                         initiator("/account/profile?uid=" + id, true);
                     }
 
@@ -1266,6 +1265,40 @@ var controller = {
       $("textarea").off("click").on("click", function(event){
         event.stopPropagation();
       });
+
+      // update devicetoken
+      var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+
+      function refreshDeviceToken() {
+          FirebasePlugin.onTokenRefresh(function(dtoken) {
+              if (dtoken && userdata.dtoken != dtoken) {
+                  api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
+                      if (res['ok']) {
+                          console.log("dtoken updated by Refresh");
+                      } else {
+                          console.log("api.post failed - Refresh");
+                      }
+                      return;
+                  });
+              }
+          });
+          FirebasePlugin.getToken(function(dtoken) {
+            if (dtoken && userdata.dtoken != dtoken) {
+                  api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
+                      if (res['ok']) {
+                          console.log("dtoken updated by Get");
+                      } else {
+                          console.log("api.post failed - Get");
+                      }
+                      return;
+                  });
+              }
+          });
+      }
+
+      if(userdata.uid != "None" && typeof FirebasePlugin != 'undefined'){
+          refreshDeviceToken();
+      }
 
       // redirection to login or signup
       $('#redirect-signup').trigger('click');
@@ -1392,8 +1425,8 @@ var controller = {
         });
       });
 
-      if($("#signup-item-input-devicetoken") && typeof FCMPlugin != 'undefined'){
-          FCMPlugin.getToken(function(token){
+      if($("#signup-item-input-devicetoken") && typeof FirebasePlugin != 'undefined'){
+          FirebasePlugin.getToken(function(token){
               $("#signup-item-input-devicetoken").val(token);
           });
       }
@@ -1476,192 +1509,197 @@ var controller = {
           $("#signup-info-form").submit();
       });
 
-      // 3. block_select.html
-      $(".signup-footer-item-forward-block").off('click').on('click', function(){
-		if ( $(this).data("status") == "on" ) {
-			api.post("/account/signup/block_select/", $("form").serialize(), function(response){
-				if (response['ok']){
-					initiator("/signup");  // no pushState
-				} else {
-					popup("회원가입 과정에 오류가 발생했습니다. contact@hellowoot.co.kr로 문의해주세요.")
-					console.log(response['errors']);
-                    console.log(response);
-				}
-			});
-		} else {
-			popup("문자 알람 신청 되었습니다. 커뮤니티가 열리면 문자로 알려드릴게요.");
-            $.ajax({
-                  method    : "GET",
-                  url       : serverParentURL + "/account/logout",
-                  success   : function( response ) {
-                               initiator("/login", false);
-                            },
-                  error     : function( request, status, error ) {
+      // 3. block_select.html: check community
+      // $(".signup-footer-item-forward-block").off('click').on('click', function(){
+    	// 	if ( $(this).data("status") == "on" ) {
+    	// 		api.post("/account/signup/block_select/", $("form").serialize(), function(response){
+    	// 			if (response['ok']){
+    	// 				initiator("/signup");  // no pushState
+    	// 			} else {
+    	// 				popup("회원가입 과정에 오류가 발생했습니다. contact@hellowoot.co.kr로 문의해주세요.")
+    	// 				console.log(response['errors']);
+      //                   console.log(response);
+    	// 			}
+    	// 		});
+    	// 	} else {
+    	// 		popup("문자 알람 신청 되었습니다. 커뮤니티가 열리면 문자로 알려드릴게요.");
+      //           $.ajax({
+      //                 method    : "GET",
+      //                 url       : serverParentURL + "/account/logout",
+      //                 success   : function( response ) {
+      //                              initiator("/login", false);
+      //                           },
+      //                 error     : function( request, status, error ) {
+      //
+      //                           }
+      //           });
+    	// 	}
+      // });
 
-                            }
-            });
-		}
+
+      // ModelHouse Past Version
+      // var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
+      // $("#model-house-item-wrapper").html("");
+      //
+      // $.each(modelHouseHTML,function(index,elm){
+      //   setTimeout(function(){
+      //     $("#model-house-item-wrapper").prepend(elm);
+      //     anime({
+      //       targets: '.model-house-item:nth-child(1)',
+      //       opacity: 0,
+      //       duration: 1000,
+      //       easing: 'easeInOutQuart',
+      //       direction: 'reverse'
+      //     });
+      //   }, 5000 * index);
+      // });
+
+      // Pullup Guide for Waiting and Verify
+      $(".blockopen-reason").off("click").on("click",function(){
+          pullupGuideTemplate("pullup_guide_blockopen");
       });
 
-
-      $(".signup-footer-item-forward-4").off('click').on('click',function(){
-        $("#signup-4-wrapper").css({"display":"block"});
+      $(".verify-reason").off("click").on("click",function(){
+          pullupGuideTemplate("pullup_guide_verify");
       });
 
-    var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
-    $("#model-house-item-wrapper").html("");
-
-    $.each(modelHouseHTML,function(index,elm){
-      setTimeout(function(){
-        $("#model-house-item-wrapper").prepend(elm);
-        anime({
-          targets: '.model-house-item:nth-child(1)',
-          opacity: 0,
-          duration: 1000,
-          easing: 'easeInOutQuart',
-          direction: 'reverse'
-        });
-      }, 5000 * index);
-    });
-
-
-    // Confirm Form
-    $(".signup-confirm-button").off('click').on('click',function(){
-      $(".signup-confirm-form-wrapper").css({"display":"block"});
-      var type = $(this).data("confirm");
-      if(type == "post"){
-        $(".signup-confirm-form-wrapper .post").css({"display":"block"});
-        $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
-      }else{
-        $(".signup-confirm-form-wrapper .post").css({"display":"none"});
-        $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
-      }
-
-      // Close
-      $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
-        $(".signup-confirm-form-wrapper").css({"display":"none"})
-      });
-
-    });
-
-    // Verify Upload
-    $(".verify-upload-button").off("click").on("click",function(){
-        $(".upload-img").click();
-    });
-
-    // Image Upload
-    function imageProcessor(dataURL, fileType, inputOrder) {
-      var image = new Image();
-      var srcOrientation = 1;
-      image.src = dataURL;
-
-      image.onload = function () {
-        EXIF.getData(image, function() {
-          srcOrientation = EXIF.getTag(this, "Orientation");
-          var newWidth = image.width;
-          var newHeight = image.height;
-
-          var canvas = document.createElement('canvas');
-
-          canvas.width = newWidth;
-          canvas.height = newHeight;
-
-          var context = canvas.getContext('2d');
-
-            // set proper canvas dimensions before transform & export
-            if (4 < srcOrientation && srcOrientation < 9) {
-              canvas.width = newHeight;
-              canvas.height = newWidth;
-            } else {
-              canvas.width = newWidth;
-              canvas.height = newHeight;
-            }
-
-            switch (srcOrientation) {
-              case 2: context.transform(-1, 0, 0, 1, newWidth, 0); break;
-              case 3: context.transform(-1, 0, 0, -1, newWidth, newHeight ); break;
-              case 4: context.transform(1, 0, 0, -1, 0, newHeight ); break;
-              case 5: context.transform(0, 1, 1, 0, 0, 0); break;
-              case 6: context.transform(0, 1, -1, 0, newHeight , 0); break;
-              case 7: context.transform(0, -1, -1, 0, newHeight , newWidth); break;
-              case 8: context.transform(0, -1, 1, 0, 0, newWidth); break;
-              default: break;
-            }
-
-          context.drawImage(image, 0, 0);
-          dataURL   = canvas.toDataURL(fileType);
-
-          $('.test-image').attr('src', dataURL);
-
-        });
-      };
-
-      image.onerror = function () {
-        console.log('Image Processor Error');
-      };
-
-    }
-
-    if(window.File && window.FileList && window.FileReader){
-      var $filesInput = $("input.upload-img");
-      $filesInput.on("change", function(event){
-          console.log(event);
-          console.log(event.target);
-          var inputOrder = event.target.getAttribute('data-inputOrder');
-          var file = event.target.files[0];
-          var picReader = new FileReader();
-
-          console.log(inputOrder);
-          console.log(file);
-          console.log(picReader);
-
-          picReader.onloadend = function(){
-              imageProcessor(picReader.result, file.type, inputOrder);
-          };
-
-          picReader.readAsDataURL(file);
-
-      });
-    }
-
-    $("#form-verify").submit(function(event){
-        event.preventDefault();
-
-        if($("#form-verify input[name='img']").val() == ""){
-            popup("주소 이미지를 첨부해주세요.");
-            return;
+      // Confirm Form
+      $(".signup-confirm-button").off('click').on('click',function(){
+        $(".signup-confirm-form-wrapper").css({"display":"block"});
+        var type = $(this).data("confirm");
+        if(type == "post"){
+          $(".signup-confirm-form-wrapper .post").css({"display":"block"});
+          $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
+        }else{
+          $(".signup-confirm-form-wrapper .post").css({"display":"none"});
+          $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
         }
 
-        var url = $(this).attr("action");
-        var data = new FormData(this);
-
-        api.postMulti(url, data, function(response){
-            if (response['ok']){
-                initiator("/signup", true);
-            } else {
-                console.log("fail");
-            }
+        // Close
+        $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
+          $(".signup-confirm-form-wrapper").css({"display":"none"})
         });
 
+      });
 
-    });
+      // Verify Upload
+      $(".verify-upload-button").off("click").on("click",function(){
+          $(".upload-img").click();
+      });
 
-    // Signup Logout
+      // Image Upload
+      function imageProcessor(dataURL, fileType, inputOrder) {
+        var image = new Image();
+        var srcOrientation = 1;
+        image.src = dataURL;
 
-    $(".signup-footer-logout").off("click").on("click",function(){
-        $.ajax({
-                  method    : "GET",
-                  url       : serverParentURL + "/account/logout",
-                  success   : function( response ) {
-                               initiator("/login", false);
-                            },
-                  error     : function( request, status, error ) {
+        image.onload = function () {
+          EXIF.getData(image, function() {
+            srcOrientation = EXIF.getTag(this, "Orientation");
+            var newWidth = image.width;
+            var newHeight = image.height;
 
-                            }
+            var canvas = document.createElement('canvas');
+
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+
+            var context = canvas.getContext('2d');
+
+              // set proper canvas dimensions before transform & export
+              if (4 < srcOrientation && srcOrientation < 9) {
+                canvas.width = newHeight;
+                canvas.height = newWidth;
+              } else {
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+              }
+
+              switch (srcOrientation) {
+                case 2: context.transform(-1, 0, 0, 1, newWidth, 0); break;
+                case 3: context.transform(-1, 0, 0, -1, newWidth, newHeight ); break;
+                case 4: context.transform(1, 0, 0, -1, 0, newHeight ); break;
+                case 5: context.transform(0, 1, 1, 0, 0, 0); break;
+                case 6: context.transform(0, 1, -1, 0, newHeight , 0); break;
+                case 7: context.transform(0, -1, -1, 0, newHeight , newWidth); break;
+                case 8: context.transform(0, -1, 1, 0, 0, newWidth); break;
+                default: break;
+              }
+
+            context.drawImage(image, 0, 0);
+            dataURL   = canvas.toDataURL(fileType);
+
+            $('.test-image').attr('src', dataURL);
+
+          });
+        };
+
+        image.onerror = function () {
+          console.log('Image Processor Error');
+        };
+
+      }
+
+      if(window.File && window.FileList && window.FileReader){
+        var $filesInput = $("input.upload-img");
+        $filesInput.on("change", function(event){
+            console.log(event);
+            console.log(event.target);
+            var inputOrder = event.target.getAttribute('data-inputOrder');
+            var file = event.target.files[0];
+            var picReader = new FileReader();
+
+            console.log(inputOrder);
+            console.log(file);
+            console.log(picReader);
+
+            picReader.onloadend = function(){
+                imageProcessor(picReader.result, file.type, inputOrder);
+            };
+
+            picReader.readAsDataURL(file);
+
         });
-    });
+      }
 
-    return;
+      $("#form-verify").submit(function(event){
+          event.preventDefault();
+
+          if($("#form-verify input[name='img']").val() == ""){
+              popup("주소 이미지를 첨부해주세요.");
+              return;
+          }
+
+          var url = $(this).attr("action");
+          var data = new FormData(this);
+
+          api.postMulti(url, data, function(response){
+              if (response['ok']){
+                  initiator("/signup", true);
+              } else {
+                  console.log("fail");
+              }
+          });
+
+
+      });
+
+      // Signup Logout
+
+      $(".signup-footer-logout").off("click").on("click",function(){
+          $.ajax({
+                    method    : "GET",
+                    url       : serverParentURL + "/account/logout",
+                    success   : function( response ) {
+                                 initiator("/login", false);
+                              },
+                    error     : function( request, status, error ) {
+
+                              }
+          });
+      });
+
+      return;
   },
 
   /* Signup Confirm Ctrl */
@@ -1854,7 +1892,7 @@ var controller = {
                 hour = 0;
               }
 
-              if(hour >= 0 && hour < 10){
+              if(hour > -1 && hour < 10){
                 $(this).val("0" + parseInt(hour));
               }else{
                 $(this).val(parseInt(hour));
@@ -1870,7 +1908,7 @@ var controller = {
                 minute = 0;
               }
 
-              if(minute >= 0 && minute < 10){
+              if(minute > -1 && minute < 10){
                 $(this).val("0" + parseInt(minute));
               }else{
                 $(this).val(parseInt(minute));
@@ -2104,7 +2142,7 @@ var controller = {
                 initiator('/gathering_detail?gid=' + gid, false);
                 $("#pullup-write").hide();
 
-                if (plugin_toggle) {
+                if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                     logCompletedTutorialEvent("write_gath", true);
                 }
             } else {
@@ -2360,7 +2398,7 @@ var controller = {
               initiator('/post_detail?pid=' + pid, false);
               $("#pullup-write").hide();
 
-              if (plugin_toggle) {
+              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                   logCompletedTutorialEvent("write_post", true);
               }
           } else {
@@ -2588,14 +2626,7 @@ var controller = {
 
     // Points guide
     $(".profile-button-points").off("click").on("click", function(){
-        $("#points-guide-background").show();
-        $("#points-guide").show();
-
-        $("#points-guide-close").off("click").on("click", function(){
-            $("#points-guide-background").hide();
-            $("#points-guide").hide();
-        });
-
+        pullupGuideTemplate("pullup_guide_point");
     });
 
     // Profile Buttons Like
@@ -2605,39 +2636,33 @@ var controller = {
       var action = $this.data("action");
 
       if($(this).hasClass("liked")){
-        popup("우트를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.", function() {
-            api.post("/account/woot/",{id:targetUid, action:action},function(res){
-              if(res['ok']){
-                $this.removeClass("liked");
-                $this.data("action", "woot");
-                $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
+        popup("우트를 취소하시겠습니까? 우트를 취소해도 상대방에게는 알람이 가지 않으니 괜찮아요.", function() {
+          api.post("/account/woot/",{id:targetUid, action:action},function(res){
+            if(res['ok']){
+              $this.removeClass("liked");
+              $this.data("action", "woot");
+              $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_off.png')");
 
-                if (plugin_toggle) {
-                    logCompletedTutorialEvent("like_woot", false);
-                }
+              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+                  logCompletedTutorialEvent("like_woot", false);
               }
-            });
+            }
+          });
         });
+      } else {
+        popup("웃님에게 우트하시겠습니까? 무분별한 우트하기는 제재의 대상이 됩니다.", function() {
+          api.post("/account/woot/",{id:targetUid, action:action},function(res){
+            if(res['ok']){
+              $this.addClass("liked");
+              $this.data('action', 'unwoot');
+              $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
 
-      }else{
-        if(points_left >= 1) {
-            popup("웃님과 우트하시겠습니까? 우트하려면 포인트 1점이 소모됩니다.", function() {
-                api.post("/account/woot/",{id:targetUid, action:action},function(res){
-                  if(res['ok']){
-                    $this.addClass("liked");
-                    $this.data('action', 'unwoot');
-                    $this.find('.profile-button-icon').css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/profile/func_woot_on.png')");
-
-                    if (plugin_toggle) {
-                        logCompletedTutorialEvent("like_woot", true);
-                    }
-                  }
-                });
-            });
-        } else {
-          popup("웃님과 우트를 하기 위해서는 포인트 1점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
-          globalEventHandler();
-        }
+              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+                  logCompletedTutorialEvent("like_woot", true);
+              }
+            }
+          });
+        });
       }
     });
 
@@ -2666,7 +2691,7 @@ var controller = {
               });
               $("#pullup .background").click();
 
-              if (plugin_toggle) {
+              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                   logCompletedTutorialEvent("ban", false);
               }
 
@@ -2682,7 +2707,7 @@ var controller = {
               });
               $("#pullup .background").click();
 
-              if (plugin_toggle) {
+              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                   logCompletedTutorialEvent("ban", true);
               }
           }
@@ -2708,6 +2733,16 @@ var controller = {
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
     });
+
+    // displaying app update
+    var iOS = !!navigator.platform && /iPhone|iPad|iPod/i.test(navigator.platform);
+    if ( iOS ) {
+       $("#profile-edit-update-ios").show();
+       $("#profile-edit-update-and").hide();
+    } else {
+       $("#profile-edit-update-ios").hide();
+       $("#profile-edit-update-and").show();
+    }
 
     // iOS: blur keyboard by clicking outside area
     $(".profile-contents").off("click").on("click", function(){
@@ -2785,13 +2820,14 @@ var controller = {
         $("#profile-edit-guide-intro").css({"display":"none"});
     });
 
-    // Profile Interest Edit
+    /* Profile Interest Edit */
+
+    // show existing interests
     if($("#profile-edit-input-interest").val()){
         var alreadyInterest = JSON.parse($("#profile-edit-input-interest").val() || "[]");
         $.each(alreadyInterest,function(index,value){
            $("#profile-edit-input-interest-fake").append("<span>"+value+"</span>");
-
-        $('#profile-edit-guide-interest').hide();
+           $('#profile-edit-guide-interest').hide();
         });
     } else {
         $('#profile-edit-guide-interest').show();
@@ -2803,25 +2839,33 @@ var controller = {
         var interestArrayPure = [];
         var interestValue = "";
 
+        // Push interest category to interestArrayPure
         $.each(interestArray, function(indx,val){
           interestArrayPure.push(val.split(":")[0]);
         });
 
+        // addClass for the selected interests
         $(".pullup-interest-content").find(".interest").each(function(indx,val){
           if(interestArrayPure.indexOf($(this).data("interest")) > -1){
             $(this).addClass("selected");
           }
         });
 
+        // click interest
         $(".pullup-interest-content").find(".interest").off('click').on('click',function(){
           if($(this).hasClass("selected")){
 
             $(this).removeClass("selected");
+
+            // indexing the removed one
             interestValue = $(this).data("interest");
             var deletingIndex = interestArrayPure.indexOf(interestValue);
+
+            // remove from array
             interestArray.splice(deletingIndex, 1);
             interestArrayPure.splice(deletingIndex, 1);
 
+            // input for detail displayed none and blurred
             $(".pullup-interest-detail").css({"display":"none"});
 
           }else{
@@ -2829,14 +2873,15 @@ var controller = {
             if(interestArray.length > 4){
                 popup("관심사는 최대 5개까지만 선택가능합니다.");
             }else{
+                // add new one
                 $(this).addClass("selected");
                 interestValue = $(this).data("interest");
                 interestArray.push(interestValue);
                 interestArrayPure.push(interestValue);
 
                 $(".pullup-interest-detail").css({"display":"block"});
+                $(".pullup-interest-content").hide();
                 $("#pullup-interest-detail-input").val("").attr("placeholder", interestValue + "에 대한 간단한 설명을 입력해주세요").focus();
-
             }
 
           }
@@ -2856,7 +2901,9 @@ var controller = {
             return;
           }
 
+          // attach detail value as one string
           interestArray[interestArrayPure.indexOf(interestValue)] = interestValue + ":" + detail;
+
           $("#profile-edit-input-interest").val(JSON.stringify(interestArray));
           $("#profile-edit-input-interest-fake").html("");
           $.each(interestArray,function(indx,val){
@@ -2865,6 +2912,8 @@ var controller = {
 
           $("#pullup-interest-detail-input").val("");
           $(".pullup-interest-detail").css({"display":"none"});
+          $(".pullup-interest-content").show();
+
 
         });
 
@@ -2938,8 +2987,8 @@ var controller = {
 
     });
 
-    if(typeof FCMPlugin != 'undefined'){
-        FCMPlugin.getToken(function(token){
+    if(typeof FirebasePlugin != 'undefined'){
+        FirebasePlugin.getToken(function(token){
            $("#profile-edit-input-devicetoken").val(token);
         });
     }
@@ -3037,6 +3086,7 @@ var controller = {
 
   /* Board Ctrl */
     postListCtrl : function(){
+
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
@@ -3199,7 +3249,7 @@ var controller = {
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
 
-                              if (plugin_toggle) {
+                              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                                   logCompletedTutorialEvent("comment", true);
                               }
                           }
@@ -3311,10 +3361,6 @@ var controller = {
                     $(this).height(1).height( $(this).prop('scrollHeight') );
                   });
 
-                  setTimeout(function(){
-                    $("#template-view").scrollTop( $("#posting-comment-" + cid).offset().top - 60 );
-                  }, 500);
-
                   // Post API: Comment
                   $("#footer-textarea-submit").off('click').on('click',function(){
                       if ( $("#footer-textarea").val() ) {
@@ -3338,7 +3384,7 @@ var controller = {
                               var comment_count = $('#posting-item-' + pid).find('.comment .count');
                               comment_count.text(parseInt(comment_count.text()) + 1);
 
-                              if (plugin_toggle) {
+                              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                                 logCompletedTutorialEvent("comment", true);
                               }
                           }
@@ -3607,7 +3653,7 @@ var controller = {
                       var comment_count = $('#posting-item-' + pid).find('.comment .count');
                       comment_count.text(parseInt(comment_count.text()) + 1);
 
-                      if (plugin_toggle) {
+                      if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                         logCompletedTutorialEvent("comment", true);
                       }
                   }
@@ -3700,7 +3746,7 @@ var controller = {
                           var comment_count = $('#posting-item-' + pid).find('.comment .count');
                           comment_count.text(parseInt(comment_count.text()) + 1);
 
-                          if (plugin_toggle) {
+                          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                             logCompletedTutorialEvent("comment", true);
                           }
                       }
@@ -3763,28 +3809,33 @@ var controller = {
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
     var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
-    $.each($(".gathering-item"), function(){
-        $(this).off("click").on("click", function(){
+    $(".gathering-item").off("click").on("click", function(){
+        var item = $(this);
+        var gid = item.data("id");
 
-            var item = $(this);
-            var gid = item.data("id");
-
-            if ( item.data("join") ) {
-                if ( item.data("chaton") ) {
-                    initiator("/chat?gid=" + gid, true);
-                } else {
-                    initiator("/gathering_detail?gid=" + gid, true);
-                }
+        if ( item.data("join") ) {
+            if ( item.data("chaton") ) {
+                initiator("/chat?gid=" + gid, true);
             } else {
-                if ( points_left >= 3 ) {
-                    initiator("/gathering_detail?gid=" + gid, true);
-                } else {
-                    popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
-                    globalEventHandler();
-                }
+                initiator("/gathering_detail?gid=" + gid, true);
             }
-        });
+        } else {
+            if ( points_left >= 3 ) {
+                initiator("/gathering_detail?gid=" + gid, true);
+            } else {
+                popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+                $(".guide-point").off("click").on("click", function(){
+                    $("#popup-message").hide();
+                    pullupGuideTemplate("pullup_guide_point");
+                });
+            }
+        }
     });
+
+    $(".gathering-example").off("click").on("click",function(){
+        pullupGuideTemplate("pullup_guide_gathering");
+    });
+
     return;
   },
 
@@ -3877,7 +3928,7 @@ var controller = {
                   var count_pre = parseInt($(".tobevalid-count").text());
                   $(".tobevalid-count").text(count_pre + 1);
 
-                  if (plugin_toggle) {
+                  if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                       logCompletedTutorialEvent("join", false);
                   }
 
@@ -3890,7 +3941,7 @@ var controller = {
         } else {
           if (points_left >= 3) {
             if(hdinput.data('tochat') == 'pre') {
-              popup("최소 진행 조건을 만족하면<br>채팅방 개설 알림을 보내드려요.<br>참여에는 포인트 3점이 소모됩니다.", function(){
+              popup("최소 진행 조건을 만족하면 채팅방 개설 알림을 보내드려요.<br>**채팅방이 열리기 전 참여하신 웃님에게는 포인트 3점이 면제됩니다.", function(){
                 api.post(url, data, function (res) {
                   if(res['ok']) {
                     var next_action = "off";
@@ -3901,7 +3952,7 @@ var controller = {
                     var count_pre = parseInt($(".tobevalid-count").text());
                     $(".tobevalid-count").text(count_pre - 1);
 
-                    if (plugin_toggle) {
+                    if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                         logCompletedTutorialEvent("join", true);
                     }
 
@@ -3926,7 +3977,7 @@ var controller = {
                         var count_nor = parseInt($("#gathering-stats-participate").text());
                         $("#gathering-stats-participate").text(count_nor + 1);
 
-                        if (plugin_toggle) {
+                        if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                             logCompletedTutorialEvent("join", true);
                         }
 
@@ -3937,8 +3988,11 @@ var controller = {
               }
             }
           } else {
-              popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><woot-click href='/account/profile?uid=" + udata.uid + "'>포인트 얻는 방법 확인 >></wook-click>");
-              globalEventHandler();
+              popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              $(".guide-point").off("click").on("click", function(){
+                  $("#popup-message").hide();
+                  pullupGuideTemplate("pullup_guide_point");
+              });
           }
         }
     });
@@ -4227,6 +4281,7 @@ var controller = {
           api.post("/gathering_join/", data, function (res) {
               if(res['ok']) {
                   initiator("/gathering_detail?gid=" + gid, false);
+                  $("#template-view").removeAttr("style");
               } else {
                   popup("게더링 상세보기에서 참여를 취소해주세요.")
               }
@@ -4773,7 +4828,7 @@ var controller = {
                 popup('신고가 정상적으로 접수되었습니다.');
                 initiator("/index", false);
 
-                if (plugin_toggle) {
+                if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                     logCompletedTutorialEvent("report", true);
                 }
             } else {
@@ -4827,28 +4882,57 @@ $(document).ready(function(){
   //------------------------------------------------------------
   document.addEventListener("deviceready",function(){
 
-    // webview setCookie error solved by inject-cookie pluginf
-    wkWebView.injectCookie('http://www.hellowoot.co.kr/');
-    // FCMPlugin.onNotification(function(data){
-    //     if(data.wasTapped){
-    //       //Notification was received78902 qZ  on device tray and tapped by the user.
-    //       if(data.url){
-    //         initiator(data.url);
-    //         history.pushState(null, null, document.location.pathname + '#' + data.url);
-    //       }
-    //     }else{
-    //       //Notification was received in foreground. Maybe the user needs to be notified.
-    //     }
-    // });
+    // webview setCookie error solved by inject-cookie plugin & grantpermission for ios, status bar only for iOS
+    if (device.platform == "iOS") {
+      wkWebView.injectCookie('http://www.hellowoot.co.kr/');
+
+      // grant alert permission
+      window.FirebasePlugin.grantPermission();
+
+      // hide accessory bar
+      Keyboard.hideFormAccessoryBar(true);
+    }
+
+    FirebasePlugin.onNotificationOpen(function(data){
+        console.log(data);
+        console.log(data.url);
+        if(data.tap){
+          //Notification was received on device tray and tapped by the user.
+          if(data.url){
+            // url preprocessing
+            var urlSplit = data.url.split("/");
+            var urlType = urlSplit[1];
+            var id = urlType.indexOf("account") > -1 ? urlSplit[3] : urlSplit[2];
+
+            // post -> post_detail
+            if ( urlType.indexOf("post") > -1 ) {
+                initiator("/post_detail?pid=" + id, true);
+                // history.pushState(null, null, document.location.pathname + '#');
+            }
+            // gathering (need to fix the condition of if statement through 'chatting_on')
+            else if ( urlType.indexOf("gathering") > -1 ) {
+                initiator("/gathering_detail?gid=" + id, true);
+            }
+            else if ( urlType.indexOf("chat") > -1 ) {
+                initiator("/chat?gid=" + id, true);
+            }
+            // woot -> profile
+            else if ( urlType.indexOf("account") > -1 ) {
+                initiator("/account/profile?uid=" + id, true);
+            }
+            // approved
+            else {
+                console.log("approved");
+            }
+          }
+        }else{
+          console.log("foreground");
+          //Notification was received in foreground. Maybe the user needs to be notified.
+        }
+    });
 
     // clear badge when deviceready
-    cordova.plugins.notification.badge.clear();
-
-    // Cordova iOS disable Keyboard Done button
-    Keyboard.hideFormAccessoryBar(true);
-
-    // Cordova iOS resizing viewport while input focus happens
-    // Keyboard.shrinkView(true);
+    FirebasePlugin.setBadgeNumber(0);
 
     // Cordova-plugin-screen-orientation : Orientation Lock
     screen.orientation.lock('portrait');
@@ -4864,7 +4948,7 @@ $(document).ready(function(){
               xhrFields : {withCredentials: true},
               credentials: 'include',
               success   : function( response ) {
-                          // console.log(response);
+                          console.log(response);
 
                           if(response){
                             $("body").html("");
@@ -4880,7 +4964,7 @@ $(document).ready(function(){
     }
 
     // Android Back Button Overwrite
-    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 2000);
     document.addEventListener("backbutton", function (e){
         e.preventDefault();
         if (exitApp) {
@@ -4902,7 +4986,7 @@ $(document).ready(function(){
   // clear badge when resume
   document.addEventListener("resume", onResume, false);
   function onResume() {
-      cordova.plugins.notification.badge.clear();
+      FirebasePlugin.setBadgeNumber(0);
   }
 
 });

@@ -1,45 +1,26 @@
 @font-face {
-  font-family: 'Test';
-  font-style: normal;
+  font-family: 'Noto Sans';
+  font-style: light;
   font-weight: 400;
-  src: local('Test Regular'),
-       local('TestRegular'),
-       url("../fonts/NanumSquareTestR.woff") format('woff'),
-       url("../fonts/NanumSquareTestR.ttf") format('truetype');
+  src: url("../fonts/NotoSansKR_Regular.eot");
+  src: local('Noto Sans Regular'),
+       local('NotoSansRegular'),
+       url("../fonts/NotoSansKR_Regular.eot?#iefix") format('embedded-opentype'),
+       url("../fonts/NotoSansKR_Regular.woff2") format('woff2'),
+       url("../fonts/NotoSansKR_Regular.woff") format('woff'),
+       url("../fonts/NotoSansKR_Regular.otf") format('opentype');
 }
 @font-face {
-  font-family: 'Test';
-  font-style: bold;
-  font-weight: 700;
-  src: local('Test Bold'),
-       local('TestBold'),
-       url("../fonts/NanumSquareTestB.woff") format('woff'),
-       url("../fonts/NanumSquareTestB.ttf") format('truetype');
-}
-
-@font-face {
-  font-family: 'Nanum Square';
-  font-style: normal;
-  font-weight: 400;
-  src: url("../fonts/NanumSquareR.eot");
-  src: local('Nanum Square Regular'),
-       local('NanumSquareR'),
-       url("../fonts/NanumSquareR.eot?#iefix") format('embedded-opentype'),
-       url("../fonts/NanumSquareR.woff2") format('woff2'),
-       url("../fonts/NanumSquareR.woff") format('woff'),
-       url("../fonts/NanumSquareR.ttf") format('truetype');
-}
-@font-face {
-  font-family: 'Nanum Square';
-  font-style: bold;
-  font-weight: 700;
-  src: url("../fonts/NanumSquareB.eot");
-  src: local('Nanum Square Bold'),
-       local('NanumSquareB'),
-       url("../fonts/NanumSquareB.eot?#iefix") format('embedded-opentype'),
-       url("../fonts/NanumSquareB.woff2") format('woff2'),
-       url("../fonts/NanumSquareB.woff") format('woff'),
-       url("../fonts/NanumSquareB.ttf") format('truetype');
+  font-family: 'Noto Sans';
+  font-style: light;
+  font-weight: 600;
+  src: url("../fonts/NotoSansKR_Medium.eot");
+  src: local('Noto Sans Medium'),
+       local('NotoSansMedium'),
+       url("../fonts/NotoSansKR_Medium.eot?#iefix") format('embedded-opentype'),
+       url("../fonts/NotoSansKR_Medium.woff2") format('woff2'),
+       url("../fonts/NotoSansKR_Medium.woff") format('woff'),
+       url("../fonts/NotoSansKR_Medium.otf") format('opentype');
 }
 @font-face {
     font-family: 'NanumSquareRoundBold';
@@ -66,8 +47,9 @@ html {
 body{
   width:100%;
   font-size:14px;
-  font-family:  'Nanum Square';
-  color:rgb(38,38,38);
+  font-family:  'Noto Sans';
+  color:rgb(65,65,65);
+  letter-spacing: -0.5px;
 }
 
 input,textarea{
@@ -446,7 +428,7 @@ input,textarea{
   z-index:999;
 }
 #header .header-left{
-  padding: 14px 15px 0 12px;
+  padding: 12px 15px 0 12px;
 }
 #header .header-left i{
   font-size:24px;
@@ -474,7 +456,7 @@ input,textarea{
   font-weight:600;
   font-size:14px;
   letter-spacing:0.5px;
-  padding: 14px 12px 0 12px;
+  padding: 12px 12px 0 12px;
 }
 #header .header-right-index{
   padding-left:0px;
@@ -487,7 +469,7 @@ input,textarea{
   margin-left:14px;
 }
 #header .logo img{
-margin-top:5px;
+margin-top:7px;
   height:15px;
 }
 
@@ -495,7 +477,7 @@ margin-top:5px;
   text-align:center;
   font-weight:600;
   font-size:15px;
-  padding-top:13px;
+  padding-top:12px;
   letter-spacing:1.5px;
 }
 
@@ -562,6 +544,7 @@ margin-top:5px;
   background-position: center;
   background-repeat: no-repeat;
   background-origin: content-box;
+  opacity:0.3;
 }
 .footer-item .footer-item-noti{
   position:absolute;
@@ -573,7 +556,7 @@ margin-top:5px;
   left:65%;
 }
 .footer-item.selected{
-  color:rgb(38,38,38);
+  opacity:1;
 }
 
 .footer-item .title{
@@ -619,9 +602,9 @@ margin-top:5px;
 }
 .footer-textarea-submit{
   position:absolute;
-  padding: 15px;
+  padding: 14px;
   text-align:center;
-  top:3px;
+  top:0px;
   right:0px;
   font-weight:600;
 }
@@ -660,7 +643,7 @@ margin-top:5px;
 	margin-bottom: 14vh;
 	height: 30vh;
 	font-family: NanumSquareRoundExtraBold;
-	font-size: 48px;
+	font-size: 60px;
 	font-weight: 600;
 	color: #45aaf2;
 	text-align: center;
@@ -688,7 +671,6 @@ margin-top:5px;
 	opacity: 1;
 	background-color: rgb(210,210,210);
 	color: rgb(110,110,110);
-	font-weight: 600;
 	font-size: 12px;
 	padding: 1.5vh 3vw;
 	margin-top: 1.5vh;
@@ -707,12 +689,17 @@ margin-top:5px;
   display: block;
   width: 100%;
   padding: 2vh 3vw;
+  background-color: rgb(210,210,210);
+  color: rgb(110,110,110);
+  box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
   text-align: center;
+  font-size: 12px;
+  border-radius: 5px;
+}
+.login-button-wrapper-first .login-button.signup{
   background-color: #45aaf2;
   color: white;
   font-weight: 600;
-  font-size: 12px;
-  border-radius: 5px;
   box-shadow: 2px 2px 2px 0 #45aaf2;
 }
 .login-button-wrapper{
