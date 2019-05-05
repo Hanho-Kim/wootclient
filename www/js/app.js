@@ -1,6 +1,6 @@
 /* Global Variables */
-var currentVersioniOS = "1002"; // this must be string, not integer
-var currentVersionAnd = "2003"; // this must be string, not integer
+var currentVersioniOS = "1003"; // this must be string, not integer
+var currentVersionAnd = "2004"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
@@ -1029,6 +1029,12 @@ function pullupGuideTemplate(templeteUrl){
           $("#template-view-pullup").css({"display":"none"}).html("");
           $("#pullup .background").trigger("click");
       });
+
+      if (templeteUrl = "pullup_guide_point") {
+          var udataForPoints = JSON.parse($("#hiddenInput_userdata").val() || null);
+          var points_left = parseInt(udataForPoints.points_earned) - parseInt(udataForPoints.points_used);
+          $("#points_left").text(points_left);
+      }
   });
 }
 
@@ -4498,22 +4504,24 @@ var controller = {
         event.preventDefault();
         var file = event.target.files[0];
 
-        // Clear the selection in the file picker input.
-        imageFormElement.reset();
+        popup("해당 사진을 업로드하시겠습니까?", function(){
+            // Clear the selection in the file picker input.
+            imageFormElement.reset();
 
-        // Check if the file is an image.
-        if (!file.type.match('image.*')) {
-            var data = {
-                message: 'You can only share images',
-                timeout: 2000
-            };
-            signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
-            return;
-        }
-        // Check if the user is signed-in
-        if (checkSignedInWithMessage()) {
-            saveImageMessage(file);
-        }
+            // Check if the file is an image.
+            if (!file.type.match('image.*')) {
+                var data = {
+                    message: 'You can only share images',
+                    timeout: 2000
+                };
+                signInSnackbarElement.MaterialSnackbar.showSnackbar(data);
+                return;
+            }
+            // Check if the user is signed-in
+            if (checkSignedInWithMessage()) {
+                saveImageMessage(file);
+            }
+        });
     }
 
     // Triggered when the send new message form is submitted.
@@ -4891,6 +4899,8 @@ $(document).ready(function(){
 
       // hide accessory bar
       Keyboard.hideFormAccessoryBar(true);
+
+      StatusBar.overlaysWebView(true);
     }
 
     FirebasePlugin.onNotificationOpen(function(data){
@@ -4949,16 +4959,16 @@ $(document).ready(function(){
               credentials: 'include',
               success   : function( response ) {
                           console.log(response);
-
+    
                           if(response){
                             $("body").html("");
                             $("body").append(response);
                             console.log("need update");
                           }
-
+    
                         },
               error     : function( request, status, error ) {
-
+    
               }
       });
     }
@@ -4975,6 +4985,8 @@ $(document).ready(function(){
             $(".overlap-close").click();
           }else if($("#chat-room-image").hasClass("activated")){
             $(".chat-room-image-close").click();
+            // pullup의 경우
+
           }else{
             exitApp = true
             navigator.app.backHistory();
