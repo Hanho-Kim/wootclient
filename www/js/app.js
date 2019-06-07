@@ -1,6 +1,6 @@
 /* Global Variables */
-var currentVersioniOS = "1003"; // this must be string, not integer
-var currentVersionAnd = "2004"; // this must be string, not integer
+var currentVersioniOS = "1004"; // this must be string, not integer
+var currentVersionAnd = "2005"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
@@ -292,6 +292,12 @@ function pullupMenu(menu,successFn){
                         $("#template-view").css({"overflow":""});
                         initiator($(this).attr("href"), true);
                       });
+                      
+                      $(".overlap-close").off("click").on("click",function(){
+                          $("#template-view-pullup").css({"display":"none"}).html("");
+                          $("#pullup .background").trigger("click");
+                      });
+
                     },
           error     : function( request, status, error ) {
 
@@ -380,6 +386,35 @@ if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
       console.log(params);
   }
 }
+if (plugin_toggle && typeof FiebasePlugin != "undefined") {
+  function refreshDeviceToken() {
+    FirebasePlugin.onTokenRefresh(function(dtoken) {
+        if (dtoken && userdata.dtoken != dtoken) {
+            api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
+                if (res['ok']) {
+                    console.log("dtoken updated by Refresh");
+                } else {
+                    console.log("api.post failed - Refresh");
+                }
+                return;
+            });
+        }
+    });
+    FirebasePlugin.getToken(function(dtoken) {
+      if (dtoken && userdata.dtoken != dtoken) {
+            api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
+                if (res['ok']) {
+                    console.log("dtoken updated by Get");
+                } else {
+                    console.log("api.post failed - Get");
+                }
+                return;
+            });
+        }
+    });
+  }  
+}
+
 
 //============================================================
 // Timestamp Converter
@@ -489,16 +524,6 @@ var viewConfig = {
     "template": serverParentURL + "/account/signup",
     "footerHide": true
   },
-  "/signup/to_be_approved": {
-    "controller": "signupCtrl",
-    "template": serverParentURL + "/account/to_be_approved",
-    "footerHide": true
-  },
-  "/login/signup/confirm" : {
-    "controller"  : "signupConfirmCtrl",
-    "template"    : serverParentURL + "/login/confirm",
-    "footerHide"  : true
-  },
   "/message" : {
     "controller"  : "messageCtrl",
     "template"    : serverParentURL + "/misc/message_list",
@@ -541,13 +566,18 @@ var viewConfig = {
   },
   "/post_list" : {
     "controller"  : "postListCtrl",
-    "template"    : serverParentURL + "/post_list",
-    "header"      : "./header/board.posting.html"
+    "template"    : serverParentURL + "/post_list/area_my",
+    "header"      : "./header/board.area_my.html"
+  },
+  "/post_list/area_nearby" : {
+    "controller"  : "postListCtrl",
+    "template"    : serverParentURL + "/post_list/area_nearby",
+    "header"      : "./header/board.area_nearby.html"
   },
   "/post_detail" : {
     "controller"  : "postDetailCtrl",
     "template"    : serverParentURL + "/post_detail",
-    "header"      : "./header/board.posting.html"
+    "header"      : "./header/board.post_detail.html"
   },
   "/post_users_liking" : {
     "controller"  : "voidCtrl",
@@ -556,13 +586,18 @@ var viewConfig = {
   },
   "/gathering_list" : {
     "controller"  : "gatheringListCtrl",
-    "template"    : serverParentURL + "/gathering_list",
-    "header"      : "./header/gathering.html"
+    "template"    : serverParentURL + "/gathering_list/area_my",
+    "header"      : "./header/gathering.area_my.html"
   },
-  "/gathering_list/my" : {
+  "/gathering_list/area_nearby" : {
     "controller"  : "gatheringListCtrl",
-    "template"    : serverParentURL + "/gathering_list/my",
-    "header"      : "./header/gathering.my.html"
+    "template"    : serverParentURL + "/gathering_list/area_nearby",
+    "header"      : "./header/gathering.area_nearby.html"
+  },
+  "/gathering_list/joined" : {
+    "controller"  : "gatheringListCtrl",
+    "template"    : serverParentURL + "/gathering_list/joined",
+    "header"      : "./header/gathering.joined.html"
   },
   "/gathering_detail" : {
     "controller"  : "gatheringDetailCtrl",
@@ -580,18 +615,6 @@ var viewConfig = {
     "controller"  : "chatCtrl",
     "template"    : serverParentURL + "/chat/gathering_detail",
     "header"      : "./header/void.html",
-    "footerHide"  : true
-  },
-  "/gathering/review" : {
-    "controller"  : "gatheringReviewCtrl",
-    "template"    : serverParentURL + "/gathering/review",
-    "header"      : "./header/gathering.review.html",
-    "footerHide"  : true
-  },
-  "/gathering/review/write" : {
-    "controller"  : "gatheringReviewCtrl",
-    "template"    : serverParentURL + "/write/gathering.review",
-    "header"      : "./header/gathering.review.html",
     "footerHide"  : true
   },
   "/account/more" : {
@@ -655,6 +678,18 @@ var viewConfig = {
     "controller"  : "voidCtrl",
     "template"    : serverParentURL + "/misc/guidethree",
     "header"      : "./header/void.html",
+    "footerHide"  : true
+  },
+  "/notice_list" : {
+    "controller"  : "noticeCtrl",
+    "template"    : serverParentURL + "/notice/notice_list",
+    "header"      : "./header/notice.list.html",
+    "footerHide"  : true
+  },
+  "/notice_detail" : {
+    "controller"  : "noticeCtrl",
+    "template"    : serverParentURL + "/notice/notice_detail",
+    "header"      : "./header/notice.detail.html",
     "footerHide"  : true
   }
 }
@@ -869,18 +904,12 @@ function initiator(newPath, pushState){
     pathParams = "?" + pathParams;
   }
 
-  // if (server_toggle){
-  //   var highlight_url = "/common/highlight"
-  // } else {
-  //   var highlight_url = "/api/v1/get/highlight"
-  // }
-
   // Server side id add
-  var idChecklist = ["uid","gid","bid","pid"];
+  var idChecklist = ["uid","gid","bid","pid", "nid"];
   var idSlash     = "";
   $.each(idChecklist, function(index,value){
     if(pathParamsJson[value]){
-      idSlash = "/" + pathParamsJson[value] + "/";
+      idSlash =  idSlash + "/" + pathParamsJson[value];
     }
   });
 
@@ -1054,33 +1083,6 @@ var controller = {
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header-title").text(userdata.block + " 블록");
 
-    function refreshDeviceToken() {
-        FirebasePlugin.onTokenRefresh(function(dtoken) {
-            if (dtoken && userdata.dtoken != dtoken) {
-                api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
-                    if (res['ok']) {
-                        console.log("dtoken updated by Refresh");
-                    } else {
-                        console.log("api.post failed - Refresh");
-                    }
-                    return;
-                });
-            }
-        });
-        FirebasePlugin.getToken(function(dtoken) {
-          if (dtoken && userdata.dtoken != dtoken) {
-                api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
-                    if (res['ok']) {
-                        console.log("dtoken updated by Get");
-                    } else {
-                        console.log("api.post failed - Get");
-                    }
-                    return;
-                });
-            }
-        });
-    }
-
     if(typeof FirebasePlugin != 'undefined'){
        refreshDeviceToken();
     }
@@ -1101,7 +1103,7 @@ var controller = {
         var gid = item.data("id");
 
         if ( item.hasClass("gathering-item-more") ) {
-            initiator("/gathering_list", true);
+            initiator("/write", false);
         } else if ( item.data("join") ) {
             if ( item.data("chaton") ) {
                 initiator("/chat?gid=" + gid, true);
@@ -1112,13 +1114,31 @@ var controller = {
             if ( points_left >= 3 ) {
                 initiator("/gathering_detail?gid=" + gid, true);
             } else {
-              popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
+                  initiator("/account/profile?uid=" + udata.uid);
                   pullupGuideTemplate("pullup_guide_point");
               });
             }
         }
+    });
+
+    // writing inte for the first time
+    $('form#write-posting-form').submit(function(event){
+      event.preventDefault();
+    
+      var url = $(this).attr("action");
+      var data = new FormData(this);
+    
+      api.postMulti(url, data, function(response){
+          if (response['ok']){
+              $(".write-first-wish").hide();
+          } else {
+              popup('필수 항목들에 내용을 채워주세요.');
+              // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+          }
+      });
     });
 
     return;
@@ -1274,33 +1294,6 @@ var controller = {
 
       // update devicetoken
       var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-
-      function refreshDeviceToken() {
-          FirebasePlugin.onTokenRefresh(function(dtoken) {
-              if (dtoken && userdata.dtoken != dtoken) {
-                  api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
-                      if (res['ok']) {
-                          console.log("dtoken updated by Refresh");
-                      } else {
-                          console.log("api.post failed - Refresh");
-                      }
-                      return;
-                  });
-              }
-          });
-          FirebasePlugin.getToken(function(dtoken) {
-            if (dtoken && userdata.dtoken != dtoken) {
-                  api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
-                      if (res['ok']) {
-                          console.log("dtoken updated by Get");
-                      } else {
-                          console.log("api.post failed - Get");
-                      }
-                      return;
-                  });
-              }
-          });
-      }
 
       if(userdata.uid != "None" && typeof FirebasePlugin != 'undefined'){
           refreshDeviceToken();
@@ -1466,19 +1459,14 @@ var controller = {
 
       $.each($('.radio-container .checkmark-signup'), function(){
           var checkmark = $(this);
-          console.log(checkmark);
           var parent = $(this).closest(".radio-container");
-          console.log(parent);
           var checkbox = parent.find('input[type="checkbox"]');
-          console.log(checkbox);
 
           checkmark.off('click').on('click', function(){
               if ( checkmark.hasClass("selected") ) {
-                  console.log("off");
                   checkbox.val("off");
                   checkmark.removeClass("selected");
               } else {
-                  console.log("on");
                   checkbox.val("on");
                   checkmark.addClass("selected");
               }
@@ -1560,138 +1548,149 @@ var controller = {
       //   }, 5000 * index);
       // });
 
-      // Pullup Guide for Waiting and Verify
-      $(".blockopen-reason").off("click").on("click",function(){
-          pullupGuideTemplate("pullup_guide_blockopen");
+      $(".signup-button-complete").off("click").on("click",function(){
+          api.post("/account/signup/wait_opening/", {}, function(response){
+              if ( response['ok'] ){
+                  window.location.reload();
+                  console.log("approved");
+              } else {
+                  console.log("failed");
+              }
+          });
       });
 
-      $(".verify-reason").off("click").on("click",function(){
-          pullupGuideTemplate("pullup_guide_verify");
+    // Pullup Guide for Waiting and Verify
+    $(".blockopen-reason").off("click").on("click",function(){
+      pullupGuideTemplate("pullup_guide_blockopen");
+    });
+
+    $(".verify-reason").off("click").on("click",function(){
+        pullupGuideTemplate("pullup_guide_verify");
+    });
+
+    // Confirm Form
+    $(".signup-confirm-button").off('click').on('click',function(){
+      $(".signup-confirm-form-wrapper").css({"display":"block"});
+      var type = $(this).data("confirm");
+      if(type == "post"){
+        $(".signup-confirm-form-wrapper .post").css({"display":"block"});
+        $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
+      }else{
+        $(".signup-confirm-form-wrapper .post").css({"display":"none"});
+        $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
+      }
+
+      // Close
+      $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
+        $(".signup-confirm-form-wrapper").css({"display":"none"})
       });
 
-      // Confirm Form
-      $(".signup-confirm-button").off('click').on('click',function(){
-        $(".signup-confirm-form-wrapper").css({"display":"block"});
-        var type = $(this).data("confirm");
-        if(type == "post"){
-          $(".signup-confirm-form-wrapper .post").css({"display":"block"});
-          $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
-        }else{
-          $(".signup-confirm-form-wrapper .post").css({"display":"none"});
-          $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
+    });
+
+    // Verify Upload
+    $(".verify-upload-button").off("click").on("click",function(){
+        $(".upload-img").click();
+    });
+
+    // Image Upload
+    function imageProcessor(dataURL, fileType, inputOrder) {
+      var image = new Image();
+      var srcOrientation = 1;
+      image.src = dataURL;
+
+      image.onload = function () {
+        EXIF.getData(image, function() {
+          srcOrientation = EXIF.getTag(this, "Orientation");
+          var newWidth = image.width;
+          var newHeight = image.height;
+
+          var canvas = document.createElement('canvas');
+
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+
+          var context = canvas.getContext('2d');
+
+            // set proper canvas dimensions before transform & export
+            if (4 < srcOrientation && srcOrientation < 9) {
+              canvas.width = newHeight;
+              canvas.height = newWidth;
+            } else {
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+            }
+
+            switch (srcOrientation) {
+              case 2: context.transform(-1, 0, 0, 1, newWidth, 0); break;
+              case 3: context.transform(-1, 0, 0, -1, newWidth, newHeight ); break;
+              case 4: context.transform(1, 0, 0, -1, 0, newHeight ); break;
+              case 5: context.transform(0, 1, 1, 0, 0, 0); break;
+              case 6: context.transform(0, 1, -1, 0, newHeight , 0); break;
+              case 7: context.transform(0, -1, -1, 0, newHeight , newWidth); break;
+              case 8: context.transform(0, -1, 1, 0, 0, newWidth); break;
+              default: break;
+            }
+
+          context.drawImage(image, 0, 0);
+          dataURL   = canvas.toDataURL(fileType);
+
+          $('.test-image').attr('src', dataURL);
+
+        });
+      };
+
+      image.onerror = function () {
+        console.log('Image Processor Error');
+      };
+
+    }
+
+    if(window.File && window.FileList && window.FileReader){
+      var $filesInput = $("input.upload-img");
+      $filesInput.on("change", function(event){
+          console.log(event);
+          console.log(event.target);
+          var inputOrder = event.target.getAttribute('data-inputOrder');
+          var file = event.target.files[0];
+          var picReader = new FileReader();
+
+          console.log(inputOrder);
+          console.log(file);
+          console.log(picReader);
+
+          picReader.onloadend = function(){
+              imageProcessor(picReader.result, file.type, inputOrder);
+          };
+
+          picReader.readAsDataURL(file);
+
+      });
+    }
+
+    $("#form-verify").submit(function(event){
+        event.preventDefault();
+
+        if($("#form-verify input[name='img']").val() == ""){
+            popup("주소 이미지를 첨부해주세요.");
+            return;
         }
 
-        // Close
-        $(".signup-confirm-form-wrapper .close").off('click').on('click',function(){
-          $(".signup-confirm-form-wrapper").css({"display":"none"})
+        var url = $(this).attr("action");
+        var data = new FormData(this);
+
+        api.postMulti(url, data, function(response){
+            if (response['ok']){
+                initiator("/signup", true);
+            } else {
+                console.log("fail");
+            }
         });
 
-      });
 
-      // Verify Upload
-      $(".verify-upload-button").off("click").on("click",function(){
-          $(".upload-img").click();
-      });
+    });
 
-      // Image Upload
-      function imageProcessor(dataURL, fileType, inputOrder) {
-        var image = new Image();
-        var srcOrientation = 1;
-        image.src = dataURL;
-
-        image.onload = function () {
-          EXIF.getData(image, function() {
-            srcOrientation = EXIF.getTag(this, "Orientation");
-            var newWidth = image.width;
-            var newHeight = image.height;
-
-            var canvas = document.createElement('canvas');
-
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-
-            var context = canvas.getContext('2d');
-
-              // set proper canvas dimensions before transform & export
-              if (4 < srcOrientation && srcOrientation < 9) {
-                canvas.width = newHeight;
-                canvas.height = newWidth;
-              } else {
-                canvas.width = newWidth;
-                canvas.height = newHeight;
-              }
-
-              switch (srcOrientation) {
-                case 2: context.transform(-1, 0, 0, 1, newWidth, 0); break;
-                case 3: context.transform(-1, 0, 0, -1, newWidth, newHeight ); break;
-                case 4: context.transform(1, 0, 0, -1, 0, newHeight ); break;
-                case 5: context.transform(0, 1, 1, 0, 0, 0); break;
-                case 6: context.transform(0, 1, -1, 0, newHeight , 0); break;
-                case 7: context.transform(0, -1, -1, 0, newHeight , newWidth); break;
-                case 8: context.transform(0, -1, 1, 0, 0, newWidth); break;
-                default: break;
-              }
-
-            context.drawImage(image, 0, 0);
-            dataURL   = canvas.toDataURL(fileType);
-
-            $('.test-image').attr('src', dataURL);
-
-          });
-        };
-
-        image.onerror = function () {
-          console.log('Image Processor Error');
-        };
-
-      }
-
-      if(window.File && window.FileList && window.FileReader){
-        var $filesInput = $("input.upload-img");
-        $filesInput.on("change", function(event){
-            console.log(event);
-            console.log(event.target);
-            var inputOrder = event.target.getAttribute('data-inputOrder');
-            var file = event.target.files[0];
-            var picReader = new FileReader();
-
-            console.log(inputOrder);
-            console.log(file);
-            console.log(picReader);
-
-            picReader.onloadend = function(){
-                imageProcessor(picReader.result, file.type, inputOrder);
-            };
-
-            picReader.readAsDataURL(file);
-
-        });
-      }
-
-      $("#form-verify").submit(function(event){
-          event.preventDefault();
-
-          if($("#form-verify input[name='img']").val() == ""){
-              popup("주소 이미지를 첨부해주세요.");
-              return;
-          }
-
-          var url = $(this).attr("action");
-          var data = new FormData(this);
-
-          api.postMulti(url, data, function(response){
-              if (response['ok']){
-                  initiator("/signup", true);
-              } else {
-                  console.log("fail");
-              }
-          });
-
-
-      });
 
       // Signup Logout
-
       $(".signup-footer-logout").off("click").on("click",function(){
           $.ajax({
                     method    : "GET",
@@ -1708,47 +1707,10 @@ var controller = {
       return;
   },
 
-  /* Signup Confirm Ctrl */
-  signupConfirmCtrl : function(){
-    $("#header").css({"display":"none"});
-    $("#footer").css({"display":"none"});
-
-    var modelHouseHTML = $("#model-house-item-wrapper").find(".model-house-item");
-    $("#model-house-item-wrapper").html("");
-
-    $.each(modelHouseHTML,function(index,elm){
-      setTimeout(function(){
-        $("#model-house-item-wrapper").prepend(elm);
-        anime({
-          targets: '.model-house-item:nth-child(1)',
-          opacity: 0,
-          duration: 1000,
-          easing: 'easeInOutQuart',
-          direction: 'reverse'
-        });
-      }, 5000 * index);
-    });
-
-
-    // Confirm Form
-    $(".signup-confirm-button").off('click').on('click',function(){
-      $(".signup-confirm-form-wrapper").css({"display":"block"});
-      var type = $(this).data("confirm");
-      if(type == "post"){
-        $(".signup-confirm-form-wrapper .post").css({"display":"block"});
-        $(".signup-confirm-form-wrapper .bill").css({"display":"none"});
-      }else{
-        $(".signup-confirm-form-wrapper .post").css({"display":"none"});
-        $(".signup-confirm-form-wrapper .bill").css({"display":"block"});
-      }
-    });
-
-    return;
-
-  },
-
   /* WriteCtrl */
   writeCtrl : function(){
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+
     $("#footer").css({"display":"none"});
 
     /* Global */
@@ -1797,6 +1759,18 @@ var controller = {
         }
     });
 
+    /* Write Universial for Public Status */    
+    $('.radio-wrapper').off('click').on('click', function(){
+        var parent = $(this).closest(".write-section-item-radio-wrapper");
+        var data = $(this).data("option");
+        var checkmark_clicked = $(this).find(".checkmark")
+        var checkmark_all = parent.find(".checkmark");
+        var input = parent.find("input");
+    
+        checkmark_all.removeClass("selected");
+        checkmark_clicked.addClass("selected");
+        input.val(data);
+    });
 
     /* Write Gathering */
 
@@ -1814,7 +1788,7 @@ var controller = {
       $(this).val(Math.abs(parseInt($(this).val())));
     });
 
-    // Woot Gathering On/Off
+    // Woot Gathering invitation
     /*
     $("#write-gathering-input-woot-gathering").change(function(){
 
@@ -1874,101 +1848,102 @@ var controller = {
 
     // Gathering Time
     $("#write-gathering-input-time-fake").off('click').on('click',function(){
-      if ( $(this).data("edit") == "no" ) {
-          pullupMenu("pullup_calendar",function(){
-            displayCalendar("#calendar",false);
+      pullupMenu("pullup_calendar",function(){
+        displayCalendar("#calendar",false);
 
-            // AM-PM Toggle
-            $(".am-pm.button").off('click').on('click',function(){
-              if($("#calendar-input-am-pm").val() == "am"){
-                $(this).find(".toggle").text("오후");
-                $("#calendar-input-am-pm").val("pm")
-              }else{
-                $(this).find(".toggle").text("오전");
-                $("#calendar-input-am-pm").val("am")
-              }
-            });
+        // AM-PM Toggle
+        $(".am-pm.button").off('click').on('click',function(){
+          if($("#calendar-input-am-pm").val() == "am"){
+            $(this).find(".toggle").text("오후");
+            $("#calendar-input-am-pm").val("pm")
+          }else{
+            $(this).find(".toggle").text("오전");
+            $("#calendar-input-am-pm").val("am")
+          }
+        });
 
-            // Hour Minute Restriction
-            $("#calendar-input-hour").change(function(){
-              var hour = $(this).val();
-              if(hour > 12){
-                hour = 0;
-              }else if(hour < 0){
-                hour = 0;
-              }
+        // Hour Minute Restriction
+        $("#calendar-input-hour").change(function(){
+          var hour = $(this).val();
+          if(hour > 12){
+            hour = 0;
+          }else if(hour < 0){
+            hour = 0;
+          }
 
-              if(hour > -1 && hour < 10){
-                $(this).val("0" + parseInt(hour));
-              }else{
-                $(this).val(parseInt(hour));
-              }
-            });
+          if(hour > -1 && hour < 10){
+            $(this).val("0" + parseInt(hour));
+          }else{
+            $(this).val(parseInt(hour));
+          }
+        });
 
-            $("#calendar-input-minute").change(function(){
+        $("#calendar-input-minute").change(function(){
 
-              var minute = $(this).val();
-              if(minute >= 60){
-                minute = 59;
-              }else if(minute < 0){
-                minute = 0;
-              }
+          var minute = $(this).val();
+          if(minute >= 60){
+            minute = 59;
+          }else if(minute < 0){
+            minute = 0;
+          }
 
-              if(minute > -1 && minute < 10){
-                $(this).val("0" + parseInt(minute));
-              }else{
-                $(this).val(parseInt(minute));
-              }
+          if(minute > -1 && minute < 10){
+            $(this).val("0" + parseInt(minute));
+          }else{
+            $(this).val(parseInt(minute));
+          }
 
-            });
+        });
 
-            // Submit Click Event Handler
-            $(".calendar-submit").off('click').on('click',function(){
+        // Submit Click Event Handler
+        $(".calendar-submit").off('click').on('click',function(){
 
-              var date        = $("#calendar-input-date").val();
-              var ampm        = $("#calendar-input-am-pm").val();
-              var hour        = $("#calendar-input-hour").val();
-              var minute      = $("#calendar-input-minute").val();
-              var timestamp   = "";
+          var date        = $("#calendar-input-date").val();
+          var ampm        = $("#calendar-input-am-pm").val();
+          var hour        = $("#calendar-input-hour").val();
+          var minute      = $("#calendar-input-minute").val();
+          var timestamp   = "";
 
-              if(!date || !hour || !minute){
-                popup("모든 값을 정확히 입력해주세요.");
-                return;
-              }
+          if(!date || !hour || !minute){
+            popup("모든 값을 정확히 입력해주세요.");
+            return;
+          }
 
-              if(ampm == "am"){
-                if(hour == 12){
-                    hour = hour - 12;
-                }
-                timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
-              }else{
-                if(hour == 12){
-                    hour = hour - 12;
-                }
-                timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
-              }
+          if(ampm == "am"){
+            if(hour == 12){
+                hour = hour - 12;
+            }
+            timestamp = parseInt(date) + (parseInt(hour) * 60 * 60) + (parseInt(minute) * 60);
+          }else{
+            if(hour == 12){
+                hour = hour - 12;
+            }
+            timestamp = parseInt(date) + ((parseInt(hour) + 12) * 60 * 60) + (parseInt(minute) * 60);
+          }
 
-              var ServerDate = new Date(timestamp*1000);
-              $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
-              $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
+          var ServerDate = new Date(timestamp*1000);
+          $("#write-gathering-input-time-date0").val(ServerDate.getFullYear() + "-" + (ServerDate.getMonth() + 1) + "-" + ServerDate.getDate());
+          $("#write-gathering-input-time-date1").val(ServerDate.getHours() + ":" + ServerDate.getMinutes());
 
-              $("#write-gathering-input-time-fake").val(timestampConverter(timestamp));
+          $("#write-gathering-input-time-fake")
+            .text(timestampConverter(timestamp))
+            .val(timestampConverter(timestamp))
+            .addClass("filled");
 
-              $("#pullup").css({"display":"none"});
-              $("#template-view").css({"overflow":""});
-              $("body").css({"overflow":"inherit"});
+          $("#pullup").css({"display":"none"});
+          $("#template-view").css({"overflow":""});
+          $("body").css({"overflow":"inherit"});
 
-              anime({
-                targets: '#write-gathering-input-time-fake',
-                opacity:0.3,
-                duration: 300,
-                easing: 'linear',
-                direction: 'alternate'
-              });
-
-            })
+          anime({
+            targets: '#write-gathering-input-time-fake',
+            opacity:0.3,
+            duration: 300,
+            easing: 'linear',
+            direction: 'alternate'
           });
-      }
+
+        })
+      });
     });
 
 
@@ -2014,21 +1989,36 @@ var controller = {
         $("#pullup-agelimit-submit").off('click').on('click',function(){
           var minage = $("#pullup-agelimit-input-min-fake input").val();
           var maxage = $("#pullup-agelimit-input-max-fake input").val();
+          var data = {"age_min": minage, "age_max": maxage};
 
-          if(!minage && !maxage){
+          if(minage && maxage){
             $("#pullup .background").click();
-            $("#write-gathering-input-agelimit-fake").val("");
-            $("#write-gathering-input-agelimit").val("");
-
-            $("#write-gathering-input-agelimit-has").val(false);
-
-          }else if(minage && maxage){
-            $("#pullup .background").click();
-            $("#write-gathering-input-agelimit-fake").val(minage + " ~ " + maxage);
-
+            $("#write-gathering-input-agelimit-fake")
+              .text(minage + " ~ " + maxage)
+              .val(minage + " ~ " + maxage)
+              .addClass("filled");
             $("#write-gathering-input-agelimit-min").val(minage);
             $("#write-gathering-input-agelimit-max").val(maxage);
             $("#write-gathering-input-agelimit-has").val(true);
+
+            api.post("/count_user_by_age/", data, function(res){
+                if (res['ok']){
+                    $(".age-num-people-wrapper").html("이 연령대에는 " + res.age_num_users + "명의 웃님들이 " + userdata.block + "블록에 있어요!");
+                    $(".age-num-people-wrapper").addClass("typed")
+                } else {
+                    $(".age-num-people-wrapper").html("해당 연령대에 몇명의 웃님들이 있는지 알려드릴 수 없어요 :(")
+                    $(".age-num-people-wrapper").removeClass("typed")
+                }
+            });
+            
+            anime({
+              targets: '#write-gathering-input-agelimit-fake',
+              opacity:0.3,
+              duration: 300,
+              easing: 'linear',
+              direction: 'alternate'
+            });
+
           } else {
             popup('최소나이와 최대나이를 모두 입력해주세요');
           }
@@ -2038,51 +2028,56 @@ var controller = {
     });
 
     $("#write-gathering-input-prestage").off('click').on('click',function(){
-      if ( $(this).data("edit") == "no" ) {
-          pullupMenu("pullup_prestage",function(){
+        pullupMenu("pullup_prestage",function(){
 
-            // Prestage Event Handler
-            $("#pullup-prestage-input-duration input").off('click').on('click',function(){
-              $("#pullup-prestage-input-duration .roller").css({"display":"block"});
+          // Prestage Event Handler
+          $("#pullup-prestage-input-duration input").off('click').on('click',function(){
+            $("#pullup-prestage-input-duration .roller").css({"display":"block"});
 
-              $("#pullup-prestage-input-duration li").off('click').on('click',function(){
-                $("#pullup-prestage-input-duration input").val($(this).data("duration"));
-                $("#pullup-prestage-input-duration .roller").css({"display":"none"});
+            $("#pullup-prestage-input-duration li").off('click').on('click',function(){
+              $("#pullup-prestage-input-duration input").val($(this).data("duration"));
+              $("#pullup-prestage-input-duration .roller").css({"display":"none"});
+            });
+          });
+
+          $("#pullup-prestage-input-min-people input").off('click').on('click',function(){
+            $("#pullup-prestage-input-min-people .roller").css({"display":"block"});
+
+            $("#pullup-prestage-input-min-people li").off('click').on('click',function(){
+              $("#pullup-prestage-input-min-people input").val($(this).data("people"));
+              $("#pullup-prestage-input-min-people .roller").css({"display":"none"});
+            });
+          });
+
+          // Prestage Submit
+          $("#pullup-prestage-submit").off('click').on('click',function(){
+            var duration = $("#pullup-prestage-input-duration input").val();
+            var minpeople = $("#pullup-prestage-input-min-people input").val();
+
+            if (duration && minpeople){
+              $("#pullup .background").click();
+              $("#write-gathering-input-prestage")
+                .text(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행")
+                .val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행")
+                .addClass("filled");
+              $("#write-gathering-input-prestage-duration").val(duration);
+              $("#write-gathering-input-prestage-minpeople").val(minpeople);
+              
+              anime({
+                targets: '#write-gathering-input-prestage',
+                opacity:0.3,
+                duration: 300,
+                easing: 'linear',
+                direction: 'alternate'
               });
-            });
 
-            $("#pullup-prestage-input-min-people input").off('click').on('click',function(){
-              $("#pullup-prestage-input-min-people .roller").css({"display":"block"});
-
-              $("#pullup-prestage-input-min-people li").off('click').on('click',function(){
-                $("#pullup-prestage-input-min-people input").val($(this).data("people"));
-                $("#pullup-prestage-input-min-people .roller").css({"display":"none"});
-              });
-            });
-
-            // Prestage Submit
-            $("#pullup-prestage-submit").off('click').on('click',function(){
-              var duration = $("#pullup-prestage-input-duration input").val();
-              var minpeople = $("#pullup-prestage-input-min-people input").val();
-
-              if(!duration && !minpeople){
-                $("#pullup .background").click();
-                $("#write-gathering-input-prestage").val("");
-                $("#write-gathering-input-prestage-duration").val("");
-                $("#write-gathering-input-prestage-minpeople").val("");
-              } else if (duration && minpeople){
-                $("#pullup .background").click();
-                $("#write-gathering-input-prestage").val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행");
-                $("#write-gathering-input-prestage-duration").val(duration);
-                $("#write-gathering-input-prestage-minpeople").val(minpeople);
-              } else {
-                popup("모든 값을 정확히 입력해주세요.");
-              }
-
-            });
+            } else {
+              popup("마감 시간과 최소 인원 수를 적어주세요.");
+            }
 
           });
-      }
+
+        });
     });
 
     // Gathering Max People Num
@@ -2107,17 +2102,31 @@ var controller = {
             // Maxnumpeople Submit
             $("#pullup-maxpeople-submit").off('click').on('click',function(){
               var maxpeople = $("#pullup-maxpeople-input-fake input").val();
-              if( !maxpeople ){
-                  $("#pullup .background").click();
-                  $("#write-gathering-input-maxpeople-fake").val("");
-                  $("#write-gathering-input-maxpeople").val("");
+              if( maxpeople ){
+                $("#pullup .background").click();
+                $("#write-gathering-input-maxpeople-fake")
+                  .text(maxpeople)
+                  .val(maxpeople)
+                  .addClass("filled");
+                $("#write-gathering-input-maxpeople").val(maxpeople);
+                
+                anime({
+                  targets: '#write-gathering-input-maxpeople-fake',
+                  opacity:0.3,
+                  duration: 300,
+                  easing: 'linear',
+                  direction: 'alternate'
+                });
+
               } else {
-                  $("#pullup .background").click();
-                  $("#write-gathering-input-maxpeople-fake").val(maxpeople + "명 까지만 참여 가능");
-                  $("#write-gathering-input-maxpeople").val(maxpeople);
+                popup("모든 값을 정확히 입력해주세요.");
               }
             });
         });
+    });
+    
+    $(".guide-woot").off("click").on("click", function(){
+        pullupMenuTemp("pullup_guide_woot");
     });
 
     $("#write-gathering-input-maxpeople").off('change').on('change',function(){
@@ -2128,20 +2137,34 @@ var controller = {
       }
     })
 
-    // Gathering edit
-    if ( $('#write-gathering-input-time-fake').data("edit") == "yes" ) {
-        $('#write-gathering-input-time-fake').css("opacity", "0.4");
-    }
-    if ( $('#write-gathering-input-prestage').data("edit") == "yes" ) {
-        $('#write-gathering-input-prestage').css("opacity", "0.4");
-    }
+    $(".write-gathering-button.next").off('click').on('click', function(){
+  			if ( $("#write-gathering-input-sticker").val() == "" ){
+  				popup("스티커를 선택해주세요.");
+  			} else if ( $("#write-gathering-input-title").val() == "" || $("#write-gathering-input-location").val() == "" || $("#write-gathering-input-description").val() == "" ) {
+  				popup("각 항목에 내용을 작성해주세요.")
+  			} else {
+  				$(".write-section-wrapper-first").css({"display":"none"});
+  		    $(".write-section-wrapper-second").css({"display":"block"});				
+  			}
+  	});
+  
+  	$(".write-gathering-button.previous").off('click').on('click', function(){
+  			$(".write-section-wrapper-first").css({"display":"block"});
+  		  $(".write-section-wrapper-second").css({"display":"none"});
+  	});
 
     // Gathering Submit
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
-        $("#pullup-write").show();
-
         var url = $(this).attr('action');
+        
+        // prevent submit on if condition
+        if ( $("#write-gathering-input-agelimit-min").val() == "" || $("#write-gathering-input-agelimit-max").val() == "" ) {
+            popup("게더링 공개 연령대를 설정해주세요.");
+            return;
+        }  
+          
+        $("#pullup-write").show();
         api.post(url, $(this).serialize(), function(res){
             if (res['ok']){
                 var gid = res['gid'].toString();
@@ -2153,11 +2176,13 @@ var controller = {
                 }
             } else {
                 $("#pullup-write").hide();
-                popup('필수 항목들에 내용을 채워주세요.');
+                popup('필수 항목들을 빠뜨리지 말고 작성해주세요');
                 // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
             }
-        });
+        });          
     });
+
+
 
     /* Write Posting */
 
@@ -2265,11 +2290,59 @@ var controller = {
 
     // Board Select
     $("#write-posting-input-topic-fake").off('click').on('click',function(){
+      var $this = $(this);
       pullupMenu("pullup_write_posting_category",function(){
         $(".board-select").off('click').on('click',function(){
           $("#pullup .background").click();
           var code = $(this).data("code");
+          var input = $("#write-posting-input-title");
+          var wrapper_near = $("#posting-show-block-near");
+          var wrapper_myar = $("#posting-show-block-myar");
+          var parentForBoth = wrapper_near.closest(".write-section-item-radio-wrapper");
 
+          if ( code == "inte" ) {
+              // remove tag and photo, and fill input-tag
+              $("#write-posting-tag").css({"display":"none"});
+              $(".write-section-item-photo").css({"display":"none"});
+              if ( $this.data("edit") != true && input.val() == "" ){
+                  input.val("#공통관심사");
+              }
+              
+              // remove show_block_area_nearby and select show_block_area_my
+              wrapper_near.css({"display":"none"});
+              parentForBoth.find('.checkmark').removeClass("selected");
+              wrapper_myar.find('.checkmark').addClass("selected");
+              parentForBoth.find('input').val(wrapper_myar.data("option"));
+              
+          } else if ( code == "anon" ) {
+              // display tag and photo, and empty
+              $("#write-posting-tag").css({"display":"block"});
+              $(".write-section-item-photo").css({"display":"block"});
+              if ( $this.data("edit") != true && input.val() == "#공통관심사" ){
+                  input.val("");
+              }
+
+              // remove show_block_area_nearby and select show_block_area_my
+              wrapper_near.css({"display":"none"});
+              parentForBoth.find('.checkmark').removeClass("selected");
+              wrapper_myar.find('.checkmark').addClass("selected");
+              parentForBoth.find('input').val(wrapper_myar.data("option"));
+
+          } else {
+              // display tag and photo, and empty
+              $("#write-posting-tag").css({"display":"block"});
+              $(".write-section-item-photo").css({"display":"block"});
+              if ( $this.data("edit") != true && input.val() == "#공통관심사" ){
+                  input.val("");
+              }
+
+              // display show_block_area_nearby and select it
+              wrapper_near.css({"display":"inline-block"});
+              parentForBoth.find('.checkmark').removeClass("selected");
+              wrapper_near.find('.checkmark').addClass("selected");
+              parentForBoth.find('input').val(wrapper_near.data("option"));
+          }
+          
           $("#write-posting-input-topic-fake").val($(this).find("span").text());
           $("#write-posting-input-topic").val(code);
 
@@ -2292,8 +2365,6 @@ var controller = {
             easing: 'linear',
             direction: 'alternate'
           });
-        // 주변 블록 공개 옵션: renderTemplate(serverParentURL + "/write/posting.addon?bid=" + bid, "#write-section-addon");
-
         });
       });
     });
@@ -2386,33 +2457,41 @@ var controller = {
 
     // Posting Submit
     $('form#write-posting-form').submit(function(event){
-      event.preventDefault();
-      $("#pullup-write").show();
+        event.preventDefault();
 
-      $('form#write-posting-form input[name="img"]').each(function(){
-        if($(this).val() == ""){
-          $(this).remove();
+        // prevent submit on if condition        
+        if ( $("#write-posting-input-topic").val() == "" || $("#write-posting-input-title").val() == "" || $("#write-posting-input-content").val() == "" ) {
+            popup("필수 항목들을 빠뜨리지 말고 작성해주세요");
+            return;
         }
-      });
 
-      var url = $(this).attr("action");
-      var data = new FormData(this);
+        $("#pullup-write").show();
 
-      api.postMulti(url, data, function(response){
-          if (response['ok']){
-              var pid = response['pid'].toString();
-              initiator('/post_detail?pid=' + pid, false);
-              $("#pullup-write").hide();
-
-              if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                  logCompletedTutorialEvent("write_post", true);
-              }
-          } else {
-              $("#pullup-write").hide();
-              popup('필수 항목들에 내용을 채워주세요.');
-              // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+        $('form#write-posting-form input[name="img"]').each(function(){
+          if($(this).val() == ""){
+            $(this).remove();
           }
-      });
+        });
+
+        var url = $(this).attr("action");
+        var data = new FormData(this);
+
+        api.postMulti(url, data, function(response){
+            if (response['ok']){
+                var pid = response['pid'].toString();
+                initiator('/post_detail?pid=' + pid, false);
+                $("#pullup-write").hide();
+
+                if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+                    logCompletedTutorialEvent("write_post", true);
+                }
+            } else {
+                $("#pullup-write").hide();
+                popup('필수 항목들을 빠뜨리지 말고 작성해주세요');
+                // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+            }
+        });        
+        
     });
 
     /*
@@ -2491,7 +2570,7 @@ var controller = {
         var num_area_people = parseInt( $(this).data('num_area_people') );
         $('#filter-count').text(num_area_people);
 
-        $($(this)).removeClass("filtered").find("span").text("관심사 필터");
+        $($(this)).removeClass("filtered").find("span").text("비슷한 웃님 찾기");
 
         $(".people-section-all .people-item").each(function(index,value){
             $(this).css( {"display":"block"} );
@@ -2567,6 +2646,13 @@ var controller = {
 
     var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
     var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
+
+    $(".profile-button-guide-woot").off("click").on("click", function(){
+        pullupMenuTemp("pullup_guide_woot");
+    });
+    $(".profile-button-guide-ban").off("click").on("click", function(){
+        pullupMenuTemp("pullup_guide_ban");
+    });
 
     // Interest
     $(".interest-array").each(function(){
@@ -2735,7 +2821,8 @@ var controller = {
     var udata = JSON.parse($("#hiddenInput_userdata").val());
     var editdata = JSON.parse($("#hiddenInput_editdata").val());
 
-    $("#profile-edit-input-description").height(1).height( $("#profile-edit-input-description").prop('scrollHeight') - 16 );
+    $("#profile-edit-input-description-job").height(1).height( $("#profile-edit-input-description-job").prop('scrollHeight') - 16 );
+    $("#profile-edit-input-description-intro").height(1).height( $("#profile-edit-input-description-intro").prop('scrollHeight') - 16 );
     $("textarea").on('focus keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') -16 );
     });
@@ -2749,6 +2836,10 @@ var controller = {
        $("#profile-edit-update-ios").hide();
        $("#profile-edit-update-and").show();
     }
+
+    $(".pullup-guide-edit").off("click").on("click", function(){
+      pullupMenu("pullup_guide_edit")
+    });
 
     // iOS: blur keyboard by clicking outside area
     $(".profile-contents").off("click").on("click", function(){
@@ -2809,6 +2900,7 @@ var controller = {
 
     // Profile Edit Guide
     $("#profile-edit-guide-nick").css({"display":"none"});
+    $("#profile-edit-guide-intro-job").css({"display":"none"});
     $("#profile-edit-guide-intro").css({"display":"none"});
     $("#profile-edit-guide-interest").css({"display":"none"});
 
@@ -2819,11 +2911,28 @@ var controller = {
         $("#profile-edit-guide-nick").css({"display":"none"});
     });
 
+    $('textarea[name="intro_job"]').focus(function(){
+        $("#profile-edit-guide-intro-job").css({"display":"block"});
+    });
+    $('textarea[name="intro_job"]').blur(function(){
+        $("#profile-edit-guide-intro-job").css({"display":"none"});
+    });
+
     $('textarea[name="intro"]').focus(function(){
         $("#profile-edit-guide-intro").css({"display":"block"});
     });
     $('textarea[name="intro"]').blur(function(){
         $("#profile-edit-guide-intro").css({"display":"none"});
+    });
+
+    // counting the length of characters in intros 
+    $("#profile-edit-input-description-job").on("focus keydown keyup", function(){
+        var $this = $(this);
+        $(".num_count_intro_job").text( $this.val().length );
+    });
+    $("#profile-edit-input-description-intro").on("focus keydown keyup", function(){
+        var $this = $(this);
+        $(".num_count_intro").text( $this.val().length );
     });
 
     /* Profile Interest Edit */
@@ -2959,19 +3068,21 @@ var controller = {
     */
 
     $("#profile-edit-submit").off('click').on('click',function(){
-      if($("#profile-edit-input-avatar").val()      == "" ||
-        $("#profile-edit-input-description").val()  == "" ||
-        $("#profile-edit-input-interest").val()     == "" ||
-        $("#profile-edit-input-interest").val()     == "[]" ){
-        var elm = '<div id="popup-message">' +
-                    '<span>모든 값을 정확히 입력해주세요.</span>' +
-                  '</div>';
-        $("body").append(elm);
-
-        setTimeout(function(){
-          $("#popup-message").remove();
-        }, 5000);
-        return;
+      if($("#id_profile_image_type").val()      == "") {
+          popup("프로필을 선택해주세요.");
+          return;
+      } else if(
+          $("#profile-edit-input-description-job").val()  == "" ||
+          $("#profile-edit-input-description-intro").val()  == "" ||
+          $("#profile-edit-input-interest").val()     == "" ||
+          $("#profile-edit-input-interest").val()     == "[]" ){
+          popup("모든 값을 정확히 입력해주세요.");
+          return;
+      } else if (
+          $("#profile-edit-input-description-job").val().length < 30 ||
+          $("#profile-edit-input-description-intro").val().length < 30  ) {
+          popup("하는 일, 내 소개를 각각 30자 이상으로 작성해주세요. 웃님들 간 상호 신뢰를 위해 부탁드립니다.");
+          return;
       }
 
       var data = $("#profile-edit-form").serialize();
@@ -3003,7 +3114,6 @@ var controller = {
   },
 
   passwordEditCtrl : function(){
-
       // iOS: blur keyboard by clicking outside area
       $(".profile-contents").off("click").on("click", function(){
           $("input").blur();
@@ -3094,10 +3204,15 @@ var controller = {
     postListCtrl : function(){
 
     // Blockname Replace
+    var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);  
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
-
-    var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);
+    $("#tab-posting-area_my").off("click").on("click",function(){
+        initiator("/post_list?bid=" + boarddata.topic_code, false);
+    });
+    $("#tab-posting-area_nearby").off("click").on("click",function(){
+        initiator("/post_list/area_nearby?bid=" + boarddata.topic_code, false);
+    });
 
     $("textarea").on('keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') );
@@ -3467,7 +3582,7 @@ var controller = {
           if($("#posting-wrapper").length > 0){
             $.ajax({
                     method    : "GET",
-                    url       : serverParentURL + "/post_list/" + boarddata.topic_code + "?page=" + infiniteScrollPage,
+                    url       : serverParentURL + "/post_list/" + boarddata.area_type + "/" + boarddata.topic_code + "?page=" + infiniteScrollPage,
                     xhrFields: {withCredentials: true},
                     success   : function( response ) {
 
@@ -3829,9 +3944,10 @@ var controller = {
             if ( points_left >= 3 ) {
                 initiator("/gathering_detail?gid=" + gid, true);
             } else {
-                popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+                popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
                 $(".guide-point").off("click").on("click", function(){
                     $("#popup-message").hide();
+                    initiator("/account/profile?uid=" + udata.uid);
                     pullupGuideTemplate("pullup_guide_point");
                 });
             }
@@ -3840,6 +3956,10 @@ var controller = {
 
     $(".gathering-example").off("click").on("click",function(){
         pullupGuideTemplate("pullup_guide_gathering");
+    });
+
+    $(".gathering-create").off('click').on('click', function(){
+        pullupMenu("pullup_create_gathering")
     });
 
     return;
@@ -3855,7 +3975,7 @@ var controller = {
     // gathering sub-tabs
     /*
     $(".gathering-detail-tab").off('click').on('click',function(){
-      var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+      var gatheringdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
       var tab = $(this).data("tab");
 
       if(tab == "information"){
@@ -3879,15 +3999,16 @@ var controller = {
     $("#gathering-stats-participate").text(parseInt($("#gathering-stats-participate").text() - 1));
 
     /* the required number of people */
-    var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+    var gdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
     var req_count = gdata.min_num_people - gdata.current_joining_people;
     $('.tobevalid-count').text(req_count);
 
-    // gathering-member alert
+    // gathering-member alert: prestage
     $('#gathering-stats-pre').off('click').on('click', function() {
        popup("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.")
     });
 
+    // gathering-member alert: normal
     $('#gathering-stats-nor').off('click').on('click', function(e){
       if ( $('#gathering-like-button').data('action') == "on" && $('#gathering-participate-button').data('action') == "on" ){
           popup("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요.");
@@ -3896,28 +4017,53 @@ var controller = {
       }
     });
 
-    /* block the access when not joining user enters into the chat when gathering finished */
-    $('.button-participate-end').off('click').on('click', function(){
+    // gathering-member alert: nearby
+    $('#gathering-stats-not-joinable').off('click').on('click', function() {
+        popup("누적 포인트 60점을 모아야 인접블록 게더링 멤버를 확인할 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+        $(".guide-point").off("click").on("click", function(){
+            $("#popup-message").hide();
+            initiator("/account/profile?uid=" + udata.uid);
+            pullupGuideTemplate("pullup_guide_point");
+        });
+    });
+  
+    // gathering-join alert: finished, not joined
+    $('.button-participate.end').off('click').on('click', function(){
         if ($(this).data('action') == 'on') {
             popup('게더링에 참가하신 분들만 지난 채팅을 볼 수 있습니다.');
         }
     });
+    
+    // gathering-join alert: nearby, not joinable
+    $('.button-participate.not-joinable').off('click').on('click', function(){
+        popup("누적 포인트 60점을 모아야 인접블록 게더링에 참여할 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+        $(".guide-point").off("click").on("click", function(){
+            $("#popup-message").hide();
+            initiator("/account/profile?uid=" + udata.uid);
+            pullupGuideTemplate("pullup_guide_point");
+        });
+    });
 
+    // gathering-join alert: nearby, not joinable
+    $('.button-participate.banned').off('click').on('click', function(){
+        popup("무응답/무단불참/불친절 등의 사유로 인해 강퇴 되면 재참여가 불가능합니다.");
+    });
 
     // gathering like
     $(".button-like").off('click').on('click', button_like);
 
     // gathering join
-    $('.button-participate').off('click').on('click', function(){
+    $('.button-participate.joinable').off('click').on('click', function(){
         var gid = $(this).data("gid");
+        var uid = $(this).data("uid");
         var action = $(this).data("action");
-        var data = {'gid': gid, 'action': action};
+        var data = {'gid': gid, 'uid': uid, 'action': action};
         var button = $(this);
         var url = "/gathering_join/"
-        var hdinput = $("#hiddenInput_gatheringdata");
+        var hdinput = $("#hiddenInput_gatheringdetaildata");
 
         if (button.hasClass("joined")) { // Already Liked
-          popup("정말 참여를 취소하시겠습니까? 사용한 포인트는 되돌려 받지 못해요.",function(){
+          popup("정말 참여를 취소하시겠습니까? 포인트를 사용한 경우 되돌려 받지 못해요.",function(){
               // cancel the joining
               api.post(url, data, function (res) {
                 if(res['ok']) {
@@ -3947,7 +4093,7 @@ var controller = {
         } else {
           if (points_left >= 3) {
             if(hdinput.data('tochat') == 'pre') {
-              popup("최소 진행 조건을 만족하면 채팅방 개설 알림을 보내드려요.<br>**채팅방이 열리기 전 참여하신 웃님에게는 포인트 3점이 면제됩니다.", function(){
+              popup("채팅방이 열리기 전 '모집중'에는 포인트 없이 참여 가능해요.", function(){
                 api.post(url, data, function (res) {
                   if(res['ok']) {
                     var next_action = "off";
@@ -3972,7 +4118,7 @@ var controller = {
               if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
                   popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
               } else {
-                  popup("게더링 채팅방으로 이동합니다. 참여에는 포인트 3점이 소모됩니다.", function(){
+                  popup("채팅 중인 게더링 참여에는 포인트 3점이 소모됩니다.", function(){
                     api.post(url, data, function (res) {
                       if(res['ok']) {
                         var next_action = "off";
@@ -3994,9 +4140,10 @@ var controller = {
               }
             }
           } else {
-              popup("게더링에 참여하기 위해서는 포인트 3점을 모아야 해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
+                  initiator("/account/profile?uid=" + udata.uid);
                   pullupGuideTemplate("pullup_guide_point");
               });
           }
@@ -4005,7 +4152,7 @@ var controller = {
 
     // Gathering More Button Handler
     $("#header-gathering-more-button").off("click").on("click",function(){
-      var gdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+      var gdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
       var gid = gdata.gid;
       if(gdata.is_my == "true"){
           pullupMenu("pullup_gathering_edit?gid=" + gid, function(){
@@ -4047,7 +4194,7 @@ var controller = {
 
   /* Gathering Review Ctrl */
   gatheringReviewCtrl : function(){
-    var gatheringdata = JSON.parse($("#hiddenInput_gatheringdata").val() || null);
+    var gatheringdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
     $("#chat-title").text(gatheringdata.gname);
 
     $("#footer").css({"display":"none"});
@@ -4234,21 +4381,6 @@ var controller = {
         });
         promise.then(function (res) {
             var fields = res.fields;
-            console.log(fields)
-            $(".chat-title").text(fields.title);
-            $(".chat-date").text(fields.datetime_kor);
-            $(".chat-place").text(fields.address);
-
-            $('.chat-room-overlap-section-sticker').css({"background-image": "url(" + fields.sticker_fullurl + ")"});
-
-            $(".chat-room-overlap-section-participants").find(".title").text("참여자 " + fields.users_joining.length + "명");
-            $(".participants-item-wrapper").html("");
-            $.each(fields.users_joining,function(index, value){
-                var participants_uid = fields.users_joining[index].user_id;
-                var participants_username = fields.users_joining[index].nick;
-                var participants_avatar = "'http://www.hellowoot.co.kr/static/asset/images/profile_images/" + fields.users_joining[index].profile_image_type + ".png'";
-                $(".participants-item-wrapper").append('<woot-click href="/account/profile?uid=' + participants_uid + '"><div class="participants-item"><div class="avatar" style="background-image:url(' + participants_avatar + ');"></div><div class="username">' + participants_username + '</div></div></woot-click>');
-            });
 
             $("woot-click").off("click").on("click", function(){
                 $("#template-view").removeAttr("style");
@@ -4267,6 +4399,8 @@ var controller = {
 
                 $("#chat-room-button-wrapper").css({"display":"none"});
             }
+
+            
         });
     }
 
@@ -4279,9 +4413,9 @@ var controller = {
     $('#chat-room-button-cancel').off('click').on('click', function(){
       var link = $(location).attr('href');
       var gid = link.split("=")[1];
+      var uid = $(this).data("uid");
       var action = $(this).data("action");
-      var data = {'gid': gid, 'action': action};
-      var button = $(this);
+      var data = {'gid': gid, 'uid': uid, 'action': action};
 
       popup("참여를 취소하시겠습니까? 참여를 취소해도 포인트는 되돌려 받지 못해요.", function(){
           api.post("/gathering_join/", data, function (res) {
@@ -4289,10 +4423,27 @@ var controller = {
                   initiator("/gathering_detail?gid=" + gid, false);
                   $("#template-view").removeAttr("style");
               } else {
-                  popup("게더링 상세보기에서 참여를 취소해주세요.")
+                  popup("게더링 상세보기를 누르고 그곳에서 참여를 취소해주세요.")
               }
           });
       });
+    });
+
+    $('.gathering-ban').off('click').on('click', function(){
+        var gid = $(this).data("gid");
+        var uid = $(this).data("uid");
+        var action = $(this).data("action");
+        var data = {'gid': gid, 'uid': uid, 'action': action};
+    
+        popup("강퇴를 당한 유저는 재참여가 불가능합니다.", function(){
+            api.post("/gathering_ban/", data, function (res) {
+                if(res['ok']) {
+                    popup("해당 유저가 강퇴되었습니다. 채팅방에 다시 접속해주세요.");
+                } else {
+                    popup("강퇴 과정 중 오류가 발생했습니다. 우트에게 피드백을 부탁드립니다.");
+                }
+            });
+        });
     });
 
     function infiniteScroll() {
@@ -4303,6 +4454,11 @@ var controller = {
                 }
 
                 loadMessagesOnceInfiniteScroll(infiniteScrollKey, 12);
+
+                $("woot-click").off("click").on("click", function(){
+                    $("#template-view").removeAttr("style");
+                    initiator($(this).attr("href"), true);
+                });
 
                 $(this).unbind("scroll.chat");
                 setTimeout(function () {
@@ -4575,17 +4731,21 @@ var controller = {
 
     var MESSAGE_TEMPLATE =
       '<div class="chat-item chat-item-message">' +
-        '<div class="avatar"></div>' +
-        '<div class="message">' +
-          '<div class="message-info">' +
-            '<span class="username"></span>' +
-            '<span class="time"></span>' +
+        '<woot-click class="profile-link-1" href="">' +
+          '<div class="avatar"></div>' +
+        '</woot-click>' +
+          '<div class="message">' +
+            '<woot-click class="profile-link-2" href="">' +
+              '<div class="message-info">' +
+                '<span class="username"></span>' +
+                '<span class="time"></span>' +
+              '</div>' +
+            '</woot-click>' +
+            '<div class="message-cloud">' +
+              '<p></p>' +
+              '<div class="message-image"></div>' +
+            '</div>' +
           '</div>' +
-          '<div class="message-cloud">' +
-            '<p></p>' +
-            '<div class="message-image"></div>' +
-          '</div>' +
-        '</div>' +
       '</div>';
 
     var NOTIFICATION_TEMPLATE =
@@ -4623,6 +4783,8 @@ var controller = {
         if (notification) {
             div.querySelector('.chat-notification span').textContent = text;
         } else {
+            div.querySelector('.profile-link-1').setAttribute("href", "/account/profile?uid=" + uid);
+            div.querySelector('.profile-link-2').setAttribute("href", "/account/profile?uid=" + uid);
             div.querySelector('.username').textContent = username;
             div.querySelector('.avatar').style.backgroundImage = 'url(' + avatarUrl + ')';
             div.querySelector('.time').textContent = trimDate(time)[1];
@@ -4668,6 +4830,11 @@ var controller = {
                 onMessageFormSubmitBoolean = false;
             }
         }
+        
+        $("woot-click").off("click").on("click", function(){
+            $("#template-view").removeAttr("style");
+            initiator($(this).attr("href"), true);
+        });
 
         // Show the card fading-in and scroll to view the new message.
         setTimeout(function () {
@@ -4846,6 +5013,38 @@ var controller = {
 
 
     });
+    return;
+  },
+
+  /* Notice Ctrl */
+
+  noticeCtrl : function(){
+    $("#notice-back-manual").off('click').on('click', function(){
+       initiator("/notice_list", false); 
+    });
+
+    $(".filter-item-notice").off('click').on('click',function(){
+        var filterCategoryText = $(this).find("span").text();
+        
+        // css: selected
+        $(".filter-item-notice").removeClass("selected");
+        $(this).addClass("selected");
+    
+        // if category == "all", show all
+        if( $(this).hasClass("all") ) {
+            $(".notice-item").css({"display":"block"});
+            return;
+        }
+        // if category != "all", filter each item by category
+        $(".notice-section .notice-item").each(function(index,value){
+            if($(this).find(".title").text().indexOf(filterCategoryText) > -1){
+                $(this).css({"display":"block"});
+            } else {
+                $(this).css({"display":"none"});
+            }
+        });
+    });
+
     return;
   },
 

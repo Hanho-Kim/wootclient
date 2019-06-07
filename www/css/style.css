@@ -204,66 +204,6 @@ input,textarea{
   border-radius:50%;
 }
 
-
-/* The container */
-.radio-container {
-    display: inline-block;
-    position: relative;
-    padding-left: 25px;
-    line-height:1.7em;
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-/* Hide the browser's default radio button */
-.radio-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    display:none;
-}
-
-.radio-container .checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 20px;
-    width: 20px;
-    background-color: #fff;
-    border:1px solid rgb(210,210,210);
-    border-radius: 50%;
-}
-
-.radio-container input:checked ~ .checkmark {
-    background-color: #fff;
-    border:1px solid #45aaf2;
-}
-
-.radio-container .checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.radio-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.radio-container .checkmark:after {
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #45aaf2;
-}
-
-
-/* End of toggle button */
-
 .button {
     position: relative;
     border: none;
@@ -532,19 +472,13 @@ margin-top:7px;
   padding:0px;
 }
 .footer-item{
-  position:relative;
-  float:left;
-  height:48px;
-  width:20%;
-  font-size:20px;
-  padding:8px;
-  text-align:center;
-  color:rgb(200,200,200);
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-origin: content-box;
-  opacity:0.3;
+  position: relative;
+  float: left;
+  width: 20%;
+  text-align: center;
+  padding: 2px 8px;
+  padding-bottom: 5px;
+  opacity: 0.3;
 }
 .footer-item .footer-item-noti{
   position:absolute;
@@ -558,7 +492,13 @@ margin-top:7px;
 .footer-item.selected{
   opacity:1;
 }
-
+.footer-item .footer-icon{
+  height: 24px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+}
 .footer-item .title{
   display:block;
   font-size:10px;
