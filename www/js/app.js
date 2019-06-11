@@ -4,9 +4,9 @@ var currentVersionAnd = "2005"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
-var serverParentURL = "http://www.hellowoot.co.kr"
+// var serverParentURL = "http://www.hellowoot.co.kr"
 // var serverParentURL = "http://derek-kim.com:8000";
-// var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
+var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
 
 
 // Alternate between new and old servers
@@ -17,6 +17,8 @@ var signupVariable = {
       address : "",
       postcode : ""
 };
+
+var scrollHeightPreviousPage = 0;
 
 /* Global Functions */
 //============================================================
@@ -356,7 +358,7 @@ function globalEventHandler(){
     history.back();
   });
   $(".history-home").off('click').on('click',function(){
-    window.location.replace('./index.html');
+     window.location.replace('./index.html');
   });
   $("woot-click").off('click').on('click',function(){
     initiator($(this).attr("href"), true);
@@ -386,8 +388,10 @@ if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
       console.log(params);
   }
 }
-if (plugin_toggle && typeof FiebasePlugin != "undefined") {
+if (plugin_toggle && typeof FirebasePlugin != "undefined") {
   function refreshDeviceToken() {
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+
     FirebasePlugin.onTokenRefresh(function(dtoken) {
         if (dtoken && userdata.dtoken != dtoken) {
             api.post("/account/change_devicetoken/", {"devicetoken":dtoken}, function(res){
@@ -946,7 +950,7 @@ function initiator(newPath, pushState){
                           $("#template-view").css({"display":"block"});
                           $("woot-click").off('click').on('click', function(){
                             initiator($(this).attr("href"), true);
-                          });
+                          });                          
                         },
               error     : function( request, status, error ) {}
       });
@@ -1117,8 +1121,10 @@ var controller = {
               popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
-                  initiator("/account/profile?uid=" + udata.uid);
-                  pullupGuideTemplate("pullup_guide_point");
+                  initiator("/account/profile?uid=" + udata.uid, true);
+                  setTimeout(function(){
+                      pullupGuideTemplate("pullup_guide_point");
+                  }, 500);
               });
             }
         }
@@ -1134,6 +1140,7 @@ var controller = {
       api.postMulti(url, data, function(response){
           if (response['ok']){
               $(".write-first-wish").hide();
+              $("#template-view").css({"z-index":""});
           } else {
               popup('필수 항목들에 내용을 채워주세요.');
               // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
@@ -2005,6 +2012,14 @@ var controller = {
                 if (res['ok']){
                     $(".age-num-people-wrapper").html("이 연령대에는 " + res.age_num_users + "명의 웃님들이 " + userdata.block + "블록에 있어요!");
                     $(".age-num-people-wrapper").addClass("typed")
+
+                    anime({
+                      targets: '.age-num-people-wrapper',
+                      opacity:0.3,
+                      duration: 300,
+                      easing: 'linear',
+                      direction: 'alternate'
+                    });
                 } else {
                     $(".age-num-people-wrapper").html("해당 연령대에 몇명의 웃님들이 있는지 알려드릴 수 없어요 :(")
                     $(".age-num-people-wrapper").removeClass("typed")
@@ -2057,8 +2072,8 @@ var controller = {
             if (duration && minpeople){
               $("#pullup .background").click();
               $("#write-gathering-input-prestage")
-                .text(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행")
-                .val(duration + "시간 전까지 " + minpeople + "명 이상 모이면 진행")
+                .text(duration + "시간 전까지 " + minpeople + "명 이상 모이면")
+                .val(duration + "시간 전까지 " + minpeople + "명 이상 모이면")
                 .addClass("filled");
               $("#write-gathering-input-prestage-duration").val(duration);
               $("#write-gathering-input-prestage-minpeople").val(minpeople);
@@ -2126,7 +2141,7 @@ var controller = {
     });
     
     $(".guide-woot").off("click").on("click", function(){
-        pullupMenuTemp("pullup_guide_woot");
+        pullupMenu("pullup_guide_woot");
     });
 
     $("#write-gathering-input-maxpeople").off('change').on('change',function(){
@@ -2231,6 +2246,10 @@ var controller = {
           $.each(woottagArray.slice().reverse(),function(index, value){
               var reverseIndex = parseInt(woottagArray.length -1 - index);
               $("#woot-tag-wrapper ul").prepend("<li class='woot-tag' data-index='" + reverseIndex + "'>" + value + "<i class='ion-android-close'></i></li>");
+          });
+
+          $("#woot-tag-wrapper").find(".woot-tag").off("click").on("click",function(){
+              $("#woot-tag-wrapper").find(".woot-tag").remove();
           });
         }
       },
@@ -2554,6 +2573,24 @@ var controller = {
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
     $("#header .header-center").text(userdata.block + " 블록 웃님들");
 
+    // maintaining scroll location
+    $("#template-view").scrollTop(scrollHeightPreviousPage);
+    scrollHeightPreviousPage = 0;
+
+    $("woot-click").off('click').on('click',function(){
+      if ( $(this).find("#people-item-more").length ) {
+          scrollHeightPreviousPage = $("#template-view").scrollTop();
+      }
+
+      initiator($(this).attr("href"), true);
+      $("#popup-message").hide();
+
+      if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+          var pageurl = window.location.href.split("#")[1].split("?");
+          logViewedContentEvent(pageurl[0], pageurl[1] || "none");
+      }        
+    });
+
     // Interest
     $(".interest-array").each(function(){
         if($(this).val()){
@@ -2648,10 +2685,10 @@ var controller = {
     var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
 
     $(".profile-button-guide-woot").off("click").on("click", function(){
-        pullupMenuTemp("pullup_guide_woot");
+        pullupMenu("pullup_guide_woot");
     });
     $(".profile-button-guide-ban").off("click").on("click", function(){
-        pullupMenuTemp("pullup_guide_ban");
+        pullupMenu("pullup_guide_ban");
     });
 
     // Interest
@@ -3079,9 +3116,9 @@ var controller = {
           popup("모든 값을 정확히 입력해주세요.");
           return;
       } else if (
-          $("#profile-edit-input-description-job").val().length < 30 ||
-          $("#profile-edit-input-description-intro").val().length < 30  ) {
-          popup("하는 일, 내 소개를 각각 30자 이상으로 작성해주세요. 웃님들 간 상호 신뢰를 위해 부탁드립니다.");
+          $("#profile-edit-input-description-job").val().length < 20 ||
+          $("#profile-edit-input-description-intro").val().length < 20  ) {
+          popup("하는 일, 내 소개를 각각 20자 이상으로 작성해주세요. 웃님들 간 상호 신뢰를 위해 부탁드립니다.");
           return;
       }
 
@@ -3098,7 +3135,7 @@ var controller = {
                   initiator("/account/profile?uid=" + udata.uid, false);
               }
           } else {
-              popup('모든 내용들을 충실히 작성해주세요.');
+              popup('가이드에 따라 모든 내용을 작성해주세요.');
           }
       });
 
@@ -3203,8 +3240,10 @@ var controller = {
   /* Board Ctrl */
     postListCtrl : function(){
 
-    // Blockname Replace
+    // TEMP: delete
     var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);  
+
+    // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
     $("#tab-posting-area_my").off("click").on("click",function(){
@@ -3701,6 +3740,7 @@ var controller = {
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     $("#header-title").text(boarddata.bname);
 
+    // TEMP: delete
     var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);
 
     $("textarea").on('keydown keyup', function () {
@@ -3947,8 +3987,10 @@ var controller = {
                 popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
                 $(".guide-point").off("click").on("click", function(){
                     $("#popup-message").hide();
-                    initiator("/account/profile?uid=" + udata.uid);
-                    pullupGuideTemplate("pullup_guide_point");
+                    initiator("/account/profile?uid=" + udata.uid, true);
+                    setTimeout(function(){
+                        pullupGuideTemplate("pullup_guide_point");
+                    }, 500);
                 });
             }
         }
@@ -4022,8 +4064,10 @@ var controller = {
         popup("누적 포인트 60점을 모아야 인접블록 게더링 멤버를 확인할 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
         $(".guide-point").off("click").on("click", function(){
             $("#popup-message").hide();
-            initiator("/account/profile?uid=" + udata.uid);
-            pullupGuideTemplate("pullup_guide_point");
+            initiator("/account/profile?uid=" + udata.uid, true);
+            setTimeout(function(){
+                pullupGuideTemplate("pullup_guide_point");
+            }, 500);
         });
     });
   
@@ -4039,8 +4083,10 @@ var controller = {
         popup("누적 포인트 60점을 모아야 인접블록 게더링에 참여할 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
         $(".guide-point").off("click").on("click", function(){
             $("#popup-message").hide();
-            initiator("/account/profile?uid=" + udata.uid);
-            pullupGuideTemplate("pullup_guide_point");
+            initiator("/account/profile?uid=" + udata.uid, true);
+            setTimeout(function(){
+                pullupGuideTemplate("pullup_guide_point");
+            }, 500);
         });
     });
 
@@ -4093,7 +4139,7 @@ var controller = {
         } else {
           if (points_left >= 3) {
             if(hdinput.data('tochat') == 'pre') {
-              popup("채팅방이 열리기 전 '모집중'에는 포인트 없이 참여 가능해요.", function(){
+              popup("'모집중(채팅방이 열리기 전) 게더링'은<br>포인트 없이 참여 가능해요.", function(){
                 api.post(url, data, function (res) {
                   if(res['ok']) {
                     var next_action = "off";
@@ -4118,7 +4164,7 @@ var controller = {
               if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
                   popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
               } else {
-                  popup("채팅 중인 게더링 참여에는 포인트 3점이 소모됩니다.", function(){
+                  popup("'채팅중인 게더링' 참여에는<br>포인트 3점이 소모됩니다.", function(){
                     api.post(url, data, function (res) {
                       if(res['ok']) {
                         var next_action = "off";
@@ -4143,8 +4189,10 @@ var controller = {
               popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
-                  initiator("/account/profile?uid=" + udata.uid);
-                  pullupGuideTemplate("pullup_guide_point");
+                  initiator("/account/profile?uid=" + udata.uid, true);
+                  setTimeout(function(){
+                      pullupGuideTemplate("pullup_guide_point");
+                  }, 500);
               });
           }
         }
@@ -4438,7 +4486,8 @@ var controller = {
         popup("강퇴를 당한 유저는 재참여가 불가능합니다.", function(){
             api.post("/gathering_ban/", data, function (res) {
                 if(res['ok']) {
-                    popup("해당 유저가 강퇴되었습니다. 채팅방에 다시 접속해주세요.");
+                    popup("해당 유저가 강퇴되었습니다. 강퇴된 유저는 재참여가 불가능합니다.");
+                    location.reload();
                 } else {
                     popup("강퇴 과정 중 오류가 발생했습니다. 우트에게 피드백을 부탁드립니다.");
                 }

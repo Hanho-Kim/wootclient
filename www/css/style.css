@@ -121,6 +121,7 @@ input,textarea{
   border-radius:10px;
   opacity:0.9;
   background-color:rgb(1,1,1);
+  word-break: keep-all;
 }
 #popup-message span{
   line-height:1.4em;
