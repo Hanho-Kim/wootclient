@@ -65,8 +65,31 @@
           firebase.initializeApp(config);
         </script>
 
+		<!-- GA -->
+		<script src="./js/analytics_debug.js"></script>
+		<script>
+			// Sets window.ga
+			ga('create', {
+				// Disables cookies.
+				storage: 'none',
+				// Your GA tracking id.
+				trackingId: 'UA-114209532-2',
+				// Will return null if not set, and GA will then assign one.
+				clientId: localStorage.getItem('ga:clientId')
+			});
+			console.log(localStorage.getItem('ga:clientId'));
+			ga('set', 'checkProtocolTask', null);
+			ga('set', 'transportUrl', 'https://www.google-analytics.com/collect');
+			ga(function(tracker) {
+				if ( !localStorage.getItem('ga:clientId') ) {
+					// Save the assigned id for the next time the app boots.
+					localStorage.setItem( 'ga:clientId', tracker.get('clientId') );
+				}
+			});
+		</script>
 
 	</head>
+
 	<body>
 
 		<div id="pullup">
@@ -94,6 +117,8 @@
 			<span class="loading-spinner"></span>
 		</div>
 		<div id="posting-overlap-view">
+		</div>
+		<div id="posting-overlap-view-twofold">
 		</div>
 		<div id="template-view">
 		</div>
@@ -123,7 +148,7 @@
 						<span class="title">글쓰기</span>
 					</div>
 				</woot-click>
-				<woot-click href="/post_category_list">
+				<woot-click href="/post_list?bid=allp">
 					<div class="footer-item footer-item-post_category_list footer-item-post_list">
 						<div class="footer-icon" style="background-image:url('http://www.hellowoot.co.kr/static/asset/images/gnb/gnb_post-on.png');">
 						</div>

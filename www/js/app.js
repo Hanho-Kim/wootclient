@@ -1,10 +1,10 @@
 /* Global Variables */
-var currentVersioniOS = "1004"; // this must be string, not integer
-var currentVersionAnd = "2005"; // this must be string, not integer
+var currentVersioniOS = "1005"; // this must be string, not integer
+var currentVersionAnd = "2006"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
-// var serverParentURL = "http://www.hellowoot.co.kr"
+// var serverParentURL = "http://www.hellowoot.co.kr";
 // var serverParentURL = "http://derek-kim.com:8000";
 var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
 
@@ -14,12 +14,12 @@ var server_toggle = true;  // If toggle false, old & test server
 var plugin_toggle = true;  // if toggle false, test mode
 
 var signupVariable = {
-      address : "",
-      postcode : ""
+    address : "",
+    postcode : ""
 };
 
 var scrollHeightPreviousPage = 0;
-
+var ChatUpdateCountRead = true;
 /* Global Functions */
 //============================================================
 // Calendar
@@ -290,8 +290,18 @@ function pullupMenu(menu,successFn){
 
                       $("woot-click").off('click').on('click',function(){
                         $("#pullup").css({"display":"none"});
-                        $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
+                        $("body").css({"overflow":"inherit"})
+                                 .removeClass("body-overlap-view"); 
+                        
+                        // for overlap
+                        $("#posting-overlap-view-twofold").html("")
+                                                          .removeClass("activated")
+                                                          .css({"display":"none", "overflow-y":"hidden"});
+                        $("#posting-overlap-view").css({"overflow":"", "display":"none"})
+                                                  .html("")
+                                                  .removeClass("activated");
+                        
                         initiator($(this).attr("href"), true);
                       });
                       
@@ -310,6 +320,22 @@ function pullupMenu(menu,successFn){
   });
 
 }
+
+function pullupGuideTemplate(templeteUrl){
+  pullupMenu(templeteUrl, function(){
+      $(".overlap-close").off("click").on("click",function(){
+          $("#template-view-pullup").css({"display":"none"}).html("");
+          $("#pullup .background").trigger("click");
+      });
+
+      if (templeteUrl = "pullup_guide_point") {
+          var userdataForPoints = JSON.parse($("#hiddenInput_userdata").val() || null);
+          var points_left = parseInt(userdataForPoints.points_earned) - parseInt(userdataForPoints.points_used);
+          $("#points_left").text(points_left);
+      }
+  });
+}
+
 
 
 //============================================================
@@ -330,7 +356,7 @@ function renderTemplate( templateUrl, targetElm, successFn, failureFn ){
                       $(targetElm).append($.parseHTML(response, null, true));
                       $(targetElm).css({"display":"block"});
                       $("woot-click").off('click').on('click',function(){
-                        initiator($(this).attr("href"), true);
+                          initiator($(this).attr("href"), true);
                       });
 
                     },
@@ -419,7 +445,6 @@ if (plugin_toggle && typeof FirebasePlugin != "undefined") {
   }  
 }
 
-
 //============================================================
 // Timestamp Converter
 //------------------------------------------------------------
@@ -480,6 +505,108 @@ function makeAjaxSubmitHandler(successFn) {
 
     return handler;
 }
+
+function button_like() {
+  var id = $(this).data("pid") || $(this).data("gid");
+  var action = $(this).data("action");
+  var type = ( ($(this).data('pid')) > 0 ? 'post' : 'gath' );
+  var data = (type == 'post') ? {'pid': id, 'action': action} : {'gid': id, 'action': action};
+  var url = (type == 'post') ? "/post_like/" : "/gathering_like/";
+  var button = $(this);
+
+  // TODO: need to add error handling
+  if (button.hasClass("liked")) { // Already Liked
+    api.post(url, data, function (res) {
+      console.log(res);
+      if(res['ok']) {
+        var next_action = "on";
+        button.data("action", next_action);
+        button.removeClass("liked");
+        button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_off.png')");
+
+        if (type == 'post'){
+          var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
+          $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
+
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+              logCompletedTutorialEvent("like_post", false);
+          }
+        } else {
+          var count = parseInt($("#gathering-stats-like").text());
+          $("#gathering-stats-like").text(count - 1);
+          $('#gathering-stats-nor').data("link", "");
+
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+              logCompletedTutorialEvent("like_gath", false);
+          }
+        }
+      }
+    });
+
+  } else {
+    api.post(url, data, function (res) {
+      console.log(res);
+      if(res['ok']) {
+        var next_action = "off";
+        button.data("action", next_action)
+        button.addClass("liked");
+        button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_on.png')");
+
+        if (type == 'post'){
+          var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
+          $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
+
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+              logCompletedTutorialEvent("like_post", true);
+          }
+        } else {
+          var count = parseInt($("#gathering-stats-like").text());
+          $("#gathering-stats-like").text(count + 1);
+          $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
+
+          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+              logCompletedTutorialEvent("like_gath", true);
+          }
+        }
+      }
+    });
+  }
+}
+
+(function() {
+  var autoLink,
+    slice = [].slice;
+
+  autoLink = function() {
+    var callback, k, linkAttributes, option, options, pattern, v;
+    options = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    pattern = /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[\-A-Z0-9+\u0026\u2019@#\/%?=()~_|!:,.;]*[\-A-Z0-9+\u0026@#\/%=~()_|])/gi;
+    if (!(options.length > 0)) {
+      return this.replace(pattern, "$1<a href='$2'>$2</a>");
+    }
+    option = options[0];
+    callback = option["callback"];
+    linkAttributes = ((function() {
+      var results;
+      results = [];
+      for (k in option) {
+        v = option[k];
+        if (k !== 'callback') {
+          results.push(" " + k + "='" + v + "'");
+        }
+      }
+      return results;
+    })()).join('');
+    return this.replace(pattern, function(match, space, url) {
+      var link;
+      link = (typeof callback === "function" ? callback(url) : void 0) || ("<a class='autolink' onclick='window.open("+ '"' + url + '", "_system"); return false;' + "'>" + url + "</a>");
+      return "" + space + link;
+    });
+  };
+
+  String.prototype['autoLink'] = autoLink;
+
+}).call(this);
 
 /* End of Global Functions */
 
@@ -570,13 +697,18 @@ var viewConfig = {
   },
   "/post_list" : {
     "controller"  : "postListCtrl",
-    "template"    : serverParentURL + "/post_list/area_my",
-    "header"      : "./header/board.area_my.html"
-  },
-  "/post_list/area_nearby" : {
-    "controller"  : "postListCtrl",
     "template"    : serverParentURL + "/post_list/area_nearby",
-    "header"      : "./header/board.area_nearby.html"
+    "header"      : "./header/board.html"
+  },
+  "/post_list/area_my" : {
+    "controller"  : "postListCtrl",
+    "template"    : serverParentURL + "/post_list/area_my",
+    "header"      : "./header/board.html"
+  },
+  "/post_list/area_global" : {
+    "controller"  : "postListCtrl",
+    "template"    : serverParentURL + "/post_list/area_global",
+    "header"      : "./header/board.area_global.html"
   },
   "/post_detail" : {
     "controller"  : "postDetailCtrl",
@@ -590,11 +722,6 @@ var viewConfig = {
   },
   "/gathering_list" : {
     "controller"  : "gatheringListCtrl",
-    "template"    : serverParentURL + "/gathering_list/area_my",
-    "header"      : "./header/gathering.area_my.html"
-  },
-  "/gathering_list/area_nearby" : {
-    "controller"  : "gatheringListCtrl",
     "template"    : serverParentURL + "/gathering_list/area_nearby",
     "header"      : "./header/gathering.area_nearby.html"
   },
@@ -603,6 +730,12 @@ var viewConfig = {
     "template"    : serverParentURL + "/gathering_list/joined",
     "header"      : "./header/gathering.joined.html"
   },
+  "/gathering_list/area_global" : {
+    "controller"  : "gatheringListCtrl",
+    "template"    : serverParentURL + "/gathering_list/area_global",
+    "header"      : "./header/gathering.area_global.html",
+    "footerHide"  : true
+  },  
   "/gathering_detail" : {
     "controller"  : "gatheringDetailCtrl",
     "template"    : serverParentURL + "/gathering_detail",
@@ -917,6 +1050,7 @@ function initiator(newPath, pushState){
     }
   });
 
+  // draw dots when new gath or post
   // api.get("/api/v1/get/highlight",function(response){
 
   //   var footerHighlight = response.footer;
@@ -989,88 +1123,6 @@ function initiator(newPath, pushState){
   });
 }
 
-function button_like() {
-  var id = $(this).data("pid") || $(this).data("gid");
-  var action = $(this).data("action");
-  var type = ( ($(this).data('pid')) > 0 ? 'post' : 'gath' );
-  var data = (type == 'post') ? {'pid': id, 'action': action} : {'gid': id, 'action': action};
-  var url = (type == 'post') ? "/post_like/" : "/gathering_like/";
-  var button = $(this);
-
-  // TODO: need to add error handling
-  if (button.hasClass("liked")) { // Already Liked
-    api.post(url, data, function (res) {
-      console.log(res);
-      if(res['ok']) {
-        var next_action = "on";
-        button.data("action", next_action);
-        button.removeClass("liked");
-        button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_off.png')");
-
-        if (type == 'post'){
-          var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
-          $("#posting-item-" + id).find(".posting-stat .like .count").text(count - 1);
-
-          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-              logCompletedTutorialEvent("like_post", false);
-          }
-        } else {
-          var count = parseInt($("#gathering-stats-like").text());
-          $("#gathering-stats-like").text(count - 1);
-          $('#gathering-stats-nor').data("link", "");
-
-          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-              logCompletedTutorialEvent("like_gath", false);
-          }
-        }
-      }
-    });
-
-  } else {
-    api.post(url, data, function (res) {
-      console.log(res);
-      if(res['ok']) {
-        var next_action = "off";
-        button.data("action", next_action)
-        button.addClass("liked");
-        button.css("background-image", "url('http://www.hellowoot.co.kr/static/asset/images/main/func_like_on.png')");
-
-        if (type == 'post'){
-          var count = parseInt($("#posting-item-" + id).find(".posting-stat .like .count").text());
-          $("#posting-item-" + id).find(".posting-stat .like .count").text(count + 1);
-
-          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-              logCompletedTutorialEvent("like_post", true);
-          }
-        } else {
-          var count = parseInt($("#gathering-stats-like").text());
-          $("#gathering-stats-like").text(count + 1);
-          $('#gathering-stats-nor').data("link", "/gathering_members?gid=" + id);
-
-          if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-              logCompletedTutorialEvent("like_gath", true);
-          }
-        }
-      }
-    });
-  }
-}
-
-function pullupGuideTemplate(templeteUrl){
-  pullupMenu(templeteUrl, function(){
-      $(".overlap-close").off("click").on("click",function(){
-          $("#template-view-pullup").css({"display":"none"}).html("");
-          $("#pullup .background").trigger("click");
-      });
-
-      if (templeteUrl = "pullup_guide_point") {
-          var udataForPoints = JSON.parse($("#hiddenInput_userdata").val() || null);
-          var points_left = parseInt(udataForPoints.points_earned) - parseInt(udataForPoints.points_used);
-          $("#points_left").text(points_left);
-      }
-  });
-}
-
 
 
 /* Controller */
@@ -1085,11 +1137,9 @@ var controller = {
 
     // Blockname Replace
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
+    var uid = userdata.uid;
     $("#header-title").text(userdata.block + " 블록");
-
-    if(typeof FirebasePlugin != 'undefined'){
-       refreshDeviceToken();
-    }
 
     // Header Notification Highlight
     var notidata = JSON.parse($("#hiddenInput_notidata").val() || null);
@@ -1098,10 +1148,34 @@ var controller = {
       $('.header-right-index-item.notification').append('<span class="header-item-noti">' + numNewNoti + '</span>');
     }
 
-    // requiring points for gathering
-    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
+    if(typeof FirebasePlugin != 'undefined'){
+       refreshDeviceToken();
+    }
 
+    // messgae unread
+    if ( typeof FirebasePlugin != "undefined" ){
+        $.each($(".gathering-item"), function(){
+            var item = $(this);
+            if ( item.data("join") == true ) {
+                var gid = item.data("id");
+                firebase.database().ref("messages_read/gathering/" + gid + "/" + uid).once("value").then(function(snapshot){
+                    if ( snapshot.val() ) {
+                        var count_read = snapshot.val().count_read || null;
+                        firebase.database().ref("messages/gathering/" + gid).once("value").then(function(snapshot){
+                            var count_total = snapshot.numChildren();
+                            var count_left = count_total - count_read;
+        
+                            if (count_left > 0){
+                                item.find(".message-unread").text(count_left);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    // requiring points for gathering
     $(".gathering-item").off("click").on("click", function(){
         var item = $(this);
         var gid = item.data("id");
@@ -1118,10 +1192,10 @@ var controller = {
             if ( points_left >= 3 ) {
                 initiator("/gathering_detail?gid=" + gid, true);
             } else {
-              popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              popup("포인트 3점을 모아야 게더링을 볼 수 있어요.<br>포인트는 게시글/댓글/게더링을 쓰면 생겨요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
-                  initiator("/account/profile?uid=" + udata.uid, true);
+                  initiator("/account/profile?uid=" + userdata.uid, true);
                   setTimeout(function(){
                       pullupGuideTemplate("pullup_guide_point");
                   }, 500);
@@ -1154,6 +1228,7 @@ var controller = {
   /* Notification Ctrl */
   notificationCtrl : function(){
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
 
     api.get("/action/read_all/", function(){});
 
@@ -1166,7 +1241,7 @@ var controller = {
                 if(res['ok']) {
                     var urlSplit = res.url.split("/");
                     var urlType = urlSplit[1];
-                    var id = urlType.indexOf("account") > -1 ? urlSplit[3] : urlSplit[2];
+                    var id = urlType.indexOf("account") > -1 || urlType.indexOf("notice") > -1 ? urlSplit[3] : urlSplit[2];
 
                     // post -> post_detail
                     if ( urlType.indexOf("post") > -1 ) {
@@ -1174,10 +1249,19 @@ var controller = {
                     }
                     // gathering (need to fix the condition of if statement through 'chatting_on')
                     else if ( urlType.indexOf("gathering") > -1 ) {
-                        if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt(userdata.uid)) ) {
+                        if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt("{{ request.user.id }}")) ) {
                             initiator("/chat?gid=" + id, true);
                         } else if ( res.target.fields.is_removed == true || res.target.fields.is_accessible == false ) {
-                            popup('사라진 게더링이라서 접근이 불가능합니다.');
+                            popup('현재 접근이 불가능한 게더링입니다.');
+                        } else if (points_left < 3) {
+                            popup("포인트 3점을 모아야 게더링을 볼 수 있어요.<br>포인트는 게시글/댓글/게더링을 쓰면 생겨요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+                            $(".guide-point").off("click").on("click", function(){
+                                $("#popup-message").hide();
+                                initiator("/account/profile?uid=" + userdata.uid, true);
+                                setTimeout(function(){
+                                    pullupGuideTemplate("pullup_guide_point");
+                                }, 500);
+                            });
                         } else {
                             initiator("/gathering_detail?gid=" + id, true);
                         }
@@ -1185,12 +1269,53 @@ var controller = {
                     // woot -> profile
                     else if ( urlType.indexOf("account") > -1 ) {
                         initiator("/account/profile?uid=" + id, true);
+                    } 
+                    // noti
+                    else if ( urlType.indexOf("notice") > -1 ) {
+                        initiator("/notice_detail?nid=" + id, true);
                     }
-
                 }
             });
         });
     });
+
+    // Infinite Scroll
+    var infiniteScrollPage = 2;
+    var infiniteScroll = function(){
+      $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
+        var eventScroll = $("#notification-wrapper").height() - $("#template-view").height() + 100;
+
+        if( eventScroll < $("#template-view").scrollTop() ){
+          $(this).unbind("scroll.board");
+
+          if($("#notification-wrapper").length > 0){
+            $.ajax({
+                    method    : "GET",
+                    url       : serverParentURL + "/action/notification/" + "?page=" + infiniteScrollPage,
+                    xhrFields: {withCredentials: true},
+                    success   : function( response ) {
+                                    if(response){
+                                        console.log(response);
+                                        $("#notification-wrapper").append($.parseHTML(response));
+                                        $("woot-click").off('click').on('click',function(){
+                                            initiator($(this).attr("href"), true);
+                                        });
+                                        console.log(infiniteScrollPage + " times called");
+
+                                        infiniteScrollPage += 1;
+                                        infiniteScroll();
+                                    }
+
+                              },
+                    error     : function( request, status, error ) {}
+            });
+          }
+        }
+
+      });
+    }
+    infiniteScroll();
+
     return;
   },
 
@@ -1973,6 +2098,11 @@ var controller = {
             ageup = parseInt(myage) + j;
         }
 
+        // if age 20 or 21
+        if (parseInt(myage) < 22) {
+            $(".roller-min ul").append('<li class="button" data-age="20">20</li>');
+        }
+
         // Age Limit Event Handler
         $("#pullup-agelimit-input-min-fake input").off('click').on('click',function(){
           $("#pullup-agelimit-input-min-fake .roller").css({"display":"block"});
@@ -2188,6 +2318,7 @@ var controller = {
 
                 if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                     logCompletedTutorialEvent("write_gath", true);
+                    facebookConnectPlugin.logEvent("WRITE_GATH", {"block":userdata.block}, null);
                 }
             } else {
                 $("#pullup-write").hide();
@@ -2503,6 +2634,7 @@ var controller = {
 
                 if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                     logCompletedTutorialEvent("write_post", true);
+                    facebookConnectPlugin.logEvent("WRITE_POST", {"block":userdata.block}, null);
                 }
             } else {
                 $("#pullup-write").hide();
@@ -2681,8 +2813,8 @@ var controller = {
     // Current Profile User Data
     var profiledata = JSON.parse($("#hiddenInput_currentpagedata").val() || null);
 
-    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
 
     $(".profile-button-guide-woot").off("click").on("click", function(){
         pullupMenu("pullup_guide_woot");
@@ -2855,7 +2987,7 @@ var controller = {
 
   // profileCtrl
   profileEditCtrl : function(){
-    var udata = JSON.parse($("#hiddenInput_userdata").val());
+    var userdata = JSON.parse($("#hiddenInput_userdata").val());
     var editdata = JSON.parse($("#hiddenInput_editdata").val());
 
     $("#profile-edit-input-description-job").height(1).height( $("#profile-edit-input-description-job").prop('scrollHeight') - 16 );
@@ -3132,7 +3264,7 @@ var controller = {
                   initiator("/index", false);
               } else {
                   popup("프로필이 수정되었습니다.");
-                  initiator("/account/profile?uid=" + udata.uid, false);
+                  initiator("/account/profile?uid=" + userdata.uid, false);
               }
           } else {
               popup('가이드에 따라 모든 내용을 작성해주세요.');
@@ -3238,26 +3370,22 @@ var controller = {
   },
 
   /* Board Ctrl */
-    postListCtrl : function(){
-
-    // TEMP: delete
-    var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);  
+  postListCtrl : function(){
 
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
-    $("#header-title").text(boarddata.bname);
-    $("#tab-posting-area_my").off("click").on("click",function(){
-        initiator("/post_list?bid=" + boarddata.topic_code, false);
-    });
-    $("#tab-posting-area_nearby").off("click").on("click",function(){
-        initiator("/post_list/area_nearby?bid=" + boarddata.topic_code, false);
-    });
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
 
     $("textarea").on('keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') );
       $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
     });
 
+    // Autolink
+    $.each($('p, span'), function(idx, tg) {
+      $(this).html($(this).html().autoLink({ target: "_blank" }));
+    });
+    
     var miscHandler = function(){
         // More button click event handler
         $(".content-more-button").off('click').on('click',function(){
@@ -3332,19 +3460,11 @@ var controller = {
         var pid = $(this).data("pid");
 
         $("#template-view").css({"overflow":"hidden"});
-        $("body").css({"overflow":"hidden"});
-        $("body").addClass("body-overlap-view");
+        $("body").css({"overflow":"hidden"})
+                 .addClass("body-overlap-view");
 
-        $("#posting-overlap-view").append('<div id="header" class="row">' +
-                                            '<div class="header-left overlap-close button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
-                                              '<i class="ion-android-close"></i>' +
-                                            '</div>' +
-                                            '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
-                                              '<span>댓글</span>' +
-                                            '</div>' +
-                                          '</div>');
-        $("#posting-overlap-view").css({"display":"block"});
-        $("#posting-overlap-view").addClass("activated");
+        $("#posting-overlap-view").css({"display":"block"})
+                                  .addClass("activated");
         anime({
             targets: "#posting-overlap-view",
             translateX: '-100%',
@@ -3354,38 +3474,98 @@ var controller = {
 
         renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + pid, "#posting-overlap-view", function(){
 
+          $.each($('p, span'), function(idx, tg) {
+              $(this).html($(this).html().autoLink({ target: "_blank" }));
+          });
+
+          $(".posting-profile-overlap-twofold").off('click').on('click',function(){
+              var uid = $(this).data("uid");
+              console.log(1);
+
+              $("#posting-overlap-view").css({"overflow":"hidden"});
+              $("#posting-overlap-view-twofold").css({"display":"block"})
+                                                .addClass("activated");
+
+              anime({
+                  targets: "#posting-overlap-view-twofold",
+                  translateX: '-100%',
+                  duration: 300,
+                  easing: 'easeInOutQuart'
+              });
+
+              renderTemplate(serverParentURL + "/account/profile/" + uid, "#posting-overlap-view-twofold", function(){
+                  controller["profileCtrl"]();
+                  $("#posting-overlap-view-twofold").append('<div id="header" class="row">' +
+                                                      '<div class="header-left overlap-close-posting-twofold button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                                        '<i class="ion-android-close"></i>' +
+                                                      '</div>' +
+                                                      '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                                        '<span>프로필</span>' +
+                                                      '</div>' +
+                                                    '</div>');
+                  $("#posting-overlap-view-twofold").css("overflow-y", "scroll");
+                  $(".overlap-close-posting-twofold").off('click').on('click',function(){
+                      anime({
+                          targets: "#posting-overlap-view-twofold",
+                          translateX: '100%',
+                          duration: 10
+                      });
+
+                      $("#posting-overlap-view-twofold").html("")
+                                                        .removeClass("activated")
+                                                        .css({"display":"none", "overflow-y":"hidden"});
+                      $("#posting-overlap-view").css({"overflow":""});
+                  });
+
+                  $("woot-click").off("click").on("click", function(){
+                      $("#posting-overlap-view-twofold").html("")
+                                                        .removeClass("activated")
+                                                        .css({"display":"none", "overflow-y":"hidden"});
+                      $("#posting-overlap-view").css({"overflow":"", "display":"none"})
+                                                .html("")
+                                                .removeClass("activated");
+                      $("#template-view").css({"overflow":""});
+                      $("body").css({"overflow":"inherit"})
+                               .removeClass("body-overlap-view"); 
+                      
+                      initiator($(this).attr("href"), true);
+                  });
+
+              });
+          });
+
           // iOS: blur keyboard by clicking outside area
           $(".board-detail-contents").off("click").on("click", function(){
               $("input").blur();
               $("textarea").blur();
           });
           $("input").off("click").on("click", function(event){
-            event.stopPropagation();
+              event.stopPropagation();
           });
           $("textarea").off("click").on("click", function(event){
-            event.stopPropagation();
+              event.stopPropagation();
           });
 
           // Close Event Handler
-          $(".overlap-close").off('click').on('click',function(){
-            anime({
-              targets: "#posting-overlap-view",
-              translateX: '100%',
-              duration: 10
-            });
-            $("#posting-overlap-view").html("");
-            $("#posting-overlap-view").removeClass("activated");
-            $("#posting-overlap-view").css({"display":"none"});
-            $("#template-view").css({"overflow":""});
-            $("body").css({"overflow":"inherit"});
-            $("body").removeClass("body-overlap-view");
+          $(".overlap-close-posting").off('click').on('click',function(){
+              anime({
+                targets: "#posting-overlap-view",
+                translateX: '100%',
+                duration: 10
+              });
+              $("#posting-overlap-view").html("")
+                                        .removeClass("activated")
+                                        .css({"display":"none"});
+              $("#template-view").css({"overflow":""});
+              $("body").css({"overflow":"inherit"})
+                      .removeClass("body-overlap-view");
           });
 
           var commentEventHandler = function(){
               // Post API: Comment - Default
 
               $("#footer-textarea").on('keydown keyup', function () {
-                    $(this).height(1).height( $(this).prop('scrollHeight') );
+                  $(this).height(1).height( $(this).prop('scrollHeight') );
               });
 
               $("#footer-textarea-submit").off('click').on('click',function(){
@@ -3410,7 +3590,8 @@ var controller = {
                               comment_count.text(parseInt(comment_count.text()) + 1);
 
                               if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                                  logCompletedTutorialEvent("comment", true);
+                                  logCompletedTutorialEvent("comment_p", true);
+                                  facebookConnectPlugin.logEvent("COMMENT", {"block":userdata.block}, null);
                               }
                           }
                       });
@@ -3512,7 +3693,6 @@ var controller = {
                 $(".posting-comment").removeClass("selected");
                 $("#posting-comment-" + cid).addClass("selected");
 
-                // renderTemplate(serverParentURL + "/comment/comment_list_iframe/post/" + cid,"#footer-input",function(){
                 $(function() {
                   $("#footer-textarea").focus();
                   $("#footer-textarea").attr("placeholder", "답글 달기...");
@@ -3545,7 +3725,8 @@ var controller = {
                               comment_count.text(parseInt(comment_count.text()) + 1);
 
                               if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                                logCompletedTutorialEvent("comment", true);
+                                logCompletedTutorialEvent("rcomment_p", true);
+                                facebookConnectPlugin.logEvent("COMMENT", {"block":userdata.block}, null);
                               }
                           }
                         });
@@ -3566,20 +3747,20 @@ var controller = {
       // Overlap : Like
       $(".overlap-button-like").off('click').on('click',function(){
         $("#template-view").css({"overflow":"hidden"});
-        $("body").css({"overflow":"hidden"});
-        $("body").addClass("body-overlap-view");
+        $("body").css({"overflow":"hidden"})
+                 .addClass("body-overlap-view");
 
         var pid = $(this).data("pid");
         $("#posting-overlap-view").append('<div id="header" class="row">' +
-                                            '<div class="header-left overlap-close button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                            '<div class="header-left overlap-close-posting button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
                                               '<i class="ion-android-close"></i>' +
                                             '</div>' +
                                             '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
                                               '<span>좋아요</span>' +
                                             '</div>' +
                                           '</div>');
-        $("#posting-overlap-view").css({"display":"block"});
-        $("#posting-overlap-view").addClass("activated");
+        $("#posting-overlap-view").css({"display":"block"})
+                                  .addClass("activated");
         anime({
             targets: "#posting-overlap-view",
             translateX: '-100%',
@@ -3589,25 +3770,147 @@ var controller = {
         renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
 
           // Event Handler
-          $(".overlap-close").off('click').on('click',function(){
-            anime({
-              targets: "#posting-overlap-view",
-              translateX: '100%',
-              duration: 10
-            });
-            $("#posting-overlap-view").html("");
-            $("#posting-overlap-view").css({"display":"none"});
-            $("#posting-overlap-view").removeClass("activated");
-            $("#template-view").css({"overflow":""});
-            $("body").css({"overflow":"inherit"});
-            $("body").removeClass("body-overlap-view");
+          $(".overlap-close-posting").off('click').on('click',function(){
+              anime({
+                  targets: "#posting-overlap-view",
+                  translateX: '100%',
+                  duration: 10
+              });
+              $("#posting-overlap-view").html("")
+                                        .css({"display":"none"})
+                                        .removeClass("activated");
+              $("#template-view").css({"overflow":""});
+              $("body").css({"overflow":"inherit"})
+                       .removeClass("body-overlap-view");
           });
+          
+          // overlap - profile
+          $(".people-item-like").off("click").on("click", function(){
+              var uid = $(this).data("uid");
+              console.log(1);
 
+              $("#posting-overlap-view").css({"overflow":"hidden"});
+              $("#posting-overlap-view-twofold").css({"display":"block"})
+                                                .addClass("activated");
+
+              anime({
+                  targets: "#posting-overlap-view-twofold",
+                  translateX: '-100%',
+                  duration: 300,
+                  easing: 'easeInOutQuart'
+              });
+
+              renderTemplate(serverParentURL + "/account/profile/" + uid, "#posting-overlap-view-twofold", function(){
+                  controller["profileCtrl"]();
+                  $("#posting-overlap-view-twofold").append('<div id="header" class="row">' +
+                                                      '<div class="header-left overlap-close-posting-twofold button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                                        '<i class="ion-android-close"></i>' +
+                                                      '</div>' +
+                                                      '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                                        '<span>프로필</span>' +
+                                                      '</div>' +
+                                                    '</div>');
+                  $("#posting-overlap-view-twofold").css("overflow-y", "scroll");
+                  $(".overlap-close-posting-twofold").off('click').on('click',function(){
+                      anime({
+                          targets: "#posting-overlap-view-twofold",
+                          translateX: '100%',
+                          duration: 10
+                      });
+
+                      $("#posting-overlap-view-twofold").html("")
+                                                        .removeClass("activated")
+                                                        .css({"display":"none", "overflow-y":"hidden"});
+                      $("#posting-overlap-view").css({"overflow":""});
+                      $(".like-people-contents").css({"display":"block"});
+                  });
+
+                  $("woot-click").off("click").on("click", function(){
+                      $("#posting-overlap-view-twofold").html("")
+                                                        .removeClass("activated")
+                                                        .css({"display":"none", "overflow-y":"hidden"});
+                      $("#posting-overlap-view").css({"overflow":"", "display":"none"})
+                                                .html("")
+                                                .removeClass("activated");
+                      $("#template-view").css({"overflow":""});
+                      $("body").css({"overflow":"inherit"})
+                               .removeClass("body-overlap-view"); 
+                      
+                      initiator($(this).attr("href"), true);
+                  });
+
+              });
+
+          });
         });
+
 
       });
     }
     overlapHandler();
+
+    // Overlap Profile
+    var overlapProfileHandler = function(){
+        $(".posting-profile-overlap").off('click').on('click',function(){
+            var uid = $(this).data("uid");
+            console.log(1);
+
+            $("#template-view").css({"overflow":"hidden"});
+            $("body").css({"overflow":"hidden"})
+                     .addClass("body-overlap-view");
+
+            $("#posting-overlap-view").css({"display":"block"})
+                                      .addClass("activated");
+
+            anime({
+                targets: "#posting-overlap-view",
+                translateX: '-100%',
+                duration: 300,
+                easing: 'easeInOutQuart'
+            });
+
+            renderTemplate(serverParentURL + "/account/profile/" + uid, "#posting-overlap-view", function(){
+                controller["profileCtrl"]();
+                $("#posting-overlap-view").append('<div id="header" class="row">' +
+                                                    '<div class="header-left overlap-close-posting button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                                      '<i class="ion-android-close"></i>' +
+                                                    '</div>' +
+                                                    '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                                      '<span>프로필</span>' +
+                                                    '</div>' +
+                                                  '</div>');
+                $("#posting-overlap-view").css("overflow-y", "scroll");
+                $(".overlap-close-posting").off('click').on('click',function(){
+                    anime({
+                        targets: "#posting-overlap-view",
+                        translateX: '100%',
+                        duration: 10
+                    });
+
+                    $("#posting-overlap-view").html("")
+                                              .removeClass("activated")
+                                              .css({"display":"none", "overflow-y":"hidden"});
+                    $("#template-view").css({"overflow":""});
+                    $("body").css({"overflow":"inherit"})
+                             .removeClass("body-overlap-view");
+                });
+
+                $("woot-click").off("click").on("click", function(){
+                    $("#posting-overlap-view").html("")
+                                              .removeClass("activated")
+                                              .css({"display":"none", "overflow":""});
+                    $("#template-view").css({"overflow":""});
+                    $("body").css({"overflow":"inherit"})
+                             .removeClass("body-overlap-view"); 
+                    
+                    initiator($(this).attr("href"), true);
+                });
+
+
+            });
+        });
+    }
+    overlapProfileHandler();
 
     // Infinite Scroll
     var infiniteScrollPage = 2;
@@ -3631,10 +3934,19 @@ var controller = {
                                     initiator($(this).attr("href"), true);
                                   });
                                   overlapHandler();
+                                  overlapProfileHandler();
                                   likeHandler();
                                   miscHandler();
+                                  console.log(infiniteScrollPage + " times called");
+
                                   infiniteScrollPage += 1;
                                   infiniteScroll();
+
+                                  // Autolink
+                                  $.each($('p, span'), function(idx, tg) {
+                                    $(this).html($(this).html().autoLink({ target: "_blank" }));
+                                  });
+                                  
                                 }
 
                               },
@@ -3656,11 +3968,13 @@ var controller = {
         el: '.swiper-pagination',
       },
     });
-
-    $("footer-")
-
-    var pid = $('.button-misc').data("pid");
-
+    
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    
+    // Blockname Replace
+    var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
+    $("#header-title").text(boarddata.bname);
+    
     // iOS: blur keyboard by clicking outside area
     $(".board-contents").off("click").on("click", function(){
         $("input").blur();
@@ -3673,50 +3987,56 @@ var controller = {
       event.stopPropagation();
     });
 
+    $("textarea").on('keydown keyup', function () {
+      $(this).height(1).height( $(this).prop('scrollHeight') );
+      $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
+    });
+
+    $.each($('p, span'), function(idx, tg) {
+      $(this).html($(this).html().autoLink({ target: "_blank" }));
+    });
+
+    var pid = $('.button-misc').data("pid");
     $(".button-misc").off('click').on('click',function(){
 
-    // post edit, delete
-    if ($(this).data("right") == "yes") {
-        pullupMenu('pullup_post_edit?pid=' + pid, function(){
+        // post edit, delete
+        if ($(this).data("right") == "yes") {
+            pullupMenu('pullup_post_edit?pid=' + pid, function(){
 
-            // post delete
-            $(".pullup-item-post-delete").off('click').on('click',function(e){
-                e.preventDefault();
+                // post delete
+                $(".pullup-item-post-delete").off('click').on('click',function(e){
+                    e.preventDefault();
 
-                popup("정말 삭제하시겠습니까?", function(){
-                    api.get('/post_delete/' + pid + '/', function(){
-                        $("#pullup .background").click();
-                        history.back();
+                    popup("정말 삭제하시겠습니까?", function(){
+                        api.get('/post_delete/' + pid + '/', function(){
+                            $("#pullup .background").click();
+                            history.back();
+                        });
                     });
                 });
+
+                // post edit
+                $(".pullup-item-post-edit").off('click').on('click',function(e){
+                    initiator("/write/posting/edit?pid=" + pid, true);
+                    $("#pullup").css({"display":"none"});
+                    $("#template-view").css({"overflow":""});
+                    $("body").css({"overflow":""});
+                });
+
             });
 
-            // post edit
-            $(".pullup-item-post-edit").off('click').on('click',function(e){
-                initiator("/write/posting/edit?pid=" + pid, true);
-                $("#pullup").css({"display":"none"});
-                $("#template-view").css({"overflow":""});
-                $("body").css({"overflow":""});
-            });
-
-        });
-
-        // post report
+            // post report
         } else {
             pullupMenu('pullup_post_report?pid=' + pid, function(){
-                    $(".pullup-item.post-report").off("click").on("click",function(){
-                         initiator("/report/post?pid=" + pid, true);
-                         $("#pullup").css({"display":"none"});
-                         $("#template-view").css({"overflow":""});
-                         $("body").css({"overflow":""});
-                    });
+                $(".pullup-item.post-report").off("click").on("click",function(){
+                      initiator("/report/post?pid=" + pid, true);
+                      $("#pullup").css({"display":"none"});
+                      $("#template-view").css({"overflow":""});
+                      $("body").css({"overflow":""});
+                });
             });
         }
     });
-
-    var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
-    $("#header-title").text(boarddata.bname);
-
 
     $("#footer").css({"display":"none"});
     $('<div id="footer-input" class="row footer-special-element">' +
@@ -3735,18 +4055,6 @@ var controller = {
         $("#template-view").scrollTop( $('#' + urlParameter.scrollToElm).position().top );
       }
     }
-
-    // Blockname Replace
-    var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
-    $("#header-title").text(boarddata.bname);
-
-    // TEMP: delete
-    var postdata = JSON.parse($("#hiddenInput_postdata").val() || null);
-
-    $("textarea").on('keydown keyup', function () {
-      $(this).height(1).height( $(this).prop('scrollHeight') );
-      $("#posting-item-comment").css({"padding-bottom":$(this).prop('scrollHeight') - 26});
-    });
 
     // Overlap : Like
     $(".overlap-button-like").off('click').on('click',function(){
@@ -3770,23 +4078,82 @@ var controller = {
             duration: 300,
             easing: 'easeInOutQuart'
         });
-        renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
 
+        renderTemplate(serverParentURL + "/post_users_liking/" + pid,"#posting-overlap-view",function(){
           // Event Handler
-          $(".overlap-close").off('click').on('click',function(){
+          $(".overlap-close-posting").off('click').on('click',function(){
             anime({
               targets: "#posting-overlap-view",
               translateX: '100%',
               duration: 10
             });
-            $("#posting-overlap-view").html("");
-            $("#posting-overlap-view").css({"display":"none"});
-            $("#posting-overlap-view").removeClass("activated");
+            $("#posting-overlap-view").html("")
+                                      .css({"display":"none"})
+                                      .removeClass("activated");
             $("#template-view").css({"overflow":""});
             $("body").css({"overflow":"inherit"});
           });
 
+          // overlap - profile
+          $(".people-item-like").off("click").on("click", function(){
+            var uid = $(this).data("uid");
+            console.log(1);
+
+            $("#posting-overlap-view").css({"overflow":"hidden"});
+            $("#posting-overlap-view-twofold").css({"display":"block"})
+                                              .addClass("activated");
+
+            anime({
+                targets: "#posting-overlap-view-twofold",
+                translateX: '-100%',
+                duration: 300,
+                easing: 'easeInOutQuart'
+            });
+
+            renderTemplate(serverParentURL + "/account/profile/" + uid, "#posting-overlap-view-twofold", function(){
+                controller["profileCtrl"]();
+                $("#posting-overlap-view-twofold").append('<div id="header" class="row">' +
+                                                    '<div class="header-left overlap-close-posting-twofold button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                                      '<i class="ion-android-close"></i>' +
+                                                    '</div>' +
+                                                    '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                                      '<span>프로필</span>' +
+                                                    '</div>' +
+                                                  '</div>');
+                $("#posting-overlap-view-twofold").css("overflow-y", "scroll");
+                $(".overlap-close-posting-twofold").off('click').on('click',function(){
+                    anime({
+                        targets: "#posting-overlap-view-twofold",
+                        translateX: '100%',
+                        duration: 10
+                    });
+
+                    $("#posting-overlap-view-twofold").html("")
+                                                      .removeClass("activated")
+                                                      .css({"display":"none", "overflow-y":"hidden"});
+                    $("#posting-overlap-view").css({"overflow":""});
+                    $(".like-people-contents").css({"display":"block"});
+                });
+
+                $("woot-click").off("click").on("click", function(){
+                    $("#posting-overlap-view-twofold").html("")
+                                                      .removeClass("activated")
+                                                      .css({"display":"none", "overflow-y":"hidden"});
+                    $("#posting-overlap-view").css({"overflow":"", "display":"none"})
+                                              .html("")
+                                              .removeClass("activated");
+                    $("#template-view").css({"overflow":""});
+                    $("body").css({"overflow":"inherit"})
+                             .removeClass("body-overlap-view"); 
+                    
+                    initiator($(this).attr("href"), true);
+                });
+
+            });
+
         });
+
+      });
 
     });
 
@@ -3815,7 +4182,8 @@ var controller = {
                       comment_count.text(parseInt(comment_count.text()) + 1);
 
                       if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                        logCompletedTutorialEvent("comment", true);
+                        logCompletedTutorialEvent("comment_p", true);
+                        facebookConnectPlugin.logEvent("COMMENT", {"block":userdata.block}, null);
                       }
                   }
               });
@@ -3825,6 +4193,7 @@ var controller = {
 
         });
 
+        
         // Comment Edit Button
         /*
         $(".comment-edit-button").off('click').on('click',function(){
@@ -3875,7 +4244,6 @@ var controller = {
           $(".posting-comment").removeClass("selected");
           $("#posting-comment-" + cid).addClass("selected");
 
-          // renderTemplate(serverParentURL + "/footer-input/comment.recomment?cid=" + cid,"#footer-input",function(){
           $(function() {
             $("#footer-textarea").focus();
             $("#footer-textarea").attr("placeholder", "답글 달기...");
@@ -3908,7 +4276,8 @@ var controller = {
                           comment_count.text(parseInt(comment_count.text()) + 1);
 
                           if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                            logCompletedTutorialEvent("comment", true);
+                            logCompletedTutorialEvent("rcomment_p", true);
+                            facebookConnectPlugin.logEvent("COMMENT", {"block":userdata.block}, null);
                           }
                       }
                     });
@@ -3959,6 +4328,64 @@ var controller = {
                 }
             });
         });
+
+        $(".posting-profile-overlap-twofold").off('click').on('click',function(){
+            var uid = $(this).data("uid");
+        
+            $("#template-view").css({"overflow":"hidden"});
+            $("body").css({"overflow":"hidden"})
+                    .addClass("body-overlap-view");
+        
+            $("#posting-overlap-view").css({"display":"block"})
+                                              .addClass("activated");
+            anime({
+                targets: "#posting-overlap-view",
+                translateX: '-100%',
+                duration: 300,
+                easing: 'easeInOutQuart'
+            });
+        
+            renderTemplate(serverParentURL + "/account/profile/" + uid, "#posting-overlap-view", function(){
+                controller["profileCtrl"]();
+                $("#posting-overlap-view").append('<div id="header" class="row">' +
+                                                    '<div class="header-left overlap-close-posting-detail button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                                    '<i class="ion-android-close"></i>' +
+                                                    '</div>' +
+                                                    '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                                    '<span>프로필</span>' +
+                                                    '</div>' +
+                                                '</div>');
+                $("#posting-overlap-view").css("overflow-y", "scroll");
+                
+        
+                $(".overlap-close-posting-detail").off('click').on('click',function(){
+                    anime({
+                        targets: "#posting-overlap-view",
+                        translateX: '100%',
+                        duration: 10
+                    });
+        
+                    $("#posting-overlap-view").html("")
+                                                    .removeClass("activated")
+                                                    .css({"display":"none", "overflow-y":"hidden"});
+                    $("#template-view").css({"overflow":""});
+                    $("body").css({"overflow":"inherit"})
+                            .removeClass("body-overlap-view");
+                });
+        
+                $("woot-click").off("click").on("click", function(){
+                    $("#posting-overlap-view").html("")
+                                                    .removeClass("activated")
+                                                    .css({"display":"none", "overflow-y":"hidden"});
+                    $("#template-view").css({"overflow":""});
+                    $("body").css({"overflow":"inherit"})
+                            .removeClass("body-overlap-view"); 
+                    
+                    initiator($(this).attr("href"), true);
+                });
+        
+            });
+        });
     }
     commentEventHandler();
 
@@ -3967,42 +4394,109 @@ var controller = {
 
 
   gatheringListCtrl : function() {
-    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var uid = userdata.uid;
+    var gathdata = JSON.parse($("#hiddenInput_gatheringlistdata").val() || null);
+    var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
 
-    $(".gathering-item").off("click").on("click", function(){
+    // display the num of messages unread
+    $.each($(".gathering-item"), function(){
         var item = $(this);
-        var gid = item.data("id");
+        if ( item.data("join") == true ) {
+            var gid = item.data("id");
+            firebase.database().ref("messages_read/gathering/" + gid + "/" + uid).once("value").then(function(snapshot){
+                console.log(snapshot.val());
+                if ( snapshot.val() ) {
+                    var count_read = snapshot.val().count_read || null;
+                    firebase.database().ref("messages/gathering/" + gid).once("value").then(function(snapshot){
+                        var count_total = snapshot.numChildren();
+                        var count_left = count_total - count_read;
 
-        if ( item.data("join") ) {
-            if ( item.data("chaton") ) {
-                initiator("/chat?gid=" + gid, true);
-            } else {
-                initiator("/gathering_detail?gid=" + gid, true);
-            }
-        } else {
-            if ( points_left >= 3 ) {
-                initiator("/gathering_detail?gid=" + gid, true);
-            } else {
-                popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
-                $(".guide-point").off("click").on("click", function(){
-                    $("#popup-message").hide();
-                    initiator("/account/profile?uid=" + udata.uid, true);
-                    setTimeout(function(){
-                        pullupGuideTemplate("pullup_guide_point");
-                    }, 500);
-                });
-            }
+                        if (count_left > 0){
+                            item.find(".message-unread").text(count_left);
+                        }
+                    });
+                }
+            });
         }
     });
+
+    function pointCheck(){
+        $(".gathering-item").off("click").on("click", function(){
+            var item = $(this);
+            var gid = item.data("id");
+            var area_type = item.data("area_type");
+
+            // area_global
+            if (area_type == "area_global") {
+                initiator("/gathering_detail?gid=" + gid, true);
+            } else {
+                if ( item.data("join") ) {
+                    if ( item.data("chaton") ) {
+                        initiator("/chat?gid=" + gid, true);
+                    } else {
+                        initiator("/gathering_detail?gid=" + gid, true);
+                    }
+                } else {
+                    if ( points_left >= 3 ) {
+                        initiator("/gathering_detail?gid=" + gid, true);
+                    } else {
+                        popup("포인트 3점을 모아야 게더링을 볼 수 있어요.<br>포인트는 게시글/댓글/게더링을 쓰면 생겨요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+                        $(".guide-point").off("click").on("click", function(){
+                            $("#popup-message").hide();
+                            initiator("/account/profile?uid=" + userdata.uid, true);
+                            setTimeout(function(){
+                                pullupGuideTemplate("pullup_guide_point");
+                            }, 500);
+                        });
+                    }
+                }
+            }
+        });
+    }
+    pointCheck();
 
     $(".gathering-example").off("click").on("click",function(){
         pullupGuideTemplate("pullup_guide_gathering");
     });
 
-    $(".gathering-create").off('click').on('click', function(){
-        pullupMenu("pullup_create_gathering")
-    });
+    // Infinite Scroll
+    var infiniteScrollPage = 2;
+    var infiniteScroll = function(){
+    $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
+        var eventScroll = $("#gathering-discover-wrapper").height() - $("#template-view").height() + 150;
+
+        if( eventScroll < $("#template-view").scrollTop() ){
+            $(this).unbind("scroll.board");
+
+            if($("#gathering-discover-wrapper").length > 0){
+              $.ajax({
+                      method    : "GET",
+                      url       : serverParentURL + "/gathering_list/" + gathdata.area_type + "?page=" + infiniteScrollPage,
+                      xhrFields: {withCredentials: true},
+                      success   : function( response ) {
+                                      if(response){
+                                          console.log(response);
+                                          $("#gathering-past-infinite").append($.parseHTML(response));
+                                          $("woot-click").off('click').on('click',function(){
+                                              initiator($(this).attr("href"), true);
+                                          });
+                                          pointCheck();
+
+                                          console.log(infiniteScrollPage + " times called");
+                                          infiniteScrollPage += 1;
+                                          infiniteScroll();
+                                      }
+
+                                },
+                      error     : function( request, status, error ) {}
+              });
+            }
+        }
+
+      });
+    }
+    infiniteScroll();    
 
     return;
   },
@@ -4011,8 +4505,14 @@ var controller = {
   gatheringDetailCtrl : function(){
     $("#footer").css({"display":"none"});
 
-    var udata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    var points_left = parseInt(udata.points_earned) - parseInt(udata.points_used);
+    var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
+
+    /* the required number of people */
+    var gathdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
+    var req_count = gathdata.min_num_people - gathdata.current_joining_people;
+    $('.tobevalid-count').text(req_count);
+
 
     // gathering sub-tabs
     /*
@@ -4040,11 +4540,6 @@ var controller = {
     $("#gathering-stats-like").text(parseInt($("#gathering-stats-like").text() - 1));
     $("#gathering-stats-participate").text(parseInt($("#gathering-stats-participate").text() - 1));
 
-    /* the required number of people */
-    var gdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
-    var req_count = gdata.min_num_people - gdata.current_joining_people;
-    $('.tobevalid-count').text(req_count);
-
     // gathering-member alert: prestage
     $('#gathering-stats-pre').off('click').on('click', function() {
        popup("게더링 최소 참석 인원이 만족되면 멤버를 확인할 수 있어요.")
@@ -4060,15 +4555,8 @@ var controller = {
     });
 
     // gathering-member alert: nearby
-    $('#gathering-stats-not-joinable').off('click').on('click', function() {
-        popup("누적 포인트 60점을 모아야 인접블록 게더링 멤버를 확인할 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
-        $(".guide-point").off("click").on("click", function(){
-            $("#popup-message").hide();
-            initiator("/account/profile?uid=" + udata.uid, true);
-            setTimeout(function(){
-                pullupGuideTemplate("pullup_guide_point");
-            }, 500);
-        });
+    $('#gathering-stats-global').off('click').on('click', function() {
+        popup("내블록과 주변블록 이외 '글로벌 게더링'은 멤버를 확인할 수 없어요.");
     });
   
     // gathering-join alert: finished, not joined
@@ -4080,10 +4568,10 @@ var controller = {
     
     // gathering-join alert: nearby, not joinable
     $('.button-participate.not-joinable').off('click').on('click', function(){
-        popup("누적 포인트 60점을 모아야 인접블록 게더링에 참여할 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+        popup("현재 '" + userdata.block + " 블록' 게더링만 참여 가능합니다.<br>'주변 블록' 게더링은 누적 포인트 60점을 모아야 참여 가능해요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
         $(".guide-point").off("click").on("click", function(){
             $("#popup-message").hide();
-            initiator("/account/profile?uid=" + udata.uid, true);
+            initiator("/account/profile?uid=" + userdata.uid, true);
             setTimeout(function(){
                 pullupGuideTemplate("pullup_guide_point");
             }, 500);
@@ -4107,6 +4595,7 @@ var controller = {
         var button = $(this);
         var url = "/gathering_join/"
         var hdinput = $("#hiddenInput_gatheringdetaildata");
+        var is_area_my = JSON.parse($("#hiddenInput_gatheringdetaildata").val()).is_area_my;
 
         if (button.hasClass("joined")) { // Already Liked
           popup("정말 참여를 취소하시겠습니까? 포인트를 사용한 경우 되돌려 받지 못해요.",function(){
@@ -4137,7 +4626,7 @@ var controller = {
 
         // joining
         } else {
-          if (points_left >= 3) {
+          if (is_area_my == "true" && points_left >= 3 || is_area_my == "false" && points_left >= 6 ) {
             if(hdinput.data('tochat') == 'pre') {
               popup("'모집중(채팅방이 열리기 전) 게더링'은<br>포인트 없이 참여 가능해요.", function(){
                 api.post(url, data, function (res) {
@@ -4151,7 +4640,8 @@ var controller = {
                     $(".tobevalid-count").text(count_pre - 1);
 
                     if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                        logCompletedTutorialEvent("join", true);
+                      logCompletedTutorialEvent("join", true);
+                      facebookConnectPlugin.logEvent("JOIN", {"block":userdata.block}, null);
                     }
 
                     if( parseInt($(".tobevalid-count").text()) <= 0 ) {
@@ -4161,10 +4651,10 @@ var controller = {
                 });
               });
             } else {
-              if ( parseInt(gdata.current_joining_people) >= parseInt(gdata.max_num_people) ) {
+              if ( parseInt(gathdata.current_joining_people) >= parseInt(gathdata.max_num_people) ) {
                   popup("현재로선 게더링 참석 인원이 마감되었습니다. 불참자가 발생할 시 참석이 가능합니다.")
               } else {
-                  popup("'채팅중인 게더링' 참여에는<br>포인트 3점이 소모됩니다.", function(){
+                  popup("'채팅중인 게더링' 참여에는<br>포인트가 소모됩니다.<br>(내블록 3점, 주변블록 6점)", function(){
                     api.post(url, data, function (res) {
                       if(res['ok']) {
                         var next_action = "off";
@@ -4177,19 +4667,21 @@ var controller = {
 
                         if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
                             logCompletedTutorialEvent("join", true);
+                            facebookConnectPlugin.logEvent("JOIN", {"block":userdata.block}, null);   
                         }
 
                         initiator("/chat?gid=" + gid, false);
+
                       }
                     });
                   });
               }
             }
           } else {
-              popup("게시글, 댓글, 또는 게더링을 써야 게더링을 볼 수 있어요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              popup("게시글/댓글/게더링을 쓰고 포인트를 모아야 게더링을 참여할 수 있어요.<br>(내블록 3점, 주변블록 6점)<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
-                  initiator("/account/profile?uid=" + udata.uid, true);
+                  initiator("/account/profile?uid=" + userdata.uid, true);
                   setTimeout(function(){
                       pullupGuideTemplate("pullup_guide_point");
                   }, 500);
@@ -4200,9 +4692,9 @@ var controller = {
 
     // Gathering More Button Handler
     $("#header-gathering-more-button").off("click").on("click",function(){
-      var gdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
-      var gid = gdata.gid;
-      if(gdata.is_my == "true"){
+      var gathdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
+      var gid = gathdata.gid;
+      if(gathdata.is_my == "true"){
           pullupMenu("pullup_gathering_edit?gid=" + gid, function(){
               $(".pullup-item.gathering-edit").off("click").on("click",function(){
                  initiator("/write/gathering/edit?gid=" + gid, true);
@@ -4237,13 +4729,260 @@ var controller = {
       }
     });
 
+    $("#gathering-comment-button").off("click").on("click",function(){
+        if ( $(this).data("is_old") == "False" && 
+             $('#gathering-like-button').data('action') == "on" && 
+             $('#gathering-participate-button').data('action') == "on" ){
+           popup("좋아요 또는 참석을 눌러야 댓글을 확인할 수 있어요.");
+        } else {
+            var gid = $(this).data("gid");
+
+            $("#template-view").css({"overflow":"hidden"});
+            $("body").css({"overflow":"hidden"})
+                    .addClass("body-overlap-view");
+
+            $("#posting-overlap-view").css({"display":"block"})
+                                      .addClass("activated");
+            anime({
+                targets: "#posting-overlap-view",
+                translateX: '-100%',
+                duration: 300,
+                easing: 'easeInOutQuart'
+            });
+
+            renderTemplate(serverParentURL + "/comment/comment_list_iframe/gathering/" + gid, "#posting-overlap-view", function(){
+
+              $(".posting-profile-overlap-twofold").off('click').on('click',function(){
+                  var uid = $(this).data("uid");
+                  console.log(1);
+
+                  $("#posting-overlap-view").css({"overflow":"hidden"});
+                  $("#posting-overlap-view-twofold").css({"display":"block"})
+                                                    .addClass("activated");
+
+                  anime({
+                      targets: "#posting-overlap-view-twofold",
+                      translateX: '-100%',
+                      duration: 300,
+                      easing: 'easeInOutQuart'
+                  });
+
+                  renderTemplate(serverParentURL + "/account/profile/" + uid, "#posting-overlap-view-twofold", function(){
+                      controller["profileCtrl"]();
+                      $("#posting-overlap-view-twofold").append('<div id="header" class="row">' +
+                                                          '<div class="header-left overlap-close-posting-twofold button col-lg-4 col-md-4 col-sm-4 col-xs-4">' +
+                                                            '<i class="ion-android-close"></i>' +
+                                                          '</div>' +
+                                                          '<div class="header-center block col-lg-16 col-md-16 col-sm-16 col-xs-16">' +
+                                                            '<span>프로필</span>' +
+                                                          '</div>' +
+                                                        '</div>');
+                      $("#posting-overlap-view-twofold").css("overflow-y", "scroll");
+                      $(".overlap-close-posting-twofold").off('click').on('click',function(){
+                          anime({
+                              targets: "#posting-overlap-view-twofold",
+                              translateX: '100%',
+                              duration: 10
+                          });
+
+                          $("#posting-overlap-view-twofold").html("")
+                                                            .removeClass("activated")
+                                                            .css({"display":"none", "overflow-y":"hidden"});
+                          $("#posting-overlap-view").css({"overflow":""});
+                      });
+
+                      $("woot-click").off("click").on("click", function(){
+                          $("#posting-overlap-view-twofold").html("")
+                                                            .removeClass("activated")
+                                                            .css({"display":"none", "overflow-y":"hidden"});
+                          $("#posting-overlap-view").css({"overflow":"", "display":"none"})
+                                                    .html("")
+                                                    .removeClass("activated");
+                          $("#template-view").css({"overflow":""});
+                          $("body").css({"overflow":"inherit"})
+                                  .removeClass("body-overlap-view"); 
+                          
+                          initiator($(this).attr("href"), true);
+                      });
+
+                  });
+              });
+
+              // iOS: blur keyboard by clicking outside area
+              $(".board-detail-contents").off("click").on("click", function(){
+                  $("input").blur();
+                  $("textarea").blur();
+              });
+              $("input").off("click").on("click", function(event){
+                  event.stopPropagation();
+              });
+              $("textarea").off("click").on("click", function(event){
+                  event.stopPropagation();
+              });
+
+              // Close Event Handler
+              $(".overlap-close-posting").off('click').on('click',function(){
+                  anime({
+                    targets: "#posting-overlap-view",
+                    translateX: '100%',
+                    duration: 10
+                  });
+                  $("#posting-overlap-view").html("")
+                                            .removeClass("activated")
+                                            .css({"display":"none"});
+                  $("#template-view").css({"overflow":""});
+                  $("body").css({"overflow":"inherit"})
+                          .removeClass("body-overlap-view");
+              });
+
+              var commentEventHandler = function(){
+                  // Post API: Comment - Default
+
+                  $("#footer-textarea").on('keydown keyup', function () {
+                      $(this).height(1).height( $(this).prop('scrollHeight') );
+                  });
+
+                  $("#footer-textarea-submit").off('click').on('click',function(){
+                      if ($("#footer-textarea").val()) {
+                          var data = {
+                                content : $("#footer-textarea").val(),
+                                content_type : $('[name="content_type"]').val(),
+                                content_id : $('[name="content_id"]').val()
+                          };
+
+                          api.post("/comment/write/",data,function(res){
+                              if (res['ok']) {
+                                  $('.posting-item-comment').append($(res.html).find(".posting-comment-wrap"));
+                                  $('#footer-textarea').val("").css("height", "48px");
+                                  commentEventHandler();
+
+                                  var heightSum = 0;
+                                  $(".posting-comment-wrap").each(function(){heightSum = heightSum + $(this).height();});
+                                  $("#posting-overlap-view .board-contents").animate({ scrollTop: heightSum }, 400);
+
+                                  var comment_count = $('#comment-count');
+                                  comment_count.text(parseInt(comment_count.text()) + 1);
+
+                                  if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+                                      logCompletedTutorialEvent("comment_g", true);
+                                      facebookConnectPlugin.logEvent("COMMENT", {"block":userdata.block}, null);
+                                  }
+                              }
+                          });
+                      } else {
+                          popup("내용을 입력해주세요.");
+                      }
+                  });
+
+                  // Comment Delete Button
+                  $('.comment-delete-button').off('click').on('click',function(){
+                      $this = $(this);
+
+                      popup("정말 삭제하시겠습니까?", function(){
+                          if($this.data('reply') == 'no') {
+                              var cid = $this.closest(".posting-comment").data('cid');
+
+                              api.get("/comment/delete/" + cid + '/', function(res){
+                                  console.log(res['msg']);
+                                  if(res['ok']){
+
+                                      var count_delete = 0;
+                                      var comment = $this.closest('.posting-comment-wrap');
+                                      comment.find('.posting-comment').each(function(){
+                                          if ( $(this).css("display") != "none" ) {
+                                              count_delete += 1;
+                                          }
+                                      });    
+                                      var count_current = $('#comment-count');
+                                      count_current.text(parseInt(count_current.text()) - count_delete);
+
+                                      comment.hide();
+                                  }
+                              });
+
+                          } else {
+                              var rid = $this.closest(".posting-comment").data('rid')
+                              api.get("/comment/replycomment_delete/" + rid + '/', function(res){
+                                  console.log(res['msg']);
+                                  if(res['ok']){
+                                      var comment = $this.closest('.posting-comment');
+                                      var count_current = $('#comment-count');
+                                      count_current.text(parseInt(count_current.text()) - 1);
+                                      comment.hide();
+                                  }
+                              });
+
+                          }
+                      });
+
+                  });
+
+                  // Comment Recomment Button
+                  $(".recomment-button").off('click').on('click',function(){
+                    var cid = $(this).closest(".posting-comment").data("cid");
+
+                    $(".posting-comment").removeClass("selected");
+                    $("#posting-comment-" + cid).addClass("selected");
+
+                    $(function() {
+                      $("#footer-textarea").focus();
+                      $("#footer-textarea").attr("placeholder", "답글 달기...");
+
+                      $("#footer-textarea").on('keydown keyup', function () {
+                        $(this).height(1).height( $(this).prop('scrollHeight') );
+                      });
+
+                      // Post API: Comment
+                      $("#footer-textarea-submit").off('click').on('click',function(){
+                          if ( $("#footer-textarea").val() ) {
+                            var data = {
+                              content : $("#footer-textarea").val(),
+                              comment_id : cid,
+                            };
+
+                            api.post("/comment/replycomment_write/" + cid + '/', data,function(res){
+                              if (res['ok']) {
+                                  $('#posting-comment-' + cid).closest('.posting-comment-wrap').append($(res.html));
+                                  $('#footer-textarea').val("");
+                                  $('#posting-comment-' + cid).removeClass("selected");
+                                  $("#footer-textarea").attr("placeholder", "댓글 달기...");
+                                  $('#footer-textarea').val("").css("height", "48px");
+                                  commentEventHandler();
+
+                                  var heightSum = $('.board-contents').height();
+                                  $("#template-view .board-contents").animate({ scrollTop: heightSum }, 400);
+
+                                  var comment_count = $('#comment-count');
+                                  comment_count.text(parseInt(comment_count.text()) + 1);
+
+                                  if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+                                    logCompletedTutorialEvent("comment", true);
+                                    facebookConnectPlugin.logEvent("COMMENT", {"block":userdata.block}, null);
+                                  }
+                              }
+                            });
+                        } else {
+                            popup("내용을 입력해주세요.");
+                        }
+
+                      });
+
+                    });
+                  });
+                }
+                commentEventHandler();
+            });
+        }
+
+    });
+
     return;
   },
 
   /* Gathering Review Ctrl */
   gatheringReviewCtrl : function(){
-    var gatheringdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
-    $("#chat-title").text(gatheringdata.gname);
+    var gathdata = JSON.parse($("#hiddenInput_gatheringdetaildata").val() || null);
+    $("#chat-title").text(gathdata.gname);
 
     $("#footer").css({"display":"none"});
     return;
@@ -4266,8 +5005,10 @@ var controller = {
     var infiniteScrollKey;
     var infiniteScrollEnd = false;
 
+    var gid = JSON.parse($("#hiddenInput_chatdata").val()).gid;
+    var uidSelf = JSON.parse($('#hiddenInput_userdata').val()).uid;
     var last_updated_time = null; // global variable
-    var globalGid = ""; // global variable
+    ChatUpdateCountRead = true;
 
     function last_chat_update() {
        var now = Date.now();
@@ -4277,7 +5018,7 @@ var controller = {
 
         $.ajax({
             method: "GET",
-            url: serverParentURL + "/gathering_last_chat_update/" + globalGid,
+            url: serverParentURL + "/gathering_last_chat_update/" + gid,
             xhrFields: {
                 withCredentials: true
             },
@@ -4296,21 +5037,17 @@ var controller = {
         });
     }
 
-    function chatInit() {
-        var pathParams = location.href.split("?")[1] || "";
-        var pathParamsJson = {};
-
-        if (pathParams != "") {
-            var pathParamsArray = pathParams.split("&");
-            $.each(pathParamsArray, function (index, value) {
-                pathParamsJson[value.split("=")[0]] = value.split("=")[1];
+    function countReadUpdate(){
+        firebase.database().ref("messages/gathering/" + gid).once("value").then(function(snapshot){
+            var count_total = snapshot.numChildren();
+            firebase.database().ref("messages_read/gathering/" + gid + "/" + uidSelf).update({
+                count_read: count_total
             });
-            pathParams = "?" + pathParams;
-        }
+            console.log("count_read updated: " + count_total);
+        });
+    }
 
-        var gid = pathParamsJson["gid"];
-        globalGid = pathParamsJson["gid"];
-
+    function chatInit() {
         var apiPathConfigInfo = serverParentURL + "/chat/gathering_config_info/";
         var apiPathInfo = serverParentURL + "/chat/gathering_info/";
 
@@ -4329,6 +5066,7 @@ var controller = {
             initFirebaseAuth();
             loadMessages();
             infiniteScroll();
+            countReadUpdate();
         });
 
         refreshRoomInfo(apiPathInfo + "?gid=" + gid);
@@ -4375,7 +5113,7 @@ var controller = {
             });
 
             refreshRoomInfo(apiPathInfo + "?gid=" + gid);
-        }); // $(".overlap-button").on
+        });
 
     }
 
@@ -4435,7 +5173,8 @@ var controller = {
                 initiator($(this).attr("href"), true);
             });
 
-            $(".history-back").off("click").on("click", function(){
+            $(".history-back-chat").off("click").on("click", function(){
+                ChatUpdateCountRead = false;
                 $("#template-view").removeAttr("style");
                 history.back();
             });
@@ -4453,35 +5192,32 @@ var controller = {
     }
 
     $('#chat-room-button-like').off('click').on('click', function(){
-      var link = $(location).attr('href');
-      var gid = link.split("=")[1];
-      initiator("/gathering_detail?gid=" + gid, true);
+        var link = $(location).attr('href');
+        initiator("/gathering_detail?gid=" + gid, true);
     });
 
     $('#chat-room-button-cancel').off('click').on('click', function(){
-      var link = $(location).attr('href');
-      var gid = link.split("=")[1];
-      var uid = $(this).data("uid");
-      var action = $(this).data("action");
-      var data = {'gid': gid, 'uid': uid, 'action': action};
+        var link = $(location).attr('href');
+        var action = $(this).data("action");
+        var data = {'gid': gid, 'uid': uidSelf, 'action': action};
 
-      popup("참여를 취소하시겠습니까? 참여를 취소해도 포인트는 되돌려 받지 못해요.", function(){
-          api.post("/gathering_join/", data, function (res) {
-              if(res['ok']) {
-                  initiator("/gathering_detail?gid=" + gid, false);
-                  $("#template-view").removeAttr("style");
-              } else {
-                  popup("게더링 상세보기를 누르고 그곳에서 참여를 취소해주세요.")
-              }
-          });
-      });
+        popup("참여를 취소하시겠습니까? 참여를 취소해도 포인트는 되돌려 받지 못해요.", function(){
+            api.post("/gathering_join/", data, function (res) {
+                if(res['ok']) {
+                    initiator("/gathering_detail?gid=" + gid, false);
+                    $("#template-view").removeAttr("style");
+                } else {
+                    popup("게더링 상세보기를 누르고 그곳에서 참여를 취소해주세요.")
+                }
+            });
+        });
     });
 
     $('.gathering-ban').off('click').on('click', function(){
         var gid = $(this).data("gid");
-        var uid = $(this).data("uid");
+        var uidBanned = $(this).data("uid");
         var action = $(this).data("action");
-        var data = {'gid': gid, 'uid': uid, 'action': action};
+        var data = {'gid': gid, 'uid': uidBanned, 'action': action};
     
         popup("강퇴를 당한 유저는 재참여가 불가능합니다.", function(){
             api.post("/gathering_ban/", data, function (res) {
@@ -4593,6 +5329,7 @@ var controller = {
                 snap.key, data.name, data.uid,
                 data.text, data.avatarUrl,
                 data.time, data.notification, data.imageUrl, true);
+            console.log("from loadMessages");
         };
 
         firebase.database().ref(chatConfig.firebase.instancePath)
@@ -4631,6 +5368,7 @@ var controller = {
                     displayMessage(key, data.name, data.uid, data.text,
                         data.avatarUrl, data.time,
                         data.notification, data.imageUrl, false));
+                console.log("from loadMessagesOnceInfiniteScroll");
             }); // $.each ends
 
             $(messageListElement).prepend(divWrapper);
@@ -4736,6 +5474,7 @@ var controller = {
         onMessageFormSubmitBoolean = true;
         // Check that the user entered a message and is signed in.
         if (messageInputElement.value && checkSignedInWithMessage()) {
+            $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
             saveMessage(messageInputElement.value).then(function () {
                 // Clear message text field and re-enable the SEND button.
                 resetMaterialTextfield(messageInputElement);
@@ -4810,6 +5549,10 @@ var controller = {
 
 
     // Displays a Message in the UI.
+    var scrollFirstLoading = true; // for scrolling for only one time
+    setTimeout(function(){
+      scrollFirstLoading = false;
+    }, 3500);
     function displayMessage(key, username, uid, text, avatarUrl,
         time, notification, imageUrl, appendBool) {
 
@@ -4848,11 +5591,13 @@ var controller = {
                 messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
             } else if (imageUrl) { // If the message is an image.
                 var image = document.createElement('img');
-                image.addEventListener('load', function () {
-                    if (appendBool) {
-                        $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
-                    }
-                });
+
+                /* CommentOn reset scrolling when a image loaded */
+                // image.addEventListener('load', function () {
+                //     if (appendBool) {
+                //         $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+                //     }
+                // });
                 image.src = imageUrl + '&' + new Date().getTime();
                 $(messageElement).remove();
                 imageElement.innerHTML = '';
@@ -4878,6 +5623,7 @@ var controller = {
                 $(messageInputElement).focus();
                 onMessageFormSubmitBoolean = false;
             }
+
         }
         
         $("woot-click").off("click").on("click", function(){
@@ -4889,8 +5635,41 @@ var controller = {
         setTimeout(function () {
             div.classList.add('visible')
         }, 1);
-        if (appendBool) {
-            $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+
+        // scroll to bottom when accessed first 
+        if (scrollFirstLoading) {
+          $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+          console.log("initiate")
+        }
+
+        // guide new message depending on the listening user's scroll location
+        console.log( "chat-room height " + $("#chat-room").height() );
+        console.log( "chat-room scroll: " + $("#chat-room-scroll").scrollTop() );
+        console.log( "scrollTopHeight: " + messageListElement.scrollHeight );
+        if (appendBool && uid != uidSelf){
+            if ( $("#chat-room").height() - $("#chat-room-scroll").scrollTop() < 500 ) {
+
+                $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+                console.log("autoscroll")
+            } else {
+                console.log("not autoscroll")
+                $("#new-message-scrolling").css("display","block");
+                $("#new-message-scrolling").off("click").on("click", function(){
+                    $("#chat-room-scroll").scrollTop($("#chat-room").height());
+                    $(this).css("display", "none");
+                    console.log("click: manual scroll")
+                });
+            }
+        }
+
+        // Autolink
+        $.each($('p, span'), function(idx, tg) {
+          $(this).html($(this).html().autoLink({ target: "_blank" }));
+        });
+
+        // firebase count_read update
+        if (appendBool && !scrollFirstLoading && ChatUpdateCountRead) {
+            countReadUpdate();
         }
 
         return div;
@@ -5072,6 +5851,14 @@ var controller = {
        initiator("/notice_list", false); 
     });
 
+    $(".notice-item woot-click").off("click").on("click", function(){
+        $("#pullup").css({"display":"none"});
+        $("body").css({"overflow":"inherit"});
+        $("#template-view").css({"overflow":""});
+        initiator($(this).attr("href"), false);
+    });
+
+
     $(".filter-item-notice").off('click').on('click',function(){
         var filterCategoryText = $(this).find("span").text();
         
@@ -5222,7 +6009,7 @@ $(document).ready(function(){
     }
 
     // Android Back Button Overwrite
-    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 500);
     document.addEventListener("backbutton", function (e){
         e.preventDefault();
         if (exitApp) {
@@ -5252,5 +6039,5 @@ $(document).ready(function(){
 });
 
 window.addEventListener('popstate', function(event) {
-  initiator();
+    initiator();
 });

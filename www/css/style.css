@@ -127,6 +127,10 @@ input,textarea{
   line-height:1.4em;
   color:white;
 }
+#popup-message span.guide-point{
+  color: #69befb;
+  font-weight: 600;
+}
 #popup-message span woot-click{
   display: block;
   margin-top: 8px;
@@ -443,7 +447,7 @@ margin-top:7px;
 #subheader .subheader-tab{
   padding-top:14px;
   padding-bottom:12px;
-  color:rgb(140,140,140);
+  font-weight: 600;
 }
 #subheader .subheader-tab.selected{
   color:#45aaf2;
