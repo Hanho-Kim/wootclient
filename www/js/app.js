@@ -4,9 +4,10 @@ var currentVersionAnd = "2006"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
-// var serverParentURL = "http://www.hellowoot.co.kr";
+var serverParentURL = "http://www.hellowoot.co.kr";
 // var serverParentURL = "http://derek-kim.com:8000";
-var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
+// var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
+// var serverParentURL = "http://192.168.0.73:8000"; // Don't remove this
 
 
 // Alternate between new and old servers
@@ -828,6 +829,16 @@ var viewConfig = {
     "template"    : serverParentURL + "/notice/notice_detail",
     "header"      : "./header/notice.detail.html",
     "footerHide"  : true
+  },
+  "/search" : {
+    "controller"  : "searchCtrl",
+    "template"    : serverParentURL + "/search_main",
+    "header"      : "./header/search.html",
+  },
+  "/search_home" : {
+    "controller"  : "searchCtrl",
+    "template"    : serverParentURL + "/search_home",
+    "header"      : "./header/search.html",
   }
 }
 
@@ -3067,17 +3078,21 @@ var controller = {
         });
     });
 
+    
+
+
     // Profile Edit Guide
-    $("#profile-edit-guide-nick").css({"display":"none"});
-    $("#profile-edit-guide-intro-job").css({"display":"none"});
-    $("#profile-edit-guide-intro").css({"display":"none"});
-    $("#profile-edit-guide-interest").css({"display":"none"});
+    $("#profile-edit-guide-interest").css({"display":"block"});
 
     $('input[name="nick"]').focus(function(){
         $("#profile-edit-guide-nick").css({"display":"block"});
+        $("#profile-edit-guide-nick-result").css({"display":"none"});
     });
     $('input[name="nick"]').blur(function(){
+        var nickname = $('input[name="nick"]').val();
         $("#profile-edit-guide-nick").css({"display":"none"});
+        $("#profile-edit-guide-nick-result").css({"display":"block"});
+        $("#profile-edit-guide-nick-result").html("앞으로 다른 웃님들이 '" + nickname + "'님으로 부를거에요 :)");
     });
 
     $('textarea[name="intro_job"]').focus(function(){
@@ -4506,6 +4521,7 @@ var controller = {
     $("#footer").css({"display":"none"});
 
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    console.log(userdata);
     var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
 
     /* the required number of people */
@@ -4513,6 +4529,11 @@ var controller = {
     var req_count = gathdata.min_num_people - gathdata.current_joining_people;
     $('.tobevalid-count').text(req_count);
 
+    /* redirect to home when gatheirng 'is_accessible' is false */
+    if ( gathdata.is_accessible == "false" ) {
+        popup("현재 접근이 불가능한 게더링입니다.");
+        initiator("/index", true);
+    }
 
     // gathering sub-tabs
     /*
@@ -5329,7 +5350,6 @@ var controller = {
                 snap.key, data.name, data.uid,
                 data.text, data.avatarUrl,
                 data.time, data.notification, data.imageUrl, true);
-            console.log("from loadMessages");
         };
 
         firebase.database().ref(chatConfig.firebase.instancePath)
@@ -5368,7 +5388,6 @@ var controller = {
                     displayMessage(key, data.name, data.uid, data.text,
                         data.avatarUrl, data.time,
                         data.notification, data.imageUrl, false));
-                console.log("from loadMessagesOnceInfiniteScroll");
             }); // $.each ends
 
             $(messageListElement).prepend(divWrapper);
@@ -5474,7 +5493,7 @@ var controller = {
         onMessageFormSubmitBoolean = true;
         // Check that the user entered a message and is signed in.
         if (messageInputElement.value && checkSignedInWithMessage()) {
-            $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+            $("#chat-room-scroll").scrollTop($("#chat-room").height());
             saveMessage(messageInputElement.value).then(function () {
                 // Clear message text field and re-enable the SEND button.
                 resetMaterialTextfield(messageInputElement);
@@ -5638,18 +5657,14 @@ var controller = {
 
         // scroll to bottom when accessed first 
         if (scrollFirstLoading) {
-          $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
-          console.log("initiate")
+          $("#chat-room-scroll").scrollTop($("#chat-room").height());
         }
 
         // guide new message depending on the listening user's scroll location
-        console.log( "chat-room height " + $("#chat-room").height() );
-        console.log( "chat-room scroll: " + $("#chat-room-scroll").scrollTop() );
-        console.log( "scrollTopHeight: " + messageListElement.scrollHeight );
         if (appendBool && uid != uidSelf){
             if ( $("#chat-room").height() - $("#chat-room-scroll").scrollTop() < 500 ) {
 
-                $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);
+                $("#chat-room-scroll").scrollTop($("#chat-room").height());
                 console.log("autoscroll")
             } else {
                 console.log("not autoscroll")
@@ -5884,6 +5899,133 @@ var controller = {
     return;
   },
 
+  searchCtrl : function(){
+    // global variable
+    var searchKeyword;
+    var searchCategory = "all";
+    var searchCategoryUrl;
+
+    $("#button-search").off("click").on("click",function(){
+        searchKeyword = $("#search-bar-input").val();
+        if (searchKeyword) {
+            $(".search-category-item").removeClass("selected");
+            $(".search-category-item.all").addClass("selected");
+
+            console.log(serverParentURL + "/search_home?text=" + searchKeyword)
+            $.ajax({
+                method    : "GET",
+                url       : serverParentURL + "/search_home?text=" + searchKeyword,
+                xhrFields : {withCredentials: true},
+                credentials: 'include',
+                success   : function( response ) {
+                                console.log("RESPONSE BELOW")
+                                // console.log(response);
+                                console.log($.parseHTML(response));
+
+                                if(response){
+                                    $("#search-contents-main").html("");
+                                    $("#search-contents-main").append(response);
+                                    // $("#search-contents-main").append($.parseHTML(response));
+                                }
+
+                            },
+                error     : function( request, status, error ) {
+
+                }
+            });
+        }
+    });
+
+    $(".search-category-item").off("click").on("click",function(){
+        searchKeyword = $("#search-bar-input").val();
+        if (searchKeyword) {
+            $(".search-category-item").removeClass("selected");
+            $(this).addClass("selected");
+
+            searchCategory = $(this).data("category");
+            if ( searchCategory == "all" ) {
+                searchCategoryUrl = "/search_home?text=" + searchKeyword;
+            } else if ( searchCategory == "post" ) {
+                searchCategoryUrl = "/search_post?text=" + searchKeyword;
+            } else if ( searchCategory == "gath" ) {
+                searchCategoryUrl = "/search_gathering?text=" + searchKeyword;
+            } else {
+                searchCategoryUrl = "/search_profile?text=" + searchKeyword;
+            }
+
+            $.ajax({
+                method    : "GET",
+                url       : serverParentURL + searchCategoryUrl,
+                xhrFields : {withCredentials: true},
+                credentials: 'include',
+                success   : function( response ) {
+                                console.log("RESPONSE BELOW")
+                                // console.log(response);
+                                console.log($.parseHTML(response));
+
+                                if(response){
+                                    $("#search-contents-main").html("");
+                                    $("#search-contents-main").append(response);                         
+                                    // $("#search-contents-main").append($.parseHTML(response));
+                                }
+
+                            },
+                error     : function( request, status, error ) {
+
+                }
+            });
+        }
+    });
+
+    // Infinite Scroll
+    var infiniteScrollPage = 2;
+    var infiniteScroll = function(){    
+        $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
+            if ( searchCategory != "all" ){
+                var eventScroll = $(".search-contents").height() - $("#template-view").height() - 100;
+                console.log(eventScroll);
+                console.log($("#template-view").scrollTop());
+                console.log("searchCategory: " + searchCategory);
+
+                
+                if( eventScroll < $("#template-view").scrollTop() ){
+                    $(this).unbind("scroll.board");
+                    console.log("ready for infinite");            
+
+                    if($(".search-contents").length > 0){                
+                        console.log(serverParentURL + searchCategoryUrl + "&page=" + infiniteScrollPage);
+                        $.ajax({
+                                method    : "GET",
+                                url       : serverParentURL + searchCategoryUrl + "&page=" + infiniteScrollPage,
+                                xhrFields: {withCredentials: true},
+                                success   : function( response ) {
+                                                if(response){
+                                                    console.log(response);
+                                                    $("#search-contents-main").append($.parseHTML(response));
+                                                    $("woot-click").off('click').on('click',function(){
+                                                        initiator($(this).attr("href"), true);
+                                                    });
+                                                    console.log(infiniteScrollPage + " times called");
+
+                                                    infiniteScrollPage += 1;
+                                                    infiniteScroll();
+                                                }
+
+                                            },
+                                error     : function( request, status, error ) {}
+                        });
+                    }
+                }
+
+            }
+        });
+
+    }
+    infiniteScroll();
+
+    return;
+  },
+
   /* Void Ctrl */
   voidCtrl : function(){
     return;
@@ -5930,7 +6072,7 @@ $(document).ready(function(){
       wkWebView.injectCookie('http://www.hellowoot.co.kr/');
 
       // grant alert permission
-      window.FirebasePlugin.grantPermission();
+      // window.FirebasePlugin.grantPermission();
 
       // hide accessory bar
       Keyboard.hideFormAccessoryBar(true);
@@ -5951,19 +6093,18 @@ $(document).ready(function(){
 
             // post -> post_detail
             if ( urlType.indexOf("post") > -1 ) {
-                initiator("/post_detail?pid=" + id, true);
+                initiator("/post_detail?pid=" + id, false);
                 // history.pushState(null, null, document.location.pathname + '#');
             }
-            // gathering (need to fix the condition of if statement through 'chatting_on')
             else if ( urlType.indexOf("gathering") > -1 ) {
-                initiator("/gathering_detail?gid=" + id, true);
+                initiator("/gathering_detail?gid=" + id, false);
             }
             else if ( urlType.indexOf("chat") > -1 ) {
-                initiator("/chat?gid=" + id, true);
+                initiator("/chat?gid=" + id, false);
             }
             // woot -> profile
             else if ( urlType.indexOf("account") > -1 ) {
-                initiator("/account/profile?uid=" + id, true);
+                initiator("/account/profile?uid=" + id, false);
             }
             // approved
             else {
@@ -5993,13 +6134,13 @@ $(document).ready(function(){
               xhrFields : {withCredentials: true},
               credentials: 'include',
               success   : function( response ) {
-                          console.log(response);
-    
-                          if(response){
-                            $("body").html("");
-                            $("body").append(response);
-                            console.log("need update");
-                          }
+                            console.log(response);
+      
+                            if(response){
+                              $("body").html("");
+                              $("body").append(response);
+                              console.log("need update");
+                            }
     
                         },
               error     : function( request, status, error ) {
