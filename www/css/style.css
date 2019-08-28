@@ -444,6 +444,9 @@ margin-top:7px;
   padding:0px 5px;
   z-index:999;
 }
+#subheader.subheader-search{
+  top:50px;
+}
 #subheader .subheader-tab{
   padding-top:14px;
   padding-bottom:12px;
@@ -454,6 +457,33 @@ margin-top:7px;
   font-weight:600;
   border-bottom:2px solid #45aaf2;
 }
+
+/* header - search */
+.search-contents-wrapper{
+  padding: 0px 15px;
+}
+.search-bar-wrapper{
+  position: relative;
+  margin-top: 9px;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1px solid #45aaf2;
+}
+#search-bar-input{ 
+  width:100%;
+  outline: none;
+  border: none;
+}
+#header #button-search{
+  padding: 12px 12px 0px 3px;
+}
+#input-no-padding{
+  padding:0px;
+  border: none;
+  background-color: white;
+  color: #45aaf2;
+}
+
 /* End of Header */
 
 /* Footer */

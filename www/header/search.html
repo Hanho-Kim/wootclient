@@ -1,25 +1,24 @@
-<style>
-.search-bar-wrapper{
-    display: block;
-    margin: 10px 20px;
-    padding: 8px;
-    position: relative;
-    border-radius: 12px;
-    border: 1px solid lightgray;
-}
-#search-bar-input{
-    width: 90%;        
-    border: 1px solid #45aaf2;
-    outline: none;
-    border: none;
-}
-</style> 
-
-<div id="header" class="row with-subheader">
-    <div class="search-contents-wrapper">
-        <div class="search-bar-wrapper">
-            <input type="text" id="search-bar-input">
-            <i class="ion-android-funnel" id="button-search"></i>
+<div id="header">
+    <div class="header-left button history-back col-lg-2 col-md-2 col-sm-2 col-xs-2">
+        <i class="ion-ios-arrow-back"></i>
+    </div>
+    
+    <form id="search-form" action="#" method="get">
+        <div class="header-search-wrapper block col-lg-19 col-md-19 col-sm-19 col-xs-19">
+            <div class="search-bar-wrapper">
+                <input type="text" id="search-bar-input" placeholder="검색어 입력">
+            </div>
+        </div>    
+        <div class="header-right button col-lg-2 col-md-2 col-sm-2 col-xs-2" id="button-search">
+            <input type="submit" id="input-no-padding" value="검색" />
+            <!-- <i class="icon ion-ios-search"></i> -->
         </div>
-    </div>    
+    </form>
+
+</div>
+<div id="subheader" class="subheader-search row">
+    <div class="subheader-tab button search-category-item all col-lg-6 col-md-6 col-sm-6 col-xs-6" id="search-all" data-category="all">전체</div>
+    <div class="subheader-tab button search-category-item posting col-lg-6 col-md-6 col-sm-6 col-xs-6" id="search-post" data-category="post">게시물</div>
+    <div class="subheader-tab button search-category-item gathering col-lg-6 col-md-6 col-sm-6 col-xs-6" id="search-gathering" data-category="gathering">게더링</div>
+    <div class="subheader-tab button search-category-item profile col-lg-6 col-md-6 col-sm-6 col-xs-6" id="search-profile" data-category="profile">프로필</div>
 </div>

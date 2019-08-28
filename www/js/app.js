@@ -1,13 +1,14 @@
 /* Global Variables */
-var currentVersioniOS = "1005"; // this must be string, not integer
-var currentVersionAnd = "2006"; // this must be string, not integer
+var currentVersioniOS = "1006"; // this must be string, not integer
+var currentVersionAnd = "2007"; // this must be string, not integer
 var mobile    = false;
 
 // No slash at the end of the url
-var serverParentURL = "http://www.hellowoot.co.kr";
+// var serverParentURL = "http://www.hellowoot.co.kr";
 // var serverParentURL = "http://derek-kim.com:8000";
-// var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
+var serverParentURL = "http://127.0.0.1:8000"; // Don't remove this
 // var serverParentURL = "http://192.168.0.73:8000"; // Don't remove this
+// var serverParentURL = "http://59.5.34.124:8000"; // Don't remove this
 
 
 // Alternate between new and old servers
@@ -133,7 +134,7 @@ function popup( message, callback ){
 
     var elm = '<div id="popup-message">' +
                 '<span>' + message + '</span>' +
-                '<div class="button-wrapper"><div class="confirm button">확인</div><div class="cancel button">취소</div></div>' +
+                '<div class="button-wrapper"><div class="cancel button">취소</div><div class="confirm button">확인</div></div>' +
               '</div>';
 
     $("body").append(elm);
@@ -205,15 +206,6 @@ function scrollReachDiv(elm,callback){
   });
 }
 
-
-//============================================================
-// Get Random Int
-//------------------------------------------------------------
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-
 //============================================================
 // Cookie
 //------------------------------------------------------------
@@ -248,6 +240,7 @@ function pullupMenu(menu,successFn){
   $("#pullup").css({"display":"block"});
   $("#template-view").css({"overflow":"hidden"});
   $("body").css({"overflow":"hidden"});
+  $(".pullup-inner").addClass("activated");
 
   anime({
     targets: '#pullup .pullup-inner',
@@ -269,6 +262,7 @@ function pullupMenu(menu,successFn){
                       $("#pullup .background").off('click').on('click',function(){
                         $("#pullup").css({"display":"none"});
                         $("#pullup .pullup-inner").html("");
+                        $(".pullup-inner").removeClass("activated");
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
                         anime({
@@ -280,6 +274,8 @@ function pullupMenu(menu,successFn){
 
                       $("#pullup .pullup-item").off('click').on('click',function(){
                         $("#pullup").css({"display":"none"});
+                        $("#pullup .pullup-inner").html("");
+                        $(".pullup-inner").removeClass("activated");
                         $("body").css({"overflow":"inherit"});
                         $("#template-view").css({"overflow":""});
                         anime({
@@ -291,10 +287,12 @@ function pullupMenu(menu,successFn){
 
                       $("woot-click").off('click').on('click',function(){
                         $("#pullup").css({"display":"none"});
+                        $("#pullup .pullup-inner").html("");
+                        $(".pullup-inner").removeClass("activated");
                         $("#template-view").css({"overflow":""});
                         $("body").css({"overflow":"inherit"})
                                  .removeClass("body-overlap-view"); 
-                        
+         
                         // for overlap
                         $("#posting-overlap-view-twofold").html("")
                                                           .removeClass("activated")
@@ -382,7 +380,11 @@ function globalEventHandler(){
   $(".history-back").off('click').on('click',function(){
     $("template-view").removeAttr("style");
     $("#popup-message").hide();
-    history.back();
+    if (history.length > 1) {
+        history.back();
+    } else {
+        initiator("/index", false);
+    }
   });
   $(".history-home").off('click').on('click',function(){
      window.location.replace('./index.html');
@@ -395,6 +397,9 @@ function globalEventHandler(){
         var pageurl = window.location.href.split("#")[1].split("?");
         logViewedContentEvent(pageurl[0], pageurl[1] || "none");
     }
+  });
+  $.each($('p, span'), function(idx, tg) {
+    $(this).html($(this).html().autoLink({ target: "_blank" }));
   });
 }
 
@@ -777,6 +782,12 @@ var viewConfig = {
     "header"      : "./header/people.profile.edit.password.html",
     "footerHide"  : true
   },
+  "/account/alarm" : {
+    "controller"  : "alarmCtrl",
+    "template"    : serverParentURL + "/account/alarm",
+    "header"      : "./header/people.profile.alarm.html",
+    "footerHide"  : true
+  },  
   "/debug" : {
     "controller"  : "debugCtrl",
     "template"    : serverParentURL + "/debug",
@@ -833,11 +844,6 @@ var viewConfig = {
   "/search" : {
     "controller"  : "searchCtrl",
     "template"    : serverParentURL + "/search_main",
-    "header"      : "./header/search.html",
-  },
-  "/search_home" : {
-    "controller"  : "searchCtrl",
-    "template"    : serverParentURL + "/search_home",
     "header"      : "./header/search.html",
   }
 }
@@ -1001,6 +1007,8 @@ function initiator(newPath, pushState){
   $("#template-view").css({"overflow":""});
   $("body").css({"overflow":"inherit"});
   $(".overlap-close").click();
+  $(".overlap-close-posting").click();
+  $(".overlap-close-posting-twofold").click();
 
   // Delete last template Ajax call if exists
   if (initAjax != "") {
@@ -1263,12 +1271,20 @@ var controller = {
                         if ( res.target.fields.is_chatting_on == true && res.target.fields.users_joining.includes(parseInt("{{ request.user.id }}")) ) {
                             initiator("/chat?gid=" + id, true);
                         } else if ( res.target.fields.is_removed == true || res.target.fields.is_accessible == false ) {
-                            popup('현재 접근이 불가능한 게더링입니다.');
+                            popup("놓친 게더링이에요😇 알람을 켜면<br> 게더링을 놓치지 않고 참여할 수 있어요<br><br><span class='activate-push'>알람 설정 하기</span>");
+                            $(".activate-push").off('click').on('click', function(){
+                                if ( localStorage.getItem('permissionAsked') ) {
+                                    cordova.plugins.settings.open("application_details");
+                                } else {    
+                                    window.FirebasePlugin.grantPermission();
+                                    localStorage.setItem('permissionAsked', "true");
+                                }
+                            });
                         } else if (points_left < 3) {
                             popup("포인트 3점을 모아야 게더링을 볼 수 있어요.<br>포인트는 게시글/댓글/게더링을 쓰면 생겨요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
                             $(".guide-point").off("click").on("click", function(){
                                 $("#popup-message").hide();
-                                initiator("/account/profile?uid=" + userdata.uid, true);
+                                initiator("/account/profile?uid=" + udata.uid, true);
                                 setTimeout(function(){
                                     pullupGuideTemplate("pullup_guide_point");
                                 }, 500);
@@ -2142,8 +2158,7 @@ var controller = {
           if(minage && maxage){
             $("#pullup .background").click();
             $("#write-gathering-input-agelimit-fake")
-              .text(minage + " ~ " + maxage)
-              .val(minage + " ~ " + maxage)
+              .text(minage + " ~ " + maxage + "세 웃님들 참여 가능")
               .addClass("filled");
             $("#write-gathering-input-agelimit-min").val(minage);
             $("#write-gathering-input-agelimit-max").val(maxage);
@@ -2151,7 +2166,7 @@ var controller = {
 
             api.post("/count_user_by_age/", data, function(res){
                 if (res['ok']){
-                    $(".age-num-people-wrapper").html("이 연령대에는 " + res.age_num_users + "명의 웃님들이 " + userdata.block + "블록에 있어요!");
+                    $(".age-num-people-wrapper").html(minage + " ~ " + maxage + "세 웃님들이 " + userdata.block + "블록에 " + res.age_num_users + "명" + " 있어요!");
                     $(".age-num-people-wrapper").addClass("typed")
 
                     anime({
@@ -2309,35 +2324,85 @@ var controller = {
   		  $(".write-section-wrapper-second").css({"display":"none"});
   	});
 
-    // Gathering Submit
     $('form.gathering_write').off('submit').on('submit', function(event){
         event.preventDefault();
-        var url = $(this).attr('action');
+        var form = $(this);
+        var url = form.attr('action');
         
         // prevent submit on if condition
         if ( $("#write-gathering-input-agelimit-min").val() == "" || $("#write-gathering-input-agelimit-max").val() == "" ) {
             popup("게더링 공개 연령대를 설정해주세요.");
             return;
         }  
-          
-        $("#pullup-write").show();
-        api.post(url, $(this).serialize(), function(res){
-            if (res['ok']){
-                var gid = res['gid'].toString();
-                initiator('/gathering_detail?gid=' + gid, false);
-                $("#pullup-write").hide();
 
-                if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
-                    logCompletedTutorialEvent("write_gath", true);
-                    facebookConnectPlugin.logEvent("WRITE_GATH", {"block":userdata.block}, null);
-                }
-            } else {
-                $("#pullup-write").hide();
-                popup('필수 항목들을 빠뜨리지 말고 작성해주세요');
-                // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
-            }
-        });          
+        // Prevent timePrestage < timeCurrent case
+        var minNumPeople = $("#write-gathering-input-prestage-minpeople").val();
+        var timeGathering = $("#write-gathering-input-time-date0").val() + "-" + $("#write-gathering-input-time-date1").val();
+        var timeArr = timeGathering.replace(":", "-").split("-");
+        timeArr[3] = parseInt(timeArr[3]) - parseInt($("#write-gathering-input-prestage-duration").val());
+        var timeArr = timeArr.map(function(v){
+            return(parseInt(v, 10));
+        });
+        var datePrestage = new Date( timeArr[0], timeArr[1] - 1, timeArr[2], timeArr[3], timeArr[4] );
+        var dateCurrent = new Date();
+        var datePrestageText = timestampConverter(datePrestage/1000);
+
+        if (dateCurrent > datePrestage) {
+            popup("모집 마감 시간이 " + datePrestageText + "으로 설정되었어요. 지금 시간보다 더 뒤로 설정해주세요.");
+        } else {
+            popup(datePrestageText + "까지 " + minNumPeople + "명이 모이지 않으면 게더링이 자동 폭파됩니다", function(){
+                $("#pullup-write").show();
+                api.post(url, form.serialize(), function(res){
+                    if (res['ok']){
+                        var gid = res['gid'].toString();
+                        initiator('/gathering_detail?gid=' + gid, false);
+                        $("#pullup-write").hide();
+
+                        if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+                            logCompletedTutorialEvent("write_gath", true);
+                            facebookConnectPlugin.logEvent("WRITE_GATH", {"block":userdata.block}, null);
+                        }
+                    } else {
+                        $("#pullup-write").hide();
+                        popup('필수 항목들을 빠뜨리지 말고 작성해주세요');
+                        // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+                    }
+                });          
+            });
+        }
     });
+
+
+
+    // Gathering Submit
+    // $('form.gathering_write').off('submit').on('submit', function(event){
+    //     event.preventDefault();
+    //     var url = $(this).attr('action');
+        
+    //     // prevent submit on if condition
+    //     if ( $("#write-gathering-input-agelimit-min").val() == "" || $("#write-gathering-input-agelimit-max").val() == "" ) {
+    //         popup("게더링 공개 연령대를 설정해주세요.");
+    //         return;
+    //     }  
+          
+    //     $("#pullup-write").show();
+    //     api.post(url, $(this).serialize(), function(res){
+    //         if (res['ok']){
+    //             var gid = res['gid'].toString();
+    //             initiator('/gathering_detail?gid=' + gid, false);
+    //             $("#pullup-write").hide();
+
+    //             if (plugin_toggle && typeof facebookConnectPlugin != "undefined") {
+    //                 logCompletedTutorialEvent("write_gath", true);
+    //                 facebookConnectPlugin.logEvent("WRITE_GATH", {"block":userdata.block}, null);
+    //             }
+    //         } else {
+    //             $("#pullup-write").hide();
+    //             popup('필수 항목들을 빠뜨리지 말고 작성해주세요');
+    //             // 안 채운 부분들 중 가장 먼저있는 곳으로 focus
+    //         }
+    //     });          
+    // });
 
 
 
@@ -3321,66 +3386,97 @@ var controller = {
         .attr("placeholder", "새로운 비밀번호를 다시 한번 입력해주세요");
 
       $("#profile-password-edit-submit").off('click').on('click',function(){
-      if($("#profile-edit-password-input-current").val()    == "" ||
-        $("#profile-edit-password-input-new").val()         == "" ||
-        $("#profile-edit-password-input-new-confirm").val() == ""){
+          if($("#profile-edit-password-input-current").val()    == "" ||
+            $("#profile-edit-password-input-new").val()         == "" ||
+            $("#profile-edit-password-input-new-confirm").val() == ""){
 
-        var elm = '<div id="popup-message">' +
-                    '<span>모든 값을 정확히 입력해주세요.</span>' +
-                  '</div>';
+            var elm = '<div id="popup-message">' +
+                        '<span>모든 값을 정확히 입력해주세요.</span>' +
+                      '</div>';
 
-        $("body").append(elm);
+            $("body").append(elm);
 
-        setTimeout(function(){
-          $("#popup-message").remove();
-        }, 5000);
+            setTimeout(function(){
+              $("#popup-message").remove();
+            }, 5000);
 
-        return;
+            return;
 
-      }
+          }
 
-      if($("#profile-edit-password-input-new").val() != $("#profile-edit-password-input-new-confirm").val()){
-        var elm = '<div id="popup-message">' +
-                    '<span>새로운 비밀번호가 일치하는지 확인해주세요.</span>' +
-                  '</div>';
-        $("body").append(elm);
+          if($("#profile-edit-password-input-new").val() != $("#profile-edit-password-input-new-confirm").val()){
+            var elm = '<div id="popup-message">' +
+                        '<span>새로운 비밀번호가 일치하는지 확인해주세요.</span>' +
+                      '</div>';
+            $("body").append(elm);
 
-        setTimeout(function(){
-          $("#popup-message").remove();
-        }, 5000);
-        return;
-      }
+            setTimeout(function(){
+              $("#popup-message").remove();
+            }, 5000);
+            return;
+          }
 
-      var serializedData = $("#profile-edit-password-form").serialize();
-      $.ajax({
-            url       : serverParentURL + "/account/change_password/",
-            type      : 'POST',
-            data      : serializedData,
-              headers   : {
-                      'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
-              },
-              xhrFields : { withCredentials: true },
-            success   : function( response ) {
-                            var res = response;
-                            if (res.errors) {
-                                var elm = '<div id="popup-message">' +
-                                            '<span>기존 비밀번호가 일치하는지 확인해주세요.</span>' +
-                                          '</div>';
-                                $("body").append(elm);
+          var serializedData = $("#profile-edit-password-form").serialize();
+          $.ajax({
+                url       : serverParentURL + "/account/change_password/",
+                type      : 'POST',
+                data      : serializedData,
+                  headers   : {
+                          'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                  },
+                  xhrFields : { withCredentials: true },
+                success   : function( response ) {
+                                var res = response;
+                                if (res.errors) {
+                                    var elm = '<div id="popup-message">' +
+                                                '<span>기존 비밀번호가 일치하는지 확인해주세요.</span>' +
+                                              '</div>';
+                                    $("body").append(elm);
 
-                                setTimeout(function(){
-                                  $("#popup-message").remove();
-                                }, 5000);
-                                return;
-                            }
-                            if (res['ok']) {
-                                popup("비밀번호가 정상적으로 변경되었습니다.");
-                                initiator("/account/edit", false);
-                            }
-                        },
-            error     : function( request, status, error ) {}
+                                    setTimeout(function(){
+                                      $("#popup-message").remove();
+                                    }, 5000);
+                                    return;
+                                }
+                                if (res['ok']) {
+                                    popup("비밀번호가 정상적으로 변경되었습니다.");
+                                    initiator("/account/edit", false);
+                                }
+                            },
+                error     : function( request, status, error ) {}
+          });
       });
+    return;
+  },
+
+  /* alarm */
+  alarmCtrl : function(){
+    function updateAlarm(url){
+        var input = $(this).closest(".profile-edit-input-toggle").find("input[type='hidden']");
+        var inputName = input.attr("name");
+        var previousStatus = input.val();
+        var updatedStatus = (previousStatus == "True") ? "False" : "True";
+        var data = {[inputName]: updatedStatus};
+
+        api.post(url, data, function(res){
+            console.log(res);
+            if (res["ok"]) {
+                input.val(updatedStatus);
+            } else {
+                popup("알람 변경 시 문제가 발생하였습니다. 메인 화면의 '우트에게 말하기'로 이야기해주시면 변경해드리도록 하겠습니다.");
+            }
+        });
+    }
+    $("#profile-edit-input-chat-push-fake").off("click").on("click",function(){
+        updateAlarm.bind($(this), "/account/change_chat_push_on/")();
     });
+    $("#profile-edit-input-push-fake").off("click").on("click",function(){
+        updateAlarm.bind($(this), "/account/change_push_on/")();
+    });
+    $("#profile-edit-input-etc-push-fake").off("click").on("click",function(){
+        updateAlarm.bind($(this), "/account/change_etc_push_on/")();
+    });
+
     return;
   },
 
@@ -3390,6 +3486,12 @@ var controller = {
     // Blockname Replace
     var boarddata = JSON.parse($("#hiddenInput_boarddata").val() || null);
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
+    var area_type = boarddata.area_type;
+    var topic = boarddata.topic_code;
+
+    if (area_type == "area_global"){
+        $("#header-title").text("🌏글로벌 게시물");
+    }
 
     $("textarea").on('keydown keyup', function () {
       $(this).height(1).height( $(this).prop('scrollHeight') );
@@ -3401,6 +3503,39 @@ var controller = {
       $(this).html($(this).html().autoLink({ target: "_blank" }));
     });
     
+    $(".filter-area").off("click").on("click",function(){
+        pullupMenu("pullup_post_filter_area", function(){
+            $(".pullup-item").off("click").on("click",function(){
+                // must use since initiator false
+                var area_type = $(this).data("area_type");              
+                if ( area_type == "area_nearby" ) {
+                    initiator("/post_list?bid=" + topic, false);
+                } else if (area_type == "area_global") {
+                    initiator("/post_list/" + area_type + "?bid=hotp", true);
+                } else {
+                    initiator("/post_list/" + area_type + "?bid=" + topic, false);
+                }
+
+                $("#pullup").css({"display":"none"});
+                $("#template-view").css({"overflow":""});
+                $("body").css({"overflow":""});
+            });
+        })
+    });
+    
+    $(".category-wrapper").find(".category-button").removeClass("selected");
+    $(".category-wrapper").find(".category-" + topic).addClass("selected");
+    $(".category-button").off("click").on("click",function(){
+        // must use category to change topics since initiator false
+        var category = $(this).data("category");
+        if ( area_type == "area_my" ) {
+            initiator("/post_list/area_my?bid=" + category, false);            
+        } else {
+            initiator("/post_list?bid=" + category, false);
+        }
+    });
+
+
     var miscHandler = function(){
         // More button click event handler
         $(".content-more-button").off('click').on('click',function(){
@@ -3937,6 +4072,9 @@ var controller = {
           $(this).unbind("scroll.board");
 
           if($("#posting-wrapper").length > 0){
+            // $("#template-view-loading-infinite").css({"display":"block"});
+            // $("#template-view-loading-infinite").css({"opacity":"1"});
+  
             $.ajax({
                     method    : "GET",
                     url       : serverParentURL + "/post_list/" + boarddata.area_type + "/" + boarddata.topic_code + "?page=" + infiniteScrollPage,
@@ -3967,6 +4105,16 @@ var controller = {
                               },
                     error     : function( request, status, error ) {}
             });
+
+            // anime({
+            //     targets: '#template-view-loading-infinite',
+            //     opacity: '0',
+            //     duration: 100,
+            //     easing: 'linear',
+            //     complete: function(){
+            //         $("#template-view-loading-infinite").css({"display":"none"});
+            //     }
+            // });
           }
         }
 
@@ -4437,37 +4585,37 @@ var controller = {
     });
 
     function pointCheck(){
-        $(".gathering-item").off("click").on("click", function(){
-            var item = $(this);
-            var gid = item.data("id");
-            var area_type = item.data("area_type");
+      $(".gathering-item").off("click").on("click", function(){
+          var item = $(this);
+          var gid = item.data("id");
+          var area_type = item.data("area_type");
 
-            // area_global
-            if (area_type == "area_global") {
-                initiator("/gathering_detail?gid=" + gid, true);
-            } else {
-                if ( item.data("join") ) {
-                    if ( item.data("chaton") ) {
-                        initiator("/chat?gid=" + gid, true);
-                    } else {
-                        initiator("/gathering_detail?gid=" + gid, true);
-                    }
-                } else {
-                    if ( points_left >= 3 ) {
-                        initiator("/gathering_detail?gid=" + gid, true);
-                    } else {
-                        popup("포인트 3점을 모아야 게더링을 볼 수 있어요.<br>포인트는 게시글/댓글/게더링을 쓰면 생겨요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
-                        $(".guide-point").off("click").on("click", function(){
-                            $("#popup-message").hide();
-                            initiator("/account/profile?uid=" + userdata.uid, true);
-                            setTimeout(function(){
-                                pullupGuideTemplate("pullup_guide_point");
-                            }, 500);
-                        });
-                    }
-                }
-            }
-        });
+          // area_global
+          if (area_type == "area_global") {
+              initiator("/gathering_detail?gid=" + gid, true);
+          } else {
+              if ( item.data("join") ) {
+                  if ( item.data("chaton") ) {
+                      initiator("/chat?gid=" + gid, true);
+                  } else {
+                      initiator("/gathering_detail?gid=" + gid, true);
+                  }
+              } else {
+                  if ( points_left >= 3 ) {
+                      initiator("/gathering_detail?gid=" + gid, true);
+                  } else {
+                      popup("포인트 3점을 모아야 게더링을 볼 수 있어요.<br>포인트는 게시글/댓글/게더링을 쓰면 생겨요.<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+                      $(".guide-point").off("click").on("click", function(){
+                          $("#popup-message").hide();
+                          initiator("/account/profile?uid=" + userdata.uid, true);
+                          setTimeout(function(){
+                              pullupGuideTemplate("pullup_guide_point");
+                          }, 500);
+                      });
+                  }
+              }
+          }
+      });
     }
     pointCheck();
 
@@ -4521,7 +4669,6 @@ var controller = {
     $("#footer").css({"display":"none"});
 
     var userdata = JSON.parse($("#hiddenInput_userdata").val() || null);
-    console.log(userdata);
     var points_left = parseInt(userdata.points_earned) - parseInt(userdata.points_used);
 
     /* the required number of people */
@@ -4531,8 +4678,28 @@ var controller = {
 
     /* redirect to home when gatheirng 'is_accessible' is false */
     if ( gathdata.is_accessible == "false" ) {
-        popup("현재 접근이 불가능한 게더링입니다.");
+        popup("현재는 접근이 불가능한 게더링입니다.");
         initiator("/index", true);
+    }
+
+    var tagArray = $("#gathering-details-view").text().split("#");
+    if (tagArray.length > 1){
+        var index_last = tagArray.length - 1
+        var detail = tagArray[index_last].slice(tagArray[index_last].indexOf(" "));
+        
+        var i;
+        var tagSpan = "";
+        for (i = 1; i <= index_last ; i++) {
+            var tag = tagArray[i].split(" ")[0];
+            var tagSpan = tagSpan + "<span class='gathering-tag'>#" + tag + "</span>"
+        }
+        
+        $("#gathering-details-view").html(tagSpan + "<p>" + detail + "</p>");
+
+        // Autolink
+        $.each($('p'), function(idx, tg) {
+          $(this).html($(this).html().autoLink({ target: "_blank" }));
+        });
     }
 
     // gathering sub-tabs
@@ -4569,7 +4736,7 @@ var controller = {
     // gathering-member alert: normal
     $('#gathering-stats-nor').off('click').on('click', function(e){
       if ( $('#gathering-like-button').data('action') == "on" && $('#gathering-participate-button').data('action') == "on" ){
-          popup("좋아요 또는 참석을 눌러야 멤버를 확인할 수 있어요.");
+          popup("관심있음 또는 참석을 눌러야 멤버를 확인할 수 있어요.");
       } else {
           initiator($('#gathering-stats-nor').data('link'), true);
       }
@@ -4699,7 +4866,7 @@ var controller = {
               }
             }
           } else {
-              popup("게시글/댓글/게더링을 쓰고 포인트를 모아야 게더링을 참여할 수 있어요.<br>(내블록 3점, 주변블록 6점)<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
+              popup("게시글/댓글/게더링을 쓰고 포인트를 모아야 게더링을 참여할 수 있어요.<br>(내블록 -3점, 주변블록 -6점)<br><br><span class='guide-point'>포인트 얻는 방법 확인 >></span>");
               $(".guide-point").off("click").on("click", function(){
                   $("#popup-message").hide();
                   initiator("/account/profile?uid=" + userdata.uid, true);
@@ -4772,6 +4939,10 @@ var controller = {
             });
 
             renderTemplate(serverParentURL + "/comment/comment_list_iframe/gathering/" + gid, "#posting-overlap-view", function(){
+
+              $.each($('p, span'), function(idx, tg) {
+                  $(this).html($(this).html().autoLink({ target: "_blank" }));
+              });  
 
               $(".posting-profile-overlap-twofold").off('click').on('click',function(){
                   var uid = $(this).data("uid");
@@ -5197,7 +5368,11 @@ var controller = {
             $(".history-back-chat").off("click").on("click", function(){
                 ChatUpdateCountRead = false;
                 $("#template-view").removeAttr("style");
-                history.back();
+                if (history.length > 1) {
+                    history.back();
+                } else {
+                    initiator("/index", false);
+                }
             });
 
             if(!chatConfig.is_chatting_on){
@@ -5493,9 +5668,10 @@ var controller = {
         onMessageFormSubmitBoolean = true;
         // Check that the user entered a message and is signed in.
         if (messageInputElement.value && checkSignedInWithMessage()) {
-            $("#chat-room-scroll").scrollTop($("#chat-room").height());
             saveMessage(messageInputElement.value).then(function () {
+                $("#chat-room-scroll").scrollTop(messageListElement.scrollHeight);          
                 // Clear message text field and re-enable the SEND button.
+                
                 resetMaterialTextfield(messageInputElement);
                 toggleButton();
                 last_chat_update();
@@ -5900,128 +6076,6 @@ var controller = {
   },
 
   searchCtrl : function(){
-    // global variable
-    var searchKeyword;
-    var searchCategory = "all";
-    var searchCategoryUrl;
-
-    $("#button-search").off("click").on("click",function(){
-        searchKeyword = $("#search-bar-input").val();
-        if (searchKeyword) {
-            $(".search-category-item").removeClass("selected");
-            $(".search-category-item.all").addClass("selected");
-
-            console.log(serverParentURL + "/search_home?text=" + searchKeyword)
-            $.ajax({
-                method    : "GET",
-                url       : serverParentURL + "/search_home?text=" + searchKeyword,
-                xhrFields : {withCredentials: true},
-                credentials: 'include',
-                success   : function( response ) {
-                                console.log("RESPONSE BELOW")
-                                // console.log(response);
-                                console.log($.parseHTML(response));
-
-                                if(response){
-                                    $("#search-contents-main").html("");
-                                    $("#search-contents-main").append(response);
-                                    // $("#search-contents-main").append($.parseHTML(response));
-                                }
-
-                            },
-                error     : function( request, status, error ) {
-
-                }
-            });
-        }
-    });
-
-    $(".search-category-item").off("click").on("click",function(){
-        searchKeyword = $("#search-bar-input").val();
-        if (searchKeyword) {
-            $(".search-category-item").removeClass("selected");
-            $(this).addClass("selected");
-
-            searchCategory = $(this).data("category");
-            if ( searchCategory == "all" ) {
-                searchCategoryUrl = "/search_home?text=" + searchKeyword;
-            } else if ( searchCategory == "post" ) {
-                searchCategoryUrl = "/search_post?text=" + searchKeyword;
-            } else if ( searchCategory == "gath" ) {
-                searchCategoryUrl = "/search_gathering?text=" + searchKeyword;
-            } else {
-                searchCategoryUrl = "/search_profile?text=" + searchKeyword;
-            }
-
-            $.ajax({
-                method    : "GET",
-                url       : serverParentURL + searchCategoryUrl,
-                xhrFields : {withCredentials: true},
-                credentials: 'include',
-                success   : function( response ) {
-                                console.log("RESPONSE BELOW")
-                                // console.log(response);
-                                console.log($.parseHTML(response));
-
-                                if(response){
-                                    $("#search-contents-main").html("");
-                                    $("#search-contents-main").append(response);                         
-                                    // $("#search-contents-main").append($.parseHTML(response));
-                                }
-
-                            },
-                error     : function( request, status, error ) {
-
-                }
-            });
-        }
-    });
-
-    // Infinite Scroll
-    var infiniteScrollPage = 2;
-    var infiniteScroll = function(){    
-        $("#template-view").unbind("scroll.board").bind("scroll.board",function() {
-            if ( searchCategory != "all" ){
-                var eventScroll = $(".search-contents").height() - $("#template-view").height() - 100;
-                console.log(eventScroll);
-                console.log($("#template-view").scrollTop());
-                console.log("searchCategory: " + searchCategory);
-
-                
-                if( eventScroll < $("#template-view").scrollTop() ){
-                    $(this).unbind("scroll.board");
-                    console.log("ready for infinite");            
-
-                    if($(".search-contents").length > 0){                
-                        console.log(serverParentURL + searchCategoryUrl + "&page=" + infiniteScrollPage);
-                        $.ajax({
-                                method    : "GET",
-                                url       : serverParentURL + searchCategoryUrl + "&page=" + infiniteScrollPage,
-                                xhrFields: {withCredentials: true},
-                                success   : function( response ) {
-                                                if(response){
-                                                    console.log(response);
-                                                    $("#search-contents-main").append($.parseHTML(response));
-                                                    $("woot-click").off('click').on('click',function(){
-                                                        initiator($(this).attr("href"), true);
-                                                    });
-                                                    console.log(infiniteScrollPage + " times called");
-
-                                                    infiniteScrollPage += 1;
-                                                    infiniteScroll();
-                                                }
-
-                                            },
-                                error     : function( request, status, error ) {}
-                        });
-                    }
-                }
-
-            }
-        });
-
-    }
-    infiniteScroll();
 
     return;
   },
@@ -6069,22 +6123,23 @@ $(document).ready(function(){
 
     // webview setCookie error solved by inject-cookie plugin & grantpermission for ios, status bar only for iOS
     if (device.platform == "iOS") {
-      wkWebView.injectCookie('http://www.hellowoot.co.kr/');
+        // Solving webview bug: cookie is not set  
+        wkWebView.injectCookie('http://www.hellowoot.co.kr/');
 
-      // grant alert permission
-      // window.FirebasePlugin.grantPermission();
+        // grant alert permission
+        // window.FirebasePlugin.grantPermission();
 
-      // hide accessory bar
-      Keyboard.hideFormAccessoryBar(true);
+        // hide accessory bar
+        Keyboard.hideFormAccessoryBar(true);
 
-      StatusBar.overlaysWebView(true);
+        StatusBar.overlaysWebView(true);
     }
 
     FirebasePlugin.onNotificationOpen(function(data){
         console.log(data);
         console.log(data.url);
         if(data.tap){
-          //Notification was received on device tray and tapped by the user.
+          // Notification was received on device tray and tapped by the user.
           if(data.url){
             // url preprocessing
             var urlSplit = data.url.split("/");
@@ -6150,22 +6205,26 @@ $(document).ready(function(){
     }
 
     // Android Back Button Overwrite
-    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 500);
+    var exitApp = false, intval = setInterval(function (){exitApp = false;}, 1000);
     document.addEventListener("backbutton", function (e){
         e.preventDefault();
+        console.log("click");
         if (exitApp) {
-          clearInterval(intval)
-          (navigator.app && navigator.app.exitApp()) || (device && device.exitApp())
-        }else {
-          if($("#posting-overlap-view").hasClass("activated")){
-            $(".overlap-close").click();
-          }else if($("#chat-room-image").hasClass("activated")){
-            $(".chat-room-image-close").click();
-            // pullup의 경우
-
-          }else{
-            exitApp = true
-            navigator.app.backHistory();
+          clearInterval(intval);
+          navigator.app.exitApp();
+        } else {
+          if ( $("#posting-overlap-view-twofold").hasClass("activated") ) {
+              $(".overlap-close-posting-twofold").click();
+          } else if($("#posting-overlap-view").hasClass("activated")) {
+              $(".overlap-close-posting").click()
+          } else if ($("#chat-room-image").hasClass("activated")) {
+              $(".chat-room-image-close").click();
+          } else if ($(".pullup-inner").hasClass("activated")) {
+              $("#pullup .background").click();
+              $(".overlap-close").click();
+          } else {
+              exitApp = true
+              navigator.app.backHistory();
           }
         }
     }, false);
@@ -6175,8 +6234,45 @@ $(document).ready(function(){
   document.addEventListener("resume", onResume, false);
   function onResume() {
       FirebasePlugin.setBadgeNumber(0);
-  }
 
+      FirebasePlugin.onNotificationOpen(function(data){
+          console.log(data);
+          console.log(data.url);
+          if(data.tap){
+              // Notification was received on device tray and tapped by the user.
+              if(data.url){
+                  // url preprocessing
+                  var urlSplit = data.url.split("/");
+                  var urlType = urlSplit[1];
+                  var id = urlType.indexOf("account") > -1 ? urlSplit[3] : urlSplit[2];
+
+                  // post -> post_detail
+                  if ( urlType.indexOf("post") > -1 ) {
+                      initiator("/post_detail?pid=" + id, false);
+                      // history.pushState(null, null, document.location.pathname + '#');
+                  }
+                  else if ( urlType.indexOf("gathering") > -1 ) {
+                      initiator("/gathering_detail?gid=" + id, false);
+                  }
+                  else if ( urlType.indexOf("chat") > -1 ) {
+                      initiator("/chat?gid=" + id, false);
+                  }
+                  // woot -> profile
+                  else if ( urlType.indexOf("account") > -1 ) {
+                      initiator("/account/profile?uid=" + id, false);
+                  }
+                  // approved
+                  else {
+                      console.log("approved");
+                  }
+              }
+          } else {
+            console.log("foreground");
+            //Notification was received in foreground. Maybe the user needs to be notified.
+          }
+      });
+  }
+  
 });
 
 window.addEventListener('popstate', function(event) {

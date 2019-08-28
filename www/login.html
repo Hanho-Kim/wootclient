@@ -44,29 +44,6 @@
                }(document, 'script', 'facebook-jssdk'));
         </script>
         <!-- end -->
-
-		<!-- GA -->
-		<script src="./js/analytics_debug.js"></script>
-		<script>
-			// Sets window.ga
-			ga('create', {
-				// Disables cookies.
-				storage: 'none',
-				// Your GA tracking id.
-				trackingId: 'UA-114209532-1',
-				// Will return null if not set, and GA will then assign one.
-				clientId: localStorage.getItem('ga:clientId')
-			});
-			console.log(localStorage.getItem('ga:clientId'));
-			ga('set', 'checkProtocolTask', null);
-			ga('set', 'transportUrl', 'https://www.google-analytics.com/collect');
-			ga(function(tracker) {
-				if ( !localStorage.getItem('ga:clientId') ) {
-					// Save the assigned id for the next time the app boots.
-					localStorage.setItem( 'ga:clientId', tracker.get('clientId') );
-				}
-			});
-		</script>		
 		
 		<!-- bootstrap -->
 		<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
