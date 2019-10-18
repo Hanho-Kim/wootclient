@@ -2,65 +2,100 @@
 
 <html>
 	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
 		<meta http-equiv="content-type" content="text/html" charset="utf-8">
 
 		<!-- Webview Meta -->
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 		<!-- Cordova -->
-		<script type="text/javascript" charset="utf-8" src="cordova.js"></script>  
+		<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
 
 		<!-- ionicons -->
 		<link rel="stylesheet" href="./fonts/icon.css">
-		<!-- End of ionicons -->
 
 		<!-- jquery -->
-		<script src="./lib/jquery/jquery-3.2.1.min.js"></script>
-		<script src="./lib/jquery/jquery-ui-1.12.1.min.js"></script>
+		<script src="./lib/jquery/jquery-3.4.1.min.js"></script>
+    	<script src="./lib/jquery/jquery-ui-1.12.1.min.js"></script>
 		<link rel="stylesheet" href="./lib/jquery/jquery-ui-1.12.1.min.css">
-		<!-- end of jquery -->
 
 		<!-- bootstrap -->
 		<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 		<script src="./lib/bootstrap/js/bootstrap.min.js"></script>
-		<!-- end of bootstrap -->
 
 		<!-- stylesheet -->
-		<link rel="stylesheet" type="text/css" href="./css/reset.css?v=181024a">
-		<link rel="stylesheet" type="text/css" href="./css/style.css?v=181024a">
-		<!--<link rel="stylesheet" type="text/css" href="./css/serverStyleDefault.min.css?v=181024a">-->
-		<!-- end of stylesheet -->
-
-		<!-- googlefont -->
-		<link rel="stylesheet" href="http://cdn.rawgit.com/hiun/NanumSquare/master/nanumsquare.css">
-		<!-- end of googlefont -->
-
+		<link rel="stylesheet" type="text/css" href="./css/reset.css?v=191014a">
+		<link rel="stylesheet" type="text/css" href="./css/style.css?v=191014a">
+		<link rel="stylesheet" type="text/css" href="./css/serverStyleDefault.min.css?v=191014a">
+ 
 		<!-- exif.js -->
 		<script src="./js/exif.js"></script>
-		<!-- end of exif.js -->
+
+		<!-- starRaty-->
+		<script src="./lib/starView/jquery.raty.js"></script>
+		<script src="./lib/starView/labs.js"></script>
+				
+		<!-- hammer.js -->
+		<script src="./js/hammer.min.js"></script>
+		
+		<!-- moment.js-->
+		<script src="./js/moment.min.js"></script>
 
 		<!-- anime.js -->
 		<script src="./js/anime.min.js"></script>
-		<!-- end of anime.js -->
 
 		<!-- swiper.js -->
 		<link rel="stylesheet" type="text/css" href="./css/swiper.min.css">
 		<script src="./js/swiper.min.js"></script>
-		<!-- end of swiper.js -->
 
 		<!-- helloweek.js -->
 		<script src="./lib/hello-week-master/helloweek.min.js"></script>
 		<link rel="stylesheet" href="./lib/hello-week-master/helloweek.min.css">
-		<!-- end of helloweek.js -->
 
+		<!-- Import and configure the Firebase SDK -->
+		<!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
+		<!-- If you do not want to serve/host your project using Firebase Hosting see https://firebase.google.com/docs/web/setup -->
+		<script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-auth.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-database.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.5.6/firebase-storage.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.5.6/firebase.js"></script>
 
+		<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyAMFHKSxppr8qPKyxfktkyfOVPP5tH44Gk",
+			authDomain: "woot-f7616.firebaseapp.com",
+			databaseURL: "https://woot-f7616.firebaseio.com",
+			projectId: "woot-f7616",
+			storageBucket: "woot-f7616.appspot.com",
+			messagingSenderId: "193591463376"
+		};
+		firebase.initializeApp(config);
+
+		</script>	  
 	</head>
+
 	<body>
 
 		<div id="pullup">
 			<div class="background"></div>
 			<div class="pullup-inner"></div>
+		</div>
+		
+		<!-- review stat -->
+		<div id="review-popup">
+		<p id="popup-img-content">
+			<img src="./images/logo_popup.png" />
+		</p>
+		<p id="popup-title-content">님 덕분에 우트가 쑥쑥 크고 있어요!</p>
+		<p id="popup-sub-title-content">앱 리뷰를 통해 우트팀을 응원해주세요</p>
+		<div id="click" class="popup-start-content"></div>
+		<div id="popup-exit-content">
+			<div id="review-done">이미 했어요</div>
+			<div id="review-later">다음에 할게요</div>
+		</div>
 		</div>
 
 		<div id="template-header">
@@ -82,45 +117,55 @@
 		<div id="template-view-loading">
 			<span class="loading-spinner"></span>
 		</div>
+		<div id="posting-overlap-view">
+		</div>
+		<div id="posting-overlap-view-twofold">
+		</div>
 		<div id="template-view">
 		</div>
 		<div id="update-alert">
 		</div>
-		<div id="footer" class="row">
+
+		<div id="footer" class="row">					
 			<div class="footer-item-wrapper col-lg-24 col-md-24 col-sm-24 col-xs-24">
 				<woot-click href="/index">
 					<div class="footer-item footer-item-index footer-item-notification footer-item-message selected">
-						<i class="ion-android-home"></i>
+						<div class="footer-icon" style="background-image:url('http://www.hellowoot.co.kr/static/asset/images/gnb/gnb_home-on.png');">
+						</div>
 						<span class="title">홈</span>
 					</div>
 				</woot-click>
-				<woot-click href="/gathering">
-					<div class="footer-item footer-item-gathering">
-						<i class="ion-android-cloud"></i>
+				<woot-click href="/gathering_list">
+					<div class="footer-item footer-item-gathering_list">
+						<div class="footer-icon" style="background-image:url('http://www.hellowoot.co.kr/static/asset/images/gnb/gnb_gathering-on.png');">
+						</div>
 						<span class="title">게더링</span>
 					</div>
 				</woot-click>
 				<woot-click href="/write">
 					<div class="footer-item footer-item-write">
-						<i class="ion-android-add-circle"></i>
-						<span class="title">만들기</span>
+						<div class="footer-icon" style="background-image:url('http://www.hellowoot.co.kr/static/asset/images/gnb/gnb_write-on.png');">
+						</div>
+						<span class="title">글쓰기</span>
 					</div>
 				</woot-click>
-				<woot-click href="/board">
-					<div class="footer-item footer-item-board">
-						<i class="ion-android-list"></i>
-						<span class="title">포스트</span>
+				<woot-click href="/post_list?bid=allp">
+					<div class="footer-item footer-item-post_category_list footer-item-post_list">
+						<div class="footer-icon" style="background-image:url('http://www.hellowoot.co.kr/static/asset/images/gnb/gnb_post-on.png');">
+						</div>
+						<span class="title">게시판</span>
 					</div>
 				</woot-click>
-				<woot-click href="/people">
-					<div class="footer-item footer-item-people">
-						<i class="ion-person-stalker"></i>
+				<woot-click href="/account/more">
+					<div class="footer-item footer-item-account">
+						<div class="footer-icon" style="background-image:url('http://www.hellowoot.co.kr/static/asset/images/gnb/gnb_neighbor-on.png');">
+						</div>
 						<span class="title">내 이웃들</span>
 					</div>
 				</woot-click>
 			</div>
 		</div>
-
-		<script src="./js/app.js?v=181024a"></script>
+		
+		<script src="./js/app.js?v=191014a"></script>
 	</body>
 </html>

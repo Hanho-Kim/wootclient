@@ -2,38 +2,73 @@
 
 <html>
 	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 		<meta http-equiv="content-type" content="text/html" charset="utf-8">
 
 		<!-- Webview Meta -->
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 		<!-- Cordova -->
-		<script type="text/javascript" charset="utf-8" src="cordova.js"></script>  
+		<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
 
 		<!-- ionicons -->
 		<link rel="stylesheet" href="./fonts/icon.css">
 		<!-- End of ionicons -->
 
 		<!-- jquery -->
-		<script src="./lib/jquery/jquery-3.2.1.min.js"></script>
+		<script src="./lib/jquery/jquery-3.4.1.min.js"></script>
 		<script src="./lib/jquery/jquery-ui-1.12.1.min.js"></script>
 		<link rel="stylesheet" href="./lib/jquery/jquery-ui-1.12.1.min.css">
 		<!-- end of jquery -->
 
+		<!-- starRaty-->
+		<script src="./lib/starView/jquery.raty.js"></script>
+		<script src="./lib/starView/labs.js"></script>
+
+		<!-- JS cookie -->
+		<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+        <!--  facebook SKD -->
+        <script>
+            window.fbAsyncInit = function() {
+                FB.init({
+                    appId            : '953763501484205',
+                    autoLogAppEvents : true,
+                    xfbml            : true,
+                    version          : 'v3.2'
+                });
+            };
+
+            (function(d, s, id){
+                 var js, fjs = d.getElementsByTagName(s)[0];
+                 if (d.getElementById(id)) {return;}
+                 js = d.createElement(s); js.id = id;
+                 js.src = "https://connect.facebook.net/en_US/sdk.js";
+                 fjs.parentNode.insertBefore(js, fjs);
+               }(document, 'script', 'facebook-jssdk'));
+            
+            
+        </script>
+        <!-- end -->
+		
 		<!-- bootstrap -->
 		<link rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css">
 		<script src="./lib/bootstrap/js/bootstrap.min.js"></script>
 		<!-- end of bootstrap -->
 
 		<!-- stylesheet -->
-		<link rel="stylesheet" type="text/css" href="./css/reset.css?v=1">
-		<link rel="stylesheet" type="text/css" href="./css/style.css?v=1">
+		<link rel="stylesheet" type="text/css" href="./css/reset.css?v=191014a">
+		<link rel="stylesheet" type="text/css" href="./css/style.css?v=191014a">
+		<link rel="stylesheet" type="text/css" href="./css/serverStyleDefault.min.css?v=191014a">
 		<!-- end of stylesheet -->
 
 		<!-- googlefont -->
 		<link rel="stylesheet" href="http://cdn.rawgit.com/hiun/NanumSquare/master/nanumsquare.css">
 		<!-- end of googlefont -->
+
+		<!-- exif.js -->
+		<script src="./js/exif.js"></script>
+		<!-- end of exif.js -->
 
 		<!-- anime.js -->
 		<script src="./js/anime.min.js"></script>
@@ -49,6 +84,7 @@
 		<link rel="stylesheet" href="./lib/hello-week-master/helloweek.min.css">
 		<!-- end of helloweek.js -->
 
+        <script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
 
 	</head>
 	<body>
@@ -60,12 +96,13 @@
 
 		<div id="template-view-loading">
 			<span class="loading-spinner"></span>
-		</div>
+    </div>
+
+
 		<div id="template-view">
-			
-		</div>		
-
-
-		<script src="./js/app.js"></script>
+        
+		</div>
+    
+		<script src="./js/app.js?v=191014a"></script>
 	</body>
 </html>
